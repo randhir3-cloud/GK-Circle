@@ -1,0 +1,145 @@
+# =============================================================
+# jovVix — docker-compose.override.yml
+#
+# This file is automatically merged with docker-compose.yaml
+# by Docker Compose (no extra flags needed for `up`).
+#
+# Evaluation changes applied here:
+#   - Isolated named network (jovvix-network)
+#   - Fixed DB healthcheck (was checking wrong user)
+#   - Named volumes (all persistent)
+#   - Restart policies on all services
+#   - Web exposed on port 3000 (was 5000)
+#   - API exposed on port 3010 (was 3000)
+#   - DB ports NOT exposed to host
+#   - Optional pgAdmin profile
+# =============================================================
+
+services:
+
+  db:
+    container_name: jovvix-db
+    restart: unless-stopped
+    # Fix: original healthcheck used -U app, user is actually jovvix
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U jovvix -d jovvix"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    networks:
+      - jovvix-network
+
+  migration:
+    container_name: jovvix-migration
+    networks:
+      - jovvix-network
+
+  redis:
+    container_name: jovvix-redis
+    restart: unless-stopped
+    # Remove external port exposure (internal only)
+    ports: !reset []
+    networks:
+      - jovvix-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    container_name: jovvix-api
+    restart: unless-stopped
+    # Expose API on 3010 (web gets 3000 below)
+    ports:
+      - "3010:3000"
+    networks:
+      - jovvix-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  web:
+    container_name: jovvix-web
+    restart: unless-stopped
+    # Remap: host 3000 → container 5000
+    ports:
+      - "3000:5000"
+    networks:
+      - jovvix-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:5000 || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+
+  kratos_migrate:
+    container_name: jovvix-kratos-migrate
+    networks:
+      - jovvix-network
+
+  kratos:
+    container_name: jovvix-kratos
+    restart: unless-stopped
+    networks:
+      - jovvix-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:4433/health/ready || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  minio:
+    container_name: jovvix-minio
+    restart: unless-stopped
+    # Fix: use named volume instead of home dir mount
+    volumes:
+      - jovvix-minio-data:/data
+    networks:
+      - jovvix-network
+
+  mailpit:
+    restart: unless-stopped
+    networks:
+      - jovvix-network
+
+  # ── pgAdmin (optional — run with: docker compose --profile tools up) ──
+  jovvix-pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: jovvix-pgadmin
+    profiles: [tools]
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@local.dev}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-pgadmin_secret}
+    ports:
+      - "${PGADMIN_PORT:-5051}:80"
+    volumes:
+      - jovvix-pgadmin-data:/var/lib/pgadmin
+    networks:
+      - jovvix-network
+    depends_on:
+      - db
+
+# ── Extend volumes with named definitions ─────────────────
+volumes:
+  pgdata:
+    name: jovvix-pgdata
+  redisdata:
+    name: jovvix-redisdata
+  jovvix-minio-data:
+    name: jovvix-minio-data
+  jovvix-pgadmin-data:
+    name: jovvix-pgadmin-data
+
+# ── Isolated Network ──────────────────────────────────────
+networks:
+  jovvix-network:
+    name: jovvix-network
+    driver: bridge
