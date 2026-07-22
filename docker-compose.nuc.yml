@@ -78,9 +78,16 @@ services:
       SELFSERVICE_FLOWS_VERIFICATION_UI_URL: https://gkcircle.com/verification
       SELFSERVICE_FLOWS_LOGIN_UI_URL: https://gkcircle.com/account/login
       SELFSERVICE_FLOWS_REGISTRATION_UI_URL: https://gkcircle.com/account/register
+      SELFSERVICE_FLOWS_LOGIN_AFTER_DEFAULT_BROWSER_RETURN_URL: https://gkcircle.com/api/v1/kratos/auth
+      SELFSERVICE_FLOWS_REGISTRATION_AFTER_DEFAULT_BROWSER_RETURN_URL: https://gkcircle.com/api/v1/kratos/auth
+      SELFSERVICE_FLOWS_VERIFICATION_AFTER_DEFAULT_BROWSER_RETURN_URL: https://gkcircle.com/account/login
+      SELFSERVICE_FLOWS_LOGOUT_AFTER_DEFAULT_BROWSER_RETURN_URL: https://gkcircle.com/account/login
+      SELFSERVICE_METHODS_OIDC_ENABLED: "false"
       CORS_ALLOWED_ORIGINS: https://gkcircle.com
       COOKIES_DOMAIN: gkcircle.com
       COOKIES_SAME_SITE: Lax
+      COOKIES_SECURE: "true"
+      COURIER_SMTP_CONNECTION_URI: smtp://mailpit:1025/?disable_starttls=true
       LOG_LEAK_SENSITIVE_VALUES: "false"
     command: serve -c /etc/config/kratos/kratos.yml --watch-courier
     depends_on:

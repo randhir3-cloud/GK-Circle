@@ -108,13 +108,13 @@ selfservice:
 log:
   level: debug
   format: text
-  leak_sensitive_values: true
+  leak_sensitive_values: false
 
 secrets:
   cookie:
-    - PLEASE-CHANGE-ME-I-AM-VERY-INSECURE
+    - change_me_to_a_long_random_cookie_secret
   cipher:
-    - 32-LONG-SECRET-NOT-SECURE-AT-ALL
+    - change_me_exactly_32_char_secret
 
 ciphers:
   algorithm: xchacha20-poly1305
