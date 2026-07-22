@@ -107,7 +107,7 @@ const actionCards = [
   },
   {
     title: "Get in touch",
-    description: "contact@jovvix.com",
+    description: "contact@gkcircle.com",
     tiltClass: "rotate-[-0.4deg]",
   },
 ];

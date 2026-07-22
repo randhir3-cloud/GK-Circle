@@ -1,12 +1,12 @@
 services:
   db:
     image: postgres:15.2-alpine
-    container_name: jovvix-db
+    container_name: gk-circle-db
     environment:
-      POSTGRES_USER: jovvix
-      POSTGRES_PASSWORD: jovvix
-      POSTGRES_DB: jovvix
-      POSTGRES_MULTIPLE_DATABASES: '"kratos-db"'
+      POSTGRES_USER: ${DB_USERNAME:-gk_circle}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env}
+      POSTGRES_DB: ${DB_NAME:-gk_circle}
+      POSTGRES_MULTIPLE_DATABASES: kratos
     ports:
       - 5432:5432
     volumes:
@@ -28,7 +28,8 @@ services:
         condition: service_healthy
     env_file:
       - ./api/.env.docker
-    command: ["./jovvix", "migrate", "up"]
+      - ./.env
+    command: ["./gk-circle", "migrate", "up"]
 
   redis:
     image: redis:latest
@@ -37,6 +38,7 @@ services:
       - "6379:6379"
     env_file:
       - ./api/.env.docker
+      - ./.env
     volumes:
       - redisdata:/root/redis
       - ./api/redis/redis.conf:/usr/local/etc/redis/redis.conf
@@ -55,7 +57,7 @@ services:
       - db
       - migration
       - redis
-    command: ["./jovvix", "api"]
+    command: ["./gk-circle", "api"]
 
   web:
     build:
@@ -72,7 +74,7 @@ services:
   kratos_migrate:
     image: oryd/kratos:v1.0.0
     environment:
-      - DSN=postgres://jovvix:jovvix@db:5432/jovvix?sslmode=disable&search_path=kratos
+      - DSN=postgres://${DB_USERNAME:-gk_circle}:${DB_PASSWORD}@db:5432/kratos?sslmode=disable
       - LOG_LEVEL=trace
     command: migrate sql -e --yes
     restart: on-failure
@@ -87,6 +89,7 @@ services:
       - "4434:${SERVE_ADMIN_PORT:-4434}" # admin
     env_file:
       - ./api/.env.kratos
+      - ./.env
     command: serve -c /etc/config/kratos/kratos.yml --watch-courier
     restart: always
     depends_on:

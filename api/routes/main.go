@@ -8,12 +8,12 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/Improwised/jovvix/api/config"
-	"github.com/Improwised/jovvix/api/constants"
-	controller "github.com/Improwised/jovvix/api/controllers/api/v1"
-	"github.com/Improwised/jovvix/api/middlewares"
-	pMetrics "github.com/Improwised/jovvix/api/pkg/prometheus"
-	"github.com/Improwised/jovvix/api/pkg/redis"
+	"github.com/randhir3-cloud/GK-Circle-v2/api/config"
+	"github.com/randhir3-cloud/GK-Circle-v2/api/constants"
+	controller "github.com/randhir3-cloud/GK-Circle-v2/api/controllers/api/v1"
+	"github.com/randhir3-cloud/GK-Circle-v2/api/middlewares"
+	pMetrics "github.com/randhir3-cloud/GK-Circle-v2/api/pkg/prometheus"
+	"github.com/randhir3-cloud/GK-Circle-v2/api/pkg/redis"
 	goqu "github.com/doug-martin/goqu/v9"
 	"github.com/gofiber/contrib/swagger"
 	"github.com/gofiber/contrib/websocket"

@@ -14,12 +14,12 @@ useHead({
 });
 
 useSeoMeta({
-  title: "Reset Password - jovVix",
+  title: "Reset Password - GK Circle",
   description:
-    "Reset your jovVix account password securely. Enter your email to receive a recovery link and regain access to your quiz dashboard.",
-  ogTitle: "Reset Password - jovVix",
+    "Reset your GK Circle account password securely. Enter your email to receive a recovery link and regain access to your quiz dashboard.",
+  ogTitle: "Reset Password - GK Circle",
   ogDescription:
-    "Reset your jovVix account password securely. Enter your email to receive a recovery link and regain access to your quiz dashboard.",
+    "Reset your GK Circle account password securely. Enter your email to receive a recovery link and regain access to your quiz dashboard.",
   ogUrl: seoCanonical,
 });
 

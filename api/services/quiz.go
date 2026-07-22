@@ -1,7 +1,7 @@
 package services
 
 import (
-	"github.com/Improwised/jovvix/api/models"
+	"github.com/randhir3-cloud/GK-Circle-v2/api/models"
 	"github.com/doug-martin/goqu/v9"
 	"go.uber.org/zap"
 )

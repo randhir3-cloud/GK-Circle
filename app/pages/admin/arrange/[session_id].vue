@@ -419,8 +419,8 @@ definePageMeta({
 });
 
 useSeoMeta({
-  title: "Quiz Session - jovVix",
-  description: "Configure and launch your live quiz session on jovVix.",
+  title: "Quiz Session - GK Circle",
+  description: "Configure and launch your live quiz session on GK Circle.",
   robots: "noindex, nofollow",
 });
 // custom class to bind component with

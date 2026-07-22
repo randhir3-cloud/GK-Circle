@@ -26,12 +26,12 @@ useHead({
 });
 
 useSeoMeta({
-  title: "Sign Up - jovVix",
+  title: "Sign Up - GK Circle",
   description:
-    "Create your free jovVix account to build and host interactive real-time quizzes, share them, and analyze results with detailed reports.",
-  ogTitle: "Sign Up - jovVix",
+    "Create your free GK Circle account to build and host interactive real-time quizzes, share them, and analyze results with detailed reports.",
+  ogTitle: "Sign Up - GK Circle",
   ogDescription:
-    "Create your free jovVix account to build and host interactive real-time quizzes, share them, and analyze results with detailed reports.",
+    "Create your free GK Circle account to build and host interactive real-time quizzes, share them, and analyze results with detailed reports.",
   ogUrl: seoCanonical,
 });
 

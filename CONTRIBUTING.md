@@ -1,7 +1,7 @@
-# Contributions to Jovvix
-- The Jovvix project welcomes all contributions from anyone willing to work in good faith with other contributors and the community. No contribution is too small and all contributions are valued.
+# Contributions to GK Circle
+- GK Circle welcomes contributions that improve reliable State PCS examination practice and preserve the existing architecture.
 
-- The Jovvix project has an open governance model. Individuals making significant and valuable contributions are made Collaborators and given commit-access to the project.
+- Read `AGENTS.md`, keep changes scoped, preserve the AGPL licence and upstream attribution, and include verification evidence with every pull request.
 
 
 <br><br>

@@ -334,12 +334,12 @@ useHead({
 });
 
 useSeoMeta({
-  title: "Join a Live Quiz - jovVix",
+  title: "Join a Live Quiz - GK Circle",
   description:
-    "Enter a game code to join a live quiz on jovVix. Play real-time multiplayer quizzes from any device and compete on the live scoreboard.",
-  ogTitle: "Join a Live Quiz - jovVix",
+    "Enter a game code to join a live quiz on GK Circle. Play real-time multiplayer quizzes from any device and compete on the live scoreboard.",
+  ogTitle: "Join a Live Quiz - GK Circle",
   ogDescription:
-    "Enter a game code to join a live quiz on jovVix. Play real-time multiplayer quizzes from any device and compete on the live scoreboard.",
+    "Enter a game code to join a live quiz on GK Circle. Play real-time multiplayer quizzes from any device and compete on the live scoreboard.",
   ogType: "website",
   ogUrl: canonicalUrl,
   ogImage: shareImageUrl,

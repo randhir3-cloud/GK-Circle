@@ -3,9 +3,9 @@ package utils
 import (
 	"mime/multipart"
 
-	"github.com/Improwised/jovvix/api/config"
-	"github.com/Improwised/jovvix/api/models"
-	"github.com/Improwised/jovvix/api/pkg/structs"
+	"github.com/randhir3-cloud/GK-Circle-v2/api/config"
+	"github.com/randhir3-cloud/GK-Circle-v2/api/models"
+	"github.com/randhir3-cloud/GK-Circle-v2/api/pkg/structs"
 )
 
 // swagger:parameters RequestAnalyticsBoardForAdmin

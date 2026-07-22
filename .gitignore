@@ -13,5 +13,5 @@ api/redis
 load-test/results
 
 # Local environment and agent tooling (never commit)
-/.env
+**/.env
 /.agent/

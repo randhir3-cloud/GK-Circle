@@ -290,9 +290,9 @@ definePageMeta({
 });
 
 useSeoMeta({
-  title: "Quiz Reports - jovVix",
+  title: "Quiz Reports - GK Circle",
   description:
-    "View performance reports and analytics for your jovVix quiz sessions.",
+    "View performance reports and analytics for your GK Circle quiz sessions.",
   robots: "noindex, nofollow",
 });
 

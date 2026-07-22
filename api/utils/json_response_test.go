@@ -5,7 +5,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/Improwised/jovvix/api/utils"
+	"github.com/randhir3-cloud/GK-Circle-v2/api/utils"
 	fiber "github.com/gofiber/fiber/v2"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

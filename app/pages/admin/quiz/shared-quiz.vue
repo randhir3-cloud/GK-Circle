@@ -7,8 +7,8 @@ definePageMeta({
 });
 
 useSeoMeta({
-  title: "Shared Quizzes - jovVix",
-  description: "Manage quizzes you have shared with others on jovVix.",
+  title: "Shared Quizzes - GK Circle",
+  description: "Manage quizzes you have shared with others on GK Circle.",
   robots: "noindex, nofollow",
 });
 

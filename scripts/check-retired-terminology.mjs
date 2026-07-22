@@ -1,153 +1,53 @@
-#!/usr/bin/env node
+import { readFileSync, readdirSync, statSync } from "node:fs";
+import { extname, join, normalize, relative } from "node:path";
 
-import fs from 'node:fs';
-import path from 'node:path';
-
-const root = process.cwd();
-
-const retiredPatterns = [
-  { name: 'retired aggregate name', regex: /\bProducts?\b/ },
-  { name: 'retired lowercase aggregate name', regex: /\bproducts?\b/ },
-  { name: 'retired permission namespace', regex: /\bproduct:[A-Za-z0-9_.-]+\b/ },
-  { name: 'retired service symbol', regex: /\bProducts?Service\b/ },
-  { name: 'retired controller symbol', regex: /\bProducts?Controller\b/ },
-  { name: 'retired module symbol', regex: /\bProducts?Module\b/ },
-  { name: 'retired DTO symbol', regex: /\bProducts?(?:Dto|DTO)\b/ },
-  { name: 'retired Prisma delegate', regex: /\bprisma\.product\b/ },
-  { name: 'retired camel-case id', regex: /\bproductId\b/ },
-  { name: 'retired snake-case id', regex: /\bproduct_id\b/ },
+const root = normalize(join(import.meta.dirname, ".."));
+const roots = ["api", "app", "scripts", "deploy"];
+const rootFiles = [
+  "docker-compose.yaml",
+  "docker-compose.override.yml",
+  "docker-compose.nuc.yml",
+  ".env.example",
+];
+const extensions = new Set([
+  ".go", ".js", ".mjs", ".ts", ".vue", ".json", ".yaml", ".yml",
+  ".toml", ".ps1", ".sh", ".conf", ".md",
+]);
+const excludedParts = new Set(["node_modules", ".nuxt", ".output", "coverage", "go.sum"]);
+const forbidden = [
+  { label: "legacy product name", pattern: /\bjovvix\b/i },
+  { label: "wrong backend framework", pattern: /\bNestJS\b/i },
+  { label: "wrong frontend framework", pattern: /\bNext\.js\b/i },
+  { label: "wrong ORM", pattern: /\bPrisma\b/i },
 ];
 
-const activeRoots = [
-  'backend/src',
-  'backend/test',
-  'backend/prisma/schema.prisma',
-  'backend/prisma/seed.ts',
-  'backend/prisma/seed-admin.ts',
-  'backend/prisma/seed-users.ts',
-  'frontend/src',
-  'frontend/playwright',
-  'frontend/scripts',
-  'scripts',
-  '.github/workflows',
-  'docs/standards',
-];
-
-const excludedParts = new Set([
-  '.git',
-  'node_modules',
-  'dist',
-  'build',
-  '.next',
-  'coverage',
-  'playwright-report',
-  'test-results',
-  '.cache',
-]);
-
-const excludedFiles = new Set([
-  path.normalize('scripts/check-retired-terminology.mjs'),
-  // Historical ADR-019 certification intentionally asserts old route families
-  // return the platform's normal not-found behavior.
-  path.normalize('frontend/playwright/adr019-course-rename-certification.spec.ts'),
-  // PHASE-C-012 final certification keeps the same negative-route assertion
-  // so retired route families cannot reappear as active contracts.
-  path.normalize('frontend/playwright/phase-c-012-certification.spec.ts'),
-]);
-
-const textExtensions = new Set([
-  '.cjs',
-  '.css',
-  '.cts',
-  '.env',
-  '.html',
-  '.js',
-  '.json',
-  '.jsx',
-  '.md',
-  '.mjs',
-  '.prisma',
-  '.ps1',
-  '.sh',
-  '.sql',
-  '.ts',
-  '.tsx',
-  '.txt',
-  '.yaml',
-  '.yml',
-]);
-
-function exists(relativePath) {
-  return fs.existsSync(path.join(root, relativePath));
-}
-
-function shouldSkip(relativePath) {
-  const normalized = path.normalize(relativePath);
-  if (excludedFiles.has(normalized)) return true;
-
-  const parts = normalized.split(path.sep);
-  return parts.some((part) => excludedParts.has(part));
-}
-
-function collectFiles(relativePath, output) {
-  if (!exists(relativePath) || shouldSkip(relativePath)) return;
-
-  const absolutePath = path.join(root, relativePath);
-  const stat = fs.statSync(absolutePath);
-
-  if (stat.isDirectory()) {
-    for (const entry of fs.readdirSync(absolutePath)) {
-      collectFiles(path.join(relativePath, entry), output);
-    }
-    return;
+function collect(path) {
+  if (excludedParts.has(path.split(/[\\/]/).at(-1))) return [];
+  if (statSync(path).isDirectory()) {
+    return readdirSync(path).flatMap((entry) => collect(join(path, entry)));
   }
-
-  if (!stat.isFile()) return;
-
-  const ext = path.extname(relativePath);
-  if (!textExtensions.has(ext)) return;
-
-  output.push(relativePath);
+  return extensions.has(extname(path)) || path.endsWith("Dockerfile") ? [path] : [];
 }
 
-function findMatches(file) {
-  const text = fs.readFileSync(path.join(root, file), 'utf8');
-  const lines = text.split(/\r?\n/);
-  const matches = [];
+const files = [
+  ...roots.flatMap((entry) => collect(join(root, entry))),
+  ...rootFiles.map((entry) => join(root, entry)),
+];
+const findings = [];
 
+for (const file of files) {
+  const display = relative(root, file);
+  const lines = readFileSync(file, "utf8").split(/\r?\n/);
   lines.forEach((line, index) => {
-    for (const pattern of retiredPatterns) {
-      if (pattern.regex.test(line)) {
-        matches.push({
-          file,
-          line: index + 1,
-          type: pattern.name,
-          text: line.trim(),
-        });
-      }
+    for (const rule of forbidden) {
+      if (rule.pattern.test(line)) findings.push(`${display}:${index + 1} ${rule.label}`);
     }
   });
-
-  return matches;
 }
 
-const files = [];
-for (const activeRoot of activeRoots) {
-  collectFiles(activeRoot, files);
-}
-
-const matches = files.flatMap(findMatches);
-
-if (matches.length > 0) {
-  console.error('Retired educational-domain terminology found in active files.');
-  console.error('Historical ADRs, immutable migrations, archived evidence, dependencies, and build output are intentionally outside this active-source scan.');
-  console.error('');
-
-  for (const match of matches) {
-    console.error(`${match.file}:${match.line} [${match.type}] ${match.text}`);
-  }
-
+if (findings.length) {
+  console.error(findings.join("\n"));
   process.exit(1);
 }
 
-console.log(`Retired terminology check passed (${files.length} active files scanned).`);
+console.log("Project identity check passed.");

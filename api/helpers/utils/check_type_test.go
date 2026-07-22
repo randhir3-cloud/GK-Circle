@@ -3,7 +3,7 @@ package quizUtilsHelper
 import (
 	"testing"
 
-	"github.com/Improwised/jovvix/api/constants"
+	"github.com/randhir3-cloud/GK-Circle-v2/api/constants"
 	"github.com/stretchr/testify/assert"
 )
 

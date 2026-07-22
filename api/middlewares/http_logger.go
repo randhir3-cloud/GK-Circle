@@ -3,7 +3,7 @@ package middlewares
 import (
 	"strings"
 
-	pMetrics "github.com/Improwised/jovvix/api/pkg/prometheus"
+	pMetrics "github.com/randhir3-cloud/GK-Circle-v2/api/pkg/prometheus"
 	fiber "github.com/gofiber/fiber/v2"
 	"github.com/samber/lo"
 	"go.uber.org/zap"

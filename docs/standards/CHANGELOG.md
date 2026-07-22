@@ -15,6 +15,17 @@ Format for every entry:
 
 ---
 
+## [3.0] - 2026-07-22 - GK Circle v2 foundation
+
+| Field | Value |
+|-------|-------|
+| **Files Changed** | `AGENTS.md`, `CLAUDE.MD`, `README.md`, core files under `docs/standards/`, `docs/architecture.md`, `docs/product-vision.md`, and `docs/deployment/NUC-DEPLOYMENT.md` |
+| **Reason** | Align governance and deployment guidance with the inherited Go/Fiber and Nuxt/Vue application, the GK Circle PCS mission, and isolated NUC deployment. |
+| **Breaking Changes** | **YES** — runtime, module, container, volume, network, and default database identities change from jovVix to GK Circle v2. |
+| **Migration Required** | **NO** for existing data — v2 starts with an isolated fresh database. The paused legacy deployment remains the rollback target and is not modified by this migration. |
+
+---
+
 ## [2.5] - 2026-07-14 - Subject-level Course Content and hierarchical Course Tests
 
 | Field | Value |

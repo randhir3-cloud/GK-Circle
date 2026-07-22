@@ -1,3 +1,10 @@
+## Unreleased - GK Circle v2
+
+- Rebrand the inherited jovVix application as GK Circle for PCS exam preparation.
+- Add isolated NUC deployment configuration for candidate validation before `gkcircle.com` cutover.
+- Preserve the legacy GK Circle stack and data as the rollback target.
+- Retain the AGPL-3.0 license and original project attribution.
+
 <a name="v1.1.1"></a>
 ## v1.1.1 - 2024-10-18
 

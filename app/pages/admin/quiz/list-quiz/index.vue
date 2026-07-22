@@ -20,8 +20,9 @@ definePageMeta({
 });
 
 useSeoMeta({
-  title: "Quiz Library - jovVix",
-  description: "Browse and manage all the quizzes you have created on jovVix.",
+  title: "Quiz Library - GK Circle",
+  description:
+    "Browse and manage all the quizzes you have created on GK Circle.",
   robots: "noindex, nofollow",
 });
 

@@ -7,7 +7,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/Improwised/jovvix/api/config"
+	"github.com/randhir3-cloud/GK-Circle-v2/api/config"
 	"github.com/spf13/cobra"
 )
 

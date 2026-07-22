@@ -55,8 +55,9 @@ useHead({
 });
 
 useSeoMeta({
-  title: "Arrange Quiz - jovVix",
-  description: "Set up and arrange a quiz session before going live on jovVix.",
+  title: "Arrange Quiz - GK Circle",
+  description:
+    "Set up and arrange a quiz session before going live on GK Circle.",
   robots: "noindex, nofollow",
 });
 </script>

@@ -24,14 +24,14 @@ export default defineNuxtConfig({
       htmlAttrs: {
         lang: "en",
       },
-      title: "jovVix - Real-time Quiz Platform",
+      title: "GK Circle - PCS Exam Preparation",
       meta: [
         { charset: "utf-8" },
         { name: "viewport", content: "width=device-width, initial-scale=1" },
         {
           name: "description",
           content:
-            "Create and host real-time interactive quizzes with jovVix. Engage your audience with live multiplayer games, instant scoring, and results.",
+            "Prepare for State PCS examinations with practice sets, mock exams, subject tests, current affairs, live competitions, and performance analytics.",
         },
       ],
       link: [

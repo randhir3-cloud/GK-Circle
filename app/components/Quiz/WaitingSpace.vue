@@ -494,7 +494,7 @@ watch(
           />
         </span>
         <h1 class="font-headings text-[24px] tracking-tight sm:text-[30px]">
-          JovVix
+          GK Circle
         </h1>
         <span
           class="hidden h-12 w-1 rotate-[10deg] rounded-full bg-jv-ink/20 sm:block"

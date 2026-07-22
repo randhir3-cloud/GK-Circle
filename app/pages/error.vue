@@ -4,9 +4,9 @@ definePageMeta({
 });
 
 useSeoMeta({
-  title: "Page Not Found - jovVix",
+  title: "Page Not Found - GK Circle",
   description:
-    "The page you are looking for could not be found. Return to jovVix to host or join a quiz.",
+    "The page you are looking for could not be found. Return to GK Circle to host or join a quiz.",
   robots: "noindex, nofollow",
 });
 

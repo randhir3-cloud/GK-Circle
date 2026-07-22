@@ -1,8 +1,8 @@
 package v1
 
 import (
-	"github.com/Improwised/jovvix/api/models"
-	pMetrics "github.com/Improwised/jovvix/api/pkg/prometheus"
+	"github.com/randhir3-cloud/GK-Circle-v2/api/models"
+	pMetrics "github.com/randhir3-cloud/GK-Circle-v2/api/pkg/prometheus"
 	goqu "github.com/doug-martin/goqu/v9"
 	adaptor "github.com/gofiber/adaptor/v2"
 	fiber "github.com/gofiber/fiber/v2"

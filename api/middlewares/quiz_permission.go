@@ -4,10 +4,10 @@ import (
 	"database/sql"
 	"net/http"
 
-	"github.com/Improwised/jovvix/api/constants"
-	quizUtilsHelper "github.com/Improwised/jovvix/api/helpers/utils"
-	"github.com/Improwised/jovvix/api/models"
-	"github.com/Improwised/jovvix/api/utils"
+	"github.com/randhir3-cloud/GK-Circle-v2/api/constants"
+	quizUtilsHelper "github.com/randhir3-cloud/GK-Circle-v2/api/helpers/utils"
+	"github.com/randhir3-cloud/GK-Circle-v2/api/models"
+	"github.com/randhir3-cloud/GK-Circle-v2/api/utils"
 	fiber "github.com/gofiber/fiber/v2"
 	"go.uber.org/zap"
 )

@@ -1,11 +1,11 @@
 # =============================================================
-# jovVix — docker-compose.override.yml
+# GK Circle - docker-compose.override.yml
 #
 # This file is automatically merged with docker-compose.yaml
 # by Docker Compose (no extra flags needed for `up`).
 #
 # Evaluation changes applied here:
-#   - Isolated named network (jovvix-network)
+#   - Isolated named network (gk-circle-network)
 #   - Fixed DB healthcheck (was checking wrong user)
 #   - Named volumes (all persistent)
 #   - Restart policies on all services
@@ -18,31 +18,31 @@
 services:
 
   db:
-    container_name: jovvix-db
+    container_name: gk-circle-db
     restart: unless-stopped
-    # Fix: original healthcheck used -U app, user is actually jovvix
+    # Healthcheck uses the GK Circle development database identity.
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U jovvix -d jovvix"]
+      test: ["CMD-SHELL", "pg_isready -U gk_circle -d gk_circle"]
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 20s
     networks:
-      - jovvix-network
+      - gk-circle-network
     ports: !reset []
 
   migration:
-    container_name: jovvix-migration
+    container_name: gk-circle-migration
     networks:
-      - jovvix-network
+      - gk-circle-network
 
   redis:
-    container_name: jovvix-redis
+    container_name: gk-circle-redis
     restart: unless-stopped
     # Remove external port exposure (internal only)
     ports: !reset []
     networks:
-      - jovvix-network
+      - gk-circle-network
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -50,28 +50,28 @@ services:
       retries: 5
 
   api:
-    container_name: jovvix-api
+    container_name: gk-circle-api
     restart: unless-stopped
     # Expose API on 3010 (web gets 3000 below)
     ports: !override
       - "3010:3000"
     networks:
-      - jovvix-network
+      - gk-circle-network
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://jovvix-api:3000/api/healthz/ >/dev/null || exit 1"]
+      test: ["CMD-SHELL", "wget -qO- http://gk-circle-api:3000/api/healthz/ >/dev/null || exit 1"]
       interval: 15s
       timeout: 5s
       retries: 5
       start_period: 30s
 
   web:
-    container_name: jovvix-web
+    container_name: gk-circle-web
     restart: unless-stopped
     # Remap: host 3000 → container 5000
     ports: !override
       - "3000:5000"
     networks:
-      - jovvix-network
+      - gk-circle-network
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:5000 || exit 1"]
       interval: 15s
@@ -80,15 +80,15 @@ services:
       start_period: 60s
 
   kratos_migrate:
-    container_name: jovvix-kratos-migrate
+    container_name: gk-circle-kratos-migrate
     networks:
-      - jovvix-network
+      - gk-circle-network
 
   kratos:
-    container_name: jovvix-kratos
+    container_name: gk-circle-kratos
     restart: unless-stopped
     networks:
-      - jovvix-network
+      - gk-circle-network
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:4433/health/ready || exit 1"]
       interval: 15s
@@ -97,13 +97,13 @@ services:
       start_period: 30s
 
   minio:
-    container_name: jovvix-minio
+    container_name: gk-circle-minio
     restart: unless-stopped
     # Fix: use named volume instead of home dir mount
     volumes:
-      - jovvix-minio-data:/data
+      - gk-circle-minio-data:/data
     networks:
-      - jovvix-network
+      - gk-circle-network
 
   mailpit:
     restart: unless-stopped
@@ -111,12 +111,12 @@ services:
       - "8025:8025"
       - "1026:1025"
     networks:
-      - jovvix-network
+      - gk-circle-network
 
   # ── pgAdmin (optional — run with: docker compose --profile tools up) ──
-  jovvix-pgadmin:
+  gk-circle-pgadmin:
     image: dpage/pgadmin4:latest
-    container_name: jovvix-pgadmin
+    container_name: gk-circle-pgadmin
     profiles: [tools]
     restart: unless-stopped
     environment:
@@ -125,25 +125,25 @@ services:
     ports:
       - "${PGADMIN_PORT:-5051}:80"
     volumes:
-      - jovvix-pgadmin-data:/var/lib/pgadmin
+      - gk-circle-pgadmin-data:/var/lib/pgadmin
     networks:
-      - jovvix-network
+      - gk-circle-network
     depends_on:
       - db
 
 # ── Extend volumes with named definitions ─────────────────
 volumes:
   pgdata:
-    name: jovvix-pgdata
+    name: gk-circle-pgdata
   redisdata:
-    name: jovvix-redisdata
-  jovvix-minio-data:
-    name: jovvix-minio-data
-  jovvix-pgadmin-data:
-    name: jovvix-pgadmin-data
+    name: gk-circle-redisdata
+  gk-circle-minio-data:
+    name: gk-circle-minio-data
+  gk-circle-pgadmin-data:
+    name: gk-circle-pgadmin-data
 
 # ── Isolated Network ──────────────────────────────────────
 networks:
-  jovvix-network:
-    name: jovvix-network
+  gk-circle-network:
+    name: gk-circle-network
     driver: bridge

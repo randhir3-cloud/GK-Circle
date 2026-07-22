@@ -4,7 +4,7 @@
   "schemes": ["http"],
   "swagger": "2.0",
   "info": {
-    "description": "Jovvix",
+    "description": "GK Circle PCS examination API",
     "version": "0.0.1-alpha"
   },
   "host": "127.0.0.1",
@@ -1043,7 +1043,7 @@
           "x-go-name": "Resource"
         }
       },
-      "x-go-package": "github.com/Improwised/jovvix/api/pkg/structs"
+      "x-go-package": "github.com/randhir3-cloud/GK-Circle-v2/api/pkg/structs"
     },
     "UUID": {
       "description": "A UUID is a 128 bit (16 byte) Universal Unique IDentifier as defined in RFC\n4122.",

@@ -1,7 +1,7 @@
 package cli
 
 import (
-	"github.com/Improwised/jovvix/api/config"
+	"github.com/randhir3-cloud/GK-Circle-v2/api/config"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 )
@@ -12,7 +12,7 @@ func Init(cfg config.AppConfig, logger *zap.Logger) error {
 	apiCmd := GetAPICommandDef(cfg, logger)
 	deleteOrphanedKratosUserCmd := GetDeleteOrphanedCommand(cfg)
 
-	rootCmd := &cobra.Command{Use: "jovvix"}
+	rootCmd := &cobra.Command{Use: "gk-circle"}
 	rootCmd.AddCommand(&migrationCmd, &apiCmd, &deleteOrphanedKratosUserCmd)
 	return rootCmd.Execute()
 }

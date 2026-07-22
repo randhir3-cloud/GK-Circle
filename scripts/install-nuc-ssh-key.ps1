@@ -19,4 +19,4 @@ Get-Content $keyPub | ssh -o StrictHostKeyChecking=accept-new randhir@192.168.1.
 
 Write-Host ""
 Write-Host "Testing passwordless login..."
-ssh -o BatchMode=yes gkcircle-nuc 'echo SSH_KEY_LOGIN_OK; hostname; whoami'
+ssh -o BatchMode=yes nuc 'echo SSH_KEY_LOGIN_OK; hostname; whoami'

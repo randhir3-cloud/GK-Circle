@@ -586,8 +586,9 @@ definePageMeta({
 });
 
 useSeoMeta({
-  title: "Edit Quiz - jovVix",
-  description: "Edit quiz details and manage questions for your jovVix quiz.",
+  title: "Edit Quiz - GK Circle",
+  description:
+    "Edit quiz details and manage questions for your GK Circle quiz.",
   robots: "noindex, nofollow",
 });
 

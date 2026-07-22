@@ -204,9 +204,9 @@ definePageMeta({
 });
 
 useSeoMeta({
-  title: "Play Live Quiz - jovVix",
+  title: "Play Live Quiz - GK Circle",
   description:
-    "Answer questions in real time and climb the live scoreboard in this jovVix multiplayer quiz game.",
+    "Answer questions in real time and climb the live scoreboard in this GK Circle multiplayer quiz game.",
   robots: "noindex, nofollow",
 });
 

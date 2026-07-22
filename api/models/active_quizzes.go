@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Improwised/jovvix/api/constants"
-	quizUtilsHelper "github.com/Improwised/jovvix/api/helpers/utils"
+	"github.com/randhir3-cloud/GK-Circle-v2/api/constants"
+	quizUtilsHelper "github.com/randhir3-cloud/GK-Circle-v2/api/helpers/utils"
 	"github.com/doug-martin/goqu/v9"
 	"github.com/google/uuid"
 	"go.uber.org/zap"

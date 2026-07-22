@@ -158,9 +158,9 @@ definePageMeta({
 });
 
 useSeoMeta({
-  title: "Change Password - jovVix",
+  title: "Change Password - GK Circle",
   description:
-    "Update your jovVix account password to keep your quizzes and data secure.",
+    "Update your GK Circle account password to keep your quizzes and data secure.",
   robots: "noindex, nofollow",
 });
 

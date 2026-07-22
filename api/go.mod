@@ -1,4 +1,4 @@
-module github.com/Improwised/jovvix/api
+module github.com/randhir3-cloud/GK-Circle-v2/api
 
 go 1.23.0
 

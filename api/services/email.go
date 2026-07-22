@@ -3,7 +3,7 @@ package services
 import (
 	"strconv"
 
-	"github.com/Improwised/jovvix/api/config"
+	"github.com/randhir3-cloud/GK-Circle-v2/api/config"
 	"go.uber.org/zap"
 	"gopkg.in/gomail.v2"
 )

@@ -347,9 +347,9 @@ definePageMeta({
 });
 
 useSeoMeta({
-  title: "Report Details - jovVix",
+  title: "Report Details - GK Circle",
   description:
-    "Explore detailed participant scores and question analytics for a jovVix quiz.",
+    "Explore detailed participant scores and question analytics for a GK Circle quiz.",
   robots: "noindex, nofollow",
 });
 

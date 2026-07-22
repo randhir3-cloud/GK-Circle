@@ -3,7 +3,7 @@ package jwt
 import (
 	"time"
 
-	"github.com/Improwised/jovvix/api/config"
+	"github.com/randhir3-cloud/GK-Circle-v2/api/config"
 	"github.com/lestrrat-go/jwx/v2/jwa"
 	"github.com/lestrrat-go/jwx/v2/jwk"
 	"github.com/lestrrat-go/jwx/v2/jwt"

@@ -6,9 +6,9 @@ definePageMeta({
 });
 
 useSeoMeta({
-  title: "Quiz Results - jovVix",
+  title: "Quiz Results - GK Circle",
   description:
-    "Review detailed results and analytics for a completed quiz session on jovVix.",
+    "Review detailed results and analytics for a completed quiz session on GK Circle.",
   robots: "noindex, nofollow",
 });
 

@@ -220,9 +220,9 @@ definePageMeta({
 });
 
 useSeoMeta({
-  title: "Admin Dashboard - jovVix",
+  title: "Admin Dashboard - GK Circle",
   description:
-    "Manage your quizzes, sessions, and reports from the jovVix admin dashboard.",
+    "Manage your quizzes, sessions, and reports from the GK Circle admin dashboard.",
   robots: "noindex, nofollow",
 });
 

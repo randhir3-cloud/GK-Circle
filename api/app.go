@@ -1,4 +1,4 @@
-// Jovvix
+// GK Circle
 //
 //	Schemes: http
 //	Host: 127.0.0.1
@@ -17,10 +17,10 @@ package main
 import (
 	"time"
 
-	"github.com/Improwised/jovvix/api/cli"
-	"github.com/Improwised/jovvix/api/config"
-	"github.com/Improwised/jovvix/api/logger"
-	"github.com/Improwised/jovvix/api/routinewrapper"
+	"github.com/randhir3-cloud/GK-Circle-v2/api/cli"
+	"github.com/randhir3-cloud/GK-Circle-v2/api/config"
+	"github.com/randhir3-cloud/GK-Circle-v2/api/logger"
+	"github.com/randhir3-cloud/GK-Circle-v2/api/routinewrapper"
 	sentry "github.com/getsentry/sentry-go"
 	"go.uber.org/zap"
 )

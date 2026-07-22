@@ -1,4 +1,4 @@
-dsn: postgres://jovvix:jovvix@db:5432/jovvix?sslmode=disable&search_path=kratos
+dsn: postgres://gk_circle:change_me_database_password@db:5432/kratos?sslmode=disable
 
 serve:
   public:

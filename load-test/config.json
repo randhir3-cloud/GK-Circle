@@ -7,12 +7,12 @@
   },
   "testData": {
     "adminUser": {
-      "email": "admin@jovvix.com",
-      "password": "admin123"
+      "email": "admin@gk-circle.local",
+      "password": "change_me_load_test_password"
     },
     "regularUser": {
-      "email": "user@jovvix.com",
-      "password": "user123"
+      "email": "user@gk-circle.local",
+      "password": "change_me_load_test_password"
     },
     "guestUser": {
       "name": "Guest User"

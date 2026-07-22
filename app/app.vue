@@ -22,7 +22,7 @@ const { baseUrl } = useRuntimeConfig().public;
 const defaultShareImage = new URL("/og-image.png", baseUrl).href;
 
 useSeoMeta({
-  ogSiteName: "jovVix",
+  ogSiteName: "GK Circle",
   ogType: "website",
   ogLocale: "en_US",
   ogImage: defaultShareImage,

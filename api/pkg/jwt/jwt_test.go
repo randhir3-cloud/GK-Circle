@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Improwised/jovvix/api/config"
+	"github.com/randhir3-cloud/GK-Circle-v2/api/config"
 	"github.com/stretchr/testify/assert"
 )
 

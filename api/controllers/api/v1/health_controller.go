@@ -4,8 +4,8 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/Improwised/jovvix/api/constants"
-	"github.com/Improwised/jovvix/api/utils"
+	"github.com/randhir3-cloud/GK-Circle-v2/api/constants"
+	"github.com/randhir3-cloud/GK-Circle-v2/api/utils"
 	goqu "github.com/doug-martin/goqu/v9"
 	fiber "github.com/gofiber/fiber/v2"
 	"go.uber.org/zap"

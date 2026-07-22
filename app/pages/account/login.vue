@@ -39,7 +39,7 @@
             </svg>
           </div>
           <p class="font-body text-jv-ink/70 text-sm sm:text-base m-0 mt-1">
-            Welcome to Jovvix
+            Welcome to GK Circle
           </p>
         </header>
 
@@ -187,12 +187,12 @@ useHead({
 });
 
 useSeoMeta({
-  title: "Login - jovVix",
+  title: "Login - GK Circle",
   description:
-    "Log in to jovVix to create, host, and manage your real-time quizzes, view reports, and track participant scores from your dashboard.",
-  ogTitle: "Login - jovVix",
+    "Log in to GK Circle to create, host, and manage your real-time quizzes, view reports, and track participant scores from your dashboard.",
+  ogTitle: "Login - GK Circle",
   ogDescription:
-    "Log in to jovVix to create, host, and manage your real-time quizzes, view reports, and track participant scores from your dashboard.",
+    "Log in to GK Circle to create, host, and manage your real-time quizzes, view reports, and track participant scores from your dashboard.",
   ogUrl: seoCanonical,
 });
 

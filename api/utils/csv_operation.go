@@ -8,9 +8,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Improwised/jovvix/api/constants"
-	quizUtilsHelper "github.com/Improwised/jovvix/api/helpers/utils"
-	"github.com/Improwised/jovvix/api/models"
+	"github.com/randhir3-cloud/GK-Circle-v2/api/constants"
+	quizUtilsHelper "github.com/randhir3-cloud/GK-Circle-v2/api/helpers/utils"
+	"github.com/randhir3-cloud/GK-Circle-v2/api/models"
 	"github.com/google/uuid"
 	"github.com/jszwec/csvutil"
 )

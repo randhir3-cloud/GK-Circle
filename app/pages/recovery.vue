@@ -10,12 +10,11 @@
         class="jv-card border-2 border-jv-ink bg-jv-white px-6 py-7 shadow-brutal-lg sm:px-8 sm:py-9"
       >
         <header class="mb-6 flex flex-col items-center gap-2">
-          <NuxtLink to="/" class="inline-block">
-            <img
-              src="~/assets/images/jovvix-logo.png"
-              alt="Jovvix"
-              class="h-9 w-auto"
-            />
+          <NuxtLink
+            to="/"
+            class="inline-block font-headings text-2xl text-jv-ink"
+          >
+            GK Circle
           </NuxtLink>
           <div class="relative inline-block">
             <h1
@@ -118,9 +117,9 @@ definePageMeta({
 });
 
 useSeoMeta({
-  title: "Account Recovery - jovVix",
+  title: "Account Recovery - GK Circle",
   description:
-    "Recover access to your jovVix account using your secure recovery link.",
+    "Recover access to your GK Circle account using your secure recovery link.",
   robots: "noindex, nofollow",
 });
 

@@ -11,7 +11,7 @@
         to="/"
         class="flex items-center gap-2 text-[20px] sm:text-[22px] md:text-[24px] font-black tracking-[-0.5px] text-jv-ink no-underline w-[120px] lg:w-[150px] h-auto"
       >
-        <img src="@/assets/images/jovvix-logo.png" />
+        <span class="whitespace-nowrap font-headings">GK Circle</span>
       </NuxtLink>
 
       <ul
@@ -39,11 +39,14 @@
 <script setup>
 import NavigationLink from "@/components/common/NavigationLink.vue";
 const navLinks = [
-  { href: "https://jovvix.com/", label: "Home" },
-  { href: "https://jovvix.com/docs/user-guide", label: "User Guide" },
-  { href: "https://jovvix.com/docs/developer-guide", label: "Developer Guide" },
+  { href: "https://gkcircle.com/", label: "Home" },
+  { href: "https://gkcircle.com/docs/user-guide", label: "User Guide" },
   {
-    href: "https://jovvix.com/docs/deployment-guide",
+    href: "https://gkcircle.com/docs/developer-guide",
+    label: "Developer Guide",
+  },
+  {
+    href: "https://gkcircle.com/docs/deployment-guide",
     label: "Deployment Guide",
   },
 ];

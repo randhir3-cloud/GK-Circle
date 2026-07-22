@@ -234,7 +234,7 @@ onBeforeUnmount(() => {
     </div>
   </button>
 
-  <!-- Per-user Questions Analysis Modal (Vue-controlled, JovVix style) -->
+  <!-- Per-user questions analysis modal -->
   <Teleport to="body">
     <div
       v-if="isOpen"

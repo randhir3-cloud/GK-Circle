@@ -10,8 +10,9 @@ definePageMeta({
 });
 
 useSeoMeta({
-  title: "Quiz Categories - jovVix",
-  description: "Manage the categories used to group public quizzes on jovVix.",
+  title: "Quiz Categories - GK Circle",
+  description:
+    "Manage the categories used to group public quizzes on GK Circle.",
   robots: "noindex, nofollow",
 });
 

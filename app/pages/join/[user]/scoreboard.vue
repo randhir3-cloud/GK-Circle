@@ -10,7 +10,7 @@ definePageMeta({
 });
 
 useSeoMeta({
-  title: "Quiz Results - jovVix",
+  title: "Quiz Results - GK Circle",
   description:
     "View your quiz results, ranking, and per-question analysis after the game.",
 });

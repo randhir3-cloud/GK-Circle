@@ -40,8 +40,8 @@ definePageMeta({
 });
 
 useSeoMeta({
-  title: "Edit Question - jovVix",
-  description: "Edit and configure an individual quiz question on jovVix.",
+  title: "Edit Question - GK Circle",
+  description: "Edit and configure an individual quiz question on GK Circle.",
   robots: "noindex, nofollow",
 });
 

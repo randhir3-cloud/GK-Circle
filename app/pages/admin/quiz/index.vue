@@ -76,8 +76,9 @@ definePageMeta({
 });
 
 useSeoMeta({
-  title: "My Quizzes - jovVix",
-  description: "Create, edit, and organize your interactive quizzes on jovVix.",
+  title: "My Quizzes - GK Circle",
+  description:
+    "Create, edit, and organize your interactive quizzes on GK Circle.",
   robots: "noindex, nofollow",
 });
 </script>

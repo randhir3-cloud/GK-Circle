@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/Improwised/jovvix/api/constants"
+	"github.com/randhir3-cloud/GK-Circle-v2/api/constants"
 )
 
 func TestIsValidCode(t *testing.T) {

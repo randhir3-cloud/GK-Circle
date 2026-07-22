@@ -7,9 +7,9 @@ definePageMeta({
 });
 
 useSeoMeta({
-  title: "Shared With Me - jovVix",
+  title: "Shared With Me - GK Circle",
   description:
-    "Access quizzes that other creators have shared with you on jovVix.",
+    "Access quizzes that other creators have shared with you on GK Circle.",
   robots: "noindex, nofollow",
 });
 

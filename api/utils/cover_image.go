@@ -3,7 +3,7 @@ package utils
 import (
 	"strings"
 
-	"github.com/Improwised/jovvix/api/constants"
+	"github.com/randhir3-cloud/GK-Circle-v2/api/constants"
 )
 
 // ValidateCoverImage checks a quiz cover image, which is stored as a base64

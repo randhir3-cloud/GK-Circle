@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/Improwised/jovvix/api/constants"
-	"github.com/Improwised/jovvix/api/pkg/structs"
+	"github.com/randhir3-cloud/GK-Circle-v2/api/constants"
+	"github.com/randhir3-cloud/GK-Circle-v2/api/pkg/structs"
 	"github.com/doug-martin/goqu/v9"
 	"github.com/google/uuid"
 )

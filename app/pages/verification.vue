@@ -99,9 +99,9 @@ definePageMeta({
 });
 
 useSeoMeta({
-  title: "Verify Account - jovVix",
+  title: "Verify Account - GK Circle",
   description:
-    "Verify your jovVix account email to activate quiz hosting and account features.",
+    "Verify your GK Circle account email to activate quiz hosting and account features.",
   robots: "noindex, nofollow",
 });
 

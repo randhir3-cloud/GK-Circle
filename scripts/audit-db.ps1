@@ -1,29 +1,13 @@
+# Read-only database summary for the GK Circle v2 NUC stack.
+
+param([string]$NucHost = "nuc")
+
 $ErrorActionPreference = "Stop"
-
-function Invoke-NucBash([string]$Script) {
-    $lf = $Script.Replace("`r", "")
-    $tmp = [System.IO.Path]::GetTempFileName()
-    try {
-        [System.IO.File]::WriteAllText($tmp, $lf, (New-Object System.Text.UTF8Encoding $false))
-        $out = cmd /c "type `"$tmp`" | ssh nuc bash -s" 2>&1
-    } finally {
-        Remove-Item $tmp -ErrorAction SilentlyContinue
-    }
-    if ($LASTEXITCODE -ne 0) {
-        throw "Remote bash failed (exit $LASTEXITCODE): $out"
-    }
-    return ($out | Out-String).Trim()
-}
-
-$query = @'
-docker exec gk-circle-postgres psql -U gk_user -d gk_circle -c '
-SELECT u.email, ca.status 
-FROM users u 
-LEFT JOIN creator_applications ca ON u.id = ca."userId" 
-WHERE u.email LIKE '\''%mq7a6bf0%'\'' 
-ORDER BY u.email;
-'
+$sql = @'
+SELECT current_database() AS database, current_user AS role;
+SELECT schemaname, tablename FROM pg_tables WHERE schemaname NOT IN ('pg_catalog', 'information_schema') ORDER BY 1, 2;
 '@
 
-$out = Invoke-NucBash $query
-Write-Host $out
+$encoded = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($sql))
+ssh $NucHost "cd /home/randhir/apps/gk-circle-v2 && echo $encoded | base64 -d | docker compose --env-file .env -f docker-compose.nuc.yml exec -T db sh -c 'psql -U \"`$POSTGRES_USER\" -d \"`$POSTGRES_DB\"'"
+if ($LASTEXITCODE -ne 0) { throw "Database audit failed." }

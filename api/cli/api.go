@@ -9,11 +9,11 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/Improwised/jovvix/api/config"
-	"github.com/Improwised/jovvix/api/database"
-	"github.com/Improwised/jovvix/api/models"
-	pMetrics "github.com/Improwised/jovvix/api/pkg/prometheus"
-	"github.com/Improwised/jovvix/api/routes"
+	"github.com/randhir3-cloud/GK-Circle-v2/api/config"
+	"github.com/randhir3-cloud/GK-Circle-v2/api/database"
+	"github.com/randhir3-cloud/GK-Circle-v2/api/models"
+	pMetrics "github.com/randhir3-cloud/GK-Circle-v2/api/pkg/prometheus"
+	"github.com/randhir3-cloud/GK-Circle-v2/api/routes"
 	fiber "github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/spf13/cobra"

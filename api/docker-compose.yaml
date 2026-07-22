@@ -2,12 +2,12 @@ version: "3.8"
 services:
   db:
     image: postgres:15.2-alpine
-    container_name: jovvix-postgresdb-saperate
+    container_name: gk-circle-postgresdb
     environment:
-      POSTGRES_USER: jovvix
-      POSTGRES_PASSWORD: jovvix
-      POSTGRES_DB: jovvix
-      POSTGRES_MULTIPLE_DATABASES: '"kratos-db", "jovvix-testing"'
+      POSTGRES_USER: gk_circle
+      POSTGRES_PASSWORD: change_me_database_password
+      POSTGRES_DB: gk_circle
+      POSTGRES_MULTIPLE_DATABASES: kratos,gk_circle_testing
     ports:
       - 5432:5432
     volumes:
@@ -43,7 +43,7 @@ services:
   kratos_migrate:
     image: oryd/kratos:v1.0.0
     environment:
-      - DSN=postgres://jovvix:jovvix@db:5432/jovvix?sslmode=disable&search_path=kratos
+      - DSN=postgres://gk_circle:change_me_database_password@db:5432/kratos?sslmode=disable
       - LOG_LEVEL=trace
     command: migrate sql -e --yes
     restart: on-failure

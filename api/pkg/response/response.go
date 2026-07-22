@@ -1,6 +1,6 @@
 package response
 
-import "github.com/Improwised/jovvix/api/models"
+import "github.com/randhir3-cloud/GK-Circle-v2/api/models"
 
 type ResponseFinalScore struct {
 	FinalScore []models.FinalScoreBoard
