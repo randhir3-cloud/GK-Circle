@@ -15,11 +15,12 @@ export GK_CIRCLE_HTTP_PORT="__PORT__"
 compose='docker compose --env-file .env -f docker-compose.nuc.yml'
 $compose config --quiet
 $compose ps
-$compose exec -T db sh -c 'pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB"'
-$compose exec -T redis sh -c 'redis-cli -a "$REDIS_PASSWORD" ping' | grep PONG
+test -z "$($compose ps --status unhealthy -q)"
+$compose exec -T db sh -c 'pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB"' < /dev/null
+$compose exec -T redis sh -c 'redis-cli -a "$REDIS_PASSWORD" ping' < /dev/null | grep PONG
 curl -fsS "http://127.0.0.1:__PORT__/healthz" >/dev/null
-curl -fsS "http://127.0.0.1:__PORT__/" | grep -q "GK Circle"
-$compose exec -T kratos wget -qO- http://localhost:4434/health/ready >/dev/null
+curl -fsS "http://127.0.0.1:__PORT__/" | grep -F "GK Circle" >/dev/null
+$compose exec -T kratos wget -qO- http://localhost:4434/health/ready < /dev/null >/dev/null
 echo "VERIFY_OK"
 exit 0 # Keep PowerShell's pipeline CR outside shell syntax.
 '@.Replace('__PROJECT__', $NucProject).Replace('__PORT__', $CandidatePort.ToString())
