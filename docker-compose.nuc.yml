@@ -29,7 +29,7 @@ services:
       - gk-circle-v2-redisdata:/data
     networks: [gk-circle-v2-network]
     healthcheck:
-      test: ["CMD-SHELL", "redis-cli -a '$${REDIS_PASSWORD}' ping | grep PONG"]
+      test: ["CMD-SHELL", "redis-cli -a \"$${REDIS_PASSWORD}\" ping | grep PONG"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -69,7 +69,9 @@ services:
     environment:
       DSN: postgres://${DB_USERNAME}:${DB_PASSWORD}@db:5432/kratos?sslmode=disable
       SERVE_PUBLIC_BASE_URL: https://gkcircle.com/kratos/
+      SERVE_PUBLIC_HOST: 0.0.0.0
       SERVE_ADMIN_BASE_URL: http://kratos:4434/
+      SERVE_ADMIN_HOST: 0.0.0.0
       SELFSERVICE_DEFAULT_BROWSER_RETURN_URL: https://gkcircle.com
       SELFSERVICE_ALLOWED_RETURN_URLS: https://gkcircle.com
       SELFSERVICE_FLOWS_ERROR_UI_URL: https://gkcircle.com/error
@@ -97,7 +99,7 @@ services:
       - ./api/pkg/kratos:/etc/config/kratos:ro
     networks: [gk-circle-v2-network]
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:4433/health/ready >/dev/null || exit 1"]
+      test: ["CMD-SHELL", "wget -qO- http://localhost:4434/health/ready >/dev/null || exit 1"]
       interval: 15s
       timeout: 5s
       retries: 10
