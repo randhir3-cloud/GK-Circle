@@ -116,6 +116,7 @@ services:
       REDIS_HOST: redis
       SERVE_PUBLIC_BASE_URL: http://kratos:4433
       WEB_URL: https://gkcircle.com
+    command: ["./gk-circle", "api"]
     depends_on:
       migration:
         condition: service_completed_successfully
