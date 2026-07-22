@@ -11,3 +11,7 @@ app/coverage
 api/redis
 .aider*
 load-test/results
+
+# Local environment and agent tooling (never commit)
+/.env
+/.agent/
