@@ -47,9 +47,10 @@ git rev-parse --short HEAD
 if [ ! -f .env ]; then
   echo "ACTION_REQUIRED: create $project/.env from .env.example and replace every change_me value"
 fi
+exit 0 # Keep PowerShell's pipeline CR outside shell syntax.
 '@.Replace('__PROJECT__', $NucProject).Replace('__BRANCH__', $branch)
 
-($remote.Replace("`r", "") + "`n") | ssh $NucHost "bash -s"
+$remote.Replace("`r", "") | ssh $NucHost "bash -s"
 if ($LASTEXITCODE -ne 0) { throw "NUC checkout update failed." }
 
 Write-Host "Published origin/$branch and updated $NucHost`:$NucProject"
