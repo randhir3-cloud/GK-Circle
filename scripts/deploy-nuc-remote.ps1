@@ -66,7 +66,7 @@ echo "ERROR: candidate health check timed out"
 exit 1
 '@.Replace('__PROJECT__', $NucProject).Replace('__BRANCH__', $branch).Replace('__SHA__', $localSha).Replace('__PORT__', $CandidatePort.ToString())
 
-$remote.Replace("`r", "") | ssh $NucHost "bash -s"
+($remote.Replace("`r", "") + "`n") | ssh $NucHost "bash -s"
 if ($LASTEXITCODE -ne 0) { throw "NUC candidate deployment failed." }
 
 Write-Host "GK Circle v2 candidate is running on NUC port $CandidatePort."

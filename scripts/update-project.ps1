@@ -49,7 +49,7 @@ if [ ! -f .env ]; then
 fi
 '@.Replace('__PROJECT__', $NucProject).Replace('__BRANCH__', $branch)
 
-$remote.Replace("`r", "") | ssh $NucHost "bash -s"
+($remote.Replace("`r", "") + "`n") | ssh $NucHost "bash -s"
 if ($LASTEXITCODE -ne 0) { throw "NUC checkout update failed." }
 
 Write-Host "Published origin/$branch and updated $NucHost`:$NucProject"
