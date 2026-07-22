@@ -18,9 +18,10 @@ $compose ps
 $compose exec -T db sh -c 'pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB"'
 $compose exec -T redis sh -c 'redis-cli -a "$REDIS_PASSWORD" ping' | grep PONG
 curl -fsS "http://127.0.0.1:__PORT__/healthz" >/dev/null
-curl -fsS "http://127.0.0.1:__PORT__/" >/dev/null
-curl -fsS "http://127.0.0.1:__PORT__/kratos/health/ready" >/dev/null
+curl -fsS "http://127.0.0.1:__PORT__/" | grep -q "GK Circle"
+$compose exec -T kratos wget -qO- http://localhost:4434/health/ready >/dev/null
 echo "VERIFY_OK"
+exit 0 # Keep PowerShell's pipeline CR outside shell syntax.
 '@.Replace('__PROJECT__', $NucProject).Replace('__PORT__', $CandidatePort.ToString())
 
 $output = $remote.Replace("`r", "") | ssh $NucHost "bash -s"
