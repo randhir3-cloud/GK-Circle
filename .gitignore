@@ -15,3 +15,5 @@ load-test/results
 # Local environment and agent tooling (never commit)
 **/.env
 /.agent/
+node_modules/
+**/node_modules/

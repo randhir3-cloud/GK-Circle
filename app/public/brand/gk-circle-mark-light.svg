@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg"
+     width="1024" height="1024" viewBox="0 0 1024 1024">
+
+  <!--
+    GK Circle "Knowledge Arc" mark
+    Hidden G: the 270° arc + crossbar reveals the letter G on close inspection.
+    Inner orbit: reinforces the "Circle" concept and suggests continuous learning.
+    Gold nucleus: the knowledge centre.
+  -->
+
+  <!-- G-arc: 270° clockwise from 6-o'clock (bottom) to 3-o'clock (right) -->
+  <path d="M 512,912 A 400,400 0 1,1 912,512"
+        fill="none" stroke="#FFFFFF" stroke-width="70"
+        stroke-linecap="round"/>
+
+  <!-- G crossbar: horizontal from 3-o'clock endpoint inward -->
+  <line x1="912" y1="512" x2="452" y2="512"
+        stroke="#FFFFFF" stroke-width="70"
+        stroke-linecap="round"/>
+
+  <!-- Inner orbit arc: 300° clockwise (60° → 0°), gold -->
+  <path d="M 627,711 A 230,230 0 1,1 742,512"
+        fill="none" stroke="#C9A84C" stroke-width="26"
+        stroke-linecap="round" opacity="0.92"/>
+
+  <!-- Nucleus: gold filled circle -->
+  <circle cx="512" cy="512" r="58" fill="#C9A84C"/>
+</svg>

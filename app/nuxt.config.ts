@@ -31,8 +31,19 @@ export default defineNuxtConfig({
         {
           name: "description",
           content:
-            "Prepare for State PCS examinations with practice sets, mock exams, subject tests, current affairs, live competitions, and performance analytics.",
+            "GK Circle provides PCS mock tests, practice questions, live examinations, analytics, and exam preparation resources.",
         },
+        // Open Graph image dimensions and alt — these are safe global defaults
+        // because they reference the fixed /og-image.png asset and do not
+        // conflict with the route-specific og:title / og:description / og:image
+        // already emitted by app.vue (useSeoMeta, server-side rendered).
+        { property: "og:image:width", content: "1200" },
+        { property: "og:image:height", content: "630" },
+        {
+          property: "og:image:alt",
+          content: "GK Circle - PCS Exam Preparation",
+        },
+        { property: "og:type", content: "website" },
       ],
       link: [
         { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -77,6 +88,12 @@ export default defineNuxtConfig({
           type: "image/png",
           sizes: "256x256",
           href: "/favicon-256x256.png",
+        },
+        // Apple touch icon — used by iOS home screen and bookmarks
+        {
+          rel: "apple-touch-icon",
+          sizes: "180x180",
+          href: "/favicon-180x180.png",
         },
       ],
     },
