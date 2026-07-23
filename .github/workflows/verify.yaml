@@ -58,6 +58,22 @@ jobs:
         working-directory: ./api
         run: go test -race ./... -v
 
+      - name: Create CI environment file
+        run: |
+          cat <<EOF > .env
+          DB_PASSWORD=${{ env.DB_PASSWORD }}
+          REDIS_PASSWORD=${{ env.REDIS_PASSWORD }}
+          SECRETS_COOKIE=${{ env.SECRETS_COOKIE }}
+          SECRETS_CIPHER=${{ env.SECRETS_CIPHER }}
+          MINIO_ROOT_USER=${{ env.MINIO_ROOT_USER }}
+          MINIO_ROOT_PASSWORD=${{ env.MINIO_ROOT_PASSWORD }}
+          PGADMIN_EMAIL=${{ env.PGADMIN_EMAIL }}
+          PGADMIN_PASSWORD=${{ env.PGADMIN_PASSWORD }}
+          PGADMIN_PORT=${{ env.PGADMIN_PORT }}
+          SERVE_PUBLIC_PORT=${{ env.SERVE_PUBLIC_PORT }}
+          SERVE_ADMIN_PORT=${{ env.SERVE_ADMIN_PORT }}
+          EOF
+
       - name: Smoke-test Docker verification service
         run: |
           docker compose --profile verify config
