@@ -50,3 +50,19 @@ build:
 
 install:
 	go build -ldflags="-s -w" -o=$(app_name) .
+
+ROOT_DIR := $(abspath $(dir $(lastword $(MAKEFILE_LIST)))/..)
+COMPOSE := docker compose -f $(ROOT_DIR)/docker-compose.yaml
+
+.PHONY: docker-test docker-test-race docker-vet docker-verify
+
+docker-test:
+	$(COMPOSE) --profile verify run --rm api-verify go test ./...
+
+docker-test-race:
+	$(COMPOSE) --profile verify run --rm api-verify go test -race ./...
+
+docker-vet:
+	$(COMPOSE) --profile verify run --rm api-verify go vet ./...
+
+docker-verify: docker-vet docker-test docker-test-race

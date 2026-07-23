@@ -92,23 +92,30 @@ go run . migrate up
 go run . api
 ```
 
-Common verification:
+## Verification Workflow
 
+For local verification, Docker is the canonical environment for backend validation.
+
+### Makefile Targets
+You can run verification tasks from the root directory or the `api/` directory:
 ```powershell
-cd app
-npm run lint
-npm test -- --run
-npm run build
+make -C api docker-test
+make -C api docker-test-race
+make -C api docker-vet
+make -C api docker-verify
 ```
 
+### Direct Docker Compose Commands
+Alternatively, you can run commands directly:
 ```powershell
-cd api
-go test ./...
+docker compose --profile verify run --rm api-verify go test ./...
+docker compose --profile verify run --rm api-verify go test -race ./...
+docker compose --profile verify run --rm api-verify go vet ./...
 ```
 
-```powershell
-docker compose config --quiet
-```
+### Windows Security Policy Warning
+> [!IMPORTANT]
+> Windows Smart App Control or WDAC may block unsigned temporary Go test executables generated under `%TEMP%\go-build`. This is a host application-control policy restriction, not a GK Circle test failure. Docker or WSL is the supported backend verification environment on affected Windows systems. Do not disable Smart App Control, Defender, WDAC, or AppLocker on your host system.
 
 ## NUC deployment
 
