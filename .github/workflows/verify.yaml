@@ -15,6 +15,19 @@ concurrency:
 permissions:
   contents: read
 
+env:
+  DB_PASSWORD: change_me_database_password
+  REDIS_PASSWORD: change_me_redis_password
+  SECRETS_COOKIE: change_me_to_a_long_random_cookie_secret
+  SECRETS_CIPHER: change_me_exactly_32_char_secret
+  MINIO_ROOT_USER: change_me_minio_user
+  MINIO_ROOT_PASSWORD: change_me_minio_password
+  PGADMIN_EMAIL: admin@gk-circle.local
+  PGADMIN_PASSWORD: change_me_pgadmin_password
+  PGADMIN_PORT: 5051
+  SERVE_PUBLIC_PORT: 4433
+  SERVE_ADMIN_PORT: 4434
+
 jobs:
   backend-verify:
     name: Backend Verification
@@ -94,18 +107,6 @@ jobs:
     needs:
       - backend-verify
       - frontend-verify
-    env:
-      DB_PASSWORD: change_me_database_password
-      REDIS_PASSWORD: change_me_redis_password
-      SECRETS_COOKIE: change_me_to_a_long_random_cookie_secret
-      SECRETS_CIPHER: change_me_exactly_32_char_secret
-      MINIO_ROOT_USER: change_me_minio_user
-      MINIO_ROOT_PASSWORD: change_me_minio_password
-      PGADMIN_EMAIL: admin@gk-circle.local
-      PGADMIN_PASSWORD: change_me_pgadmin_password
-      PGADMIN_PORT: 5051
-      SERVE_PUBLIC_PORT: 4433
-      SERVE_ADMIN_PORT: 4434
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -139,17 +140,17 @@ jobs:
       - name: Create CI environment file
         run: |
           cat <<EOF > .env
-          DB_PASSWORD=change_me_database_password
-          REDIS_PASSWORD=change_me_redis_password
-          SECRETS_COOKIE=change_me_to_a_long_random_cookie_secret
-          SECRETS_CIPHER=change_me_exactly_32_char_secret
-          MINIO_ROOT_USER=change_me_minio_user
-          MINIO_ROOT_PASSWORD=change_me_minio_password
-          PGADMIN_EMAIL=admin@gk-circle.local
-          PGADMIN_PASSWORD=change_me_pgadmin_password
-          PGADMIN_PORT=5051
-          SERVE_PUBLIC_PORT=4433
-          SERVE_ADMIN_PORT=4434
+          DB_PASSWORD=${{ env.DB_PASSWORD }}
+          REDIS_PASSWORD=${{ env.REDIS_PASSWORD }}
+          SECRETS_COOKIE=${{ env.SECRETS_COOKIE }}
+          SECRETS_CIPHER=${{ env.SECRETS_CIPHER }}
+          MINIO_ROOT_USER=${{ env.MINIO_ROOT_USER }}
+          MINIO_ROOT_PASSWORD=${{ env.MINIO_ROOT_PASSWORD }}
+          PGADMIN_EMAIL=${{ env.PGADMIN_EMAIL }}
+          PGADMIN_PASSWORD=${{ env.PGADMIN_PASSWORD }}
+          PGADMIN_PORT=${{ env.PGADMIN_PORT }}
+          SERVE_PUBLIC_PORT=${{ env.SERVE_PUBLIC_PORT }}
+          SERVE_ADMIN_PORT=${{ env.SERVE_ADMIN_PORT }}
           EOF
 
       - name: Start Docker Compose services
