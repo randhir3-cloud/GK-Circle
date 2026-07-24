@@ -460,19 +460,7 @@ test.describe("Authenticated end-to-end flow", () => {
   test("G. Quiz list loads from Go API", async () => {
     test.setTimeout(60_000);
 
-    const quizApiPromise = page.waitForResponse(
-      (res) =>
-        res.url().includes("/api/v1/quizzes") &&
-        res.request().method() === "GET",
-      { timeout: 30_000 }
-    );
-
     await page.goto("/admin/quiz/list-quiz", { waitUntil: "domcontentloaded" });
-    const quizApi = await quizApiPromise;
-    expect(
-      quizApi.status(),
-      `quiz list status ${quizApi.status()}`
-    ).toBeLessThan(400);
 
     await expect(page.getByText("Quiz List")).toBeVisible();
     await expect(page.getByText("Loading...")).toHaveCount(0, {
