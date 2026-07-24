@@ -21,6 +21,7 @@
     "@nuxtjs/robots": "^6.1.1",
     "@nuxtjs/sitemap": "^8.2.1",
     "@pinia/testing": "^0.1.7",
+    "@playwright/test": "^1.61.1",
     "@testing-library/vue": "^8.1.0",
     "@typescript-eslint/eslint-plugin": "^5.48.1",
     "@typescript-eslint/parser": "^5.48.1",
