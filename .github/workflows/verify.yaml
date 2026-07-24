@@ -87,21 +87,10 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Read Node version
-        id: node-version
-        shell: bash
-        run: |
-          NODE_VERSION="$(awk '$1 == "nodejs" { print $2; exit }' app/.tool-versions)"
-          if [ -z "$NODE_VERSION" ]; then
-            echo "Node version not found in app/.tool-versions" >&2
-            exit 1
-          fi
-          echo "version=$NODE_VERSION" >> "$GITHUB_OUTPUT"
-
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ steps.node-version.outputs.version }}
+          node-version: '22.12.0'
           cache: npm
           cache-dependency-path: app/package-lock.json
 
@@ -127,21 +116,10 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Read Node version
-        id: node-version
-        shell: bash
-        run: |
-          NODE_VERSION="$(awk '$1 == "nodejs" { print $2; exit }' app/.tool-versions)"
-          if [ -z "$NODE_VERSION" ]; then
-            echo "Node version not found in app/.tool-versions" >&2
-            exit 1
-          fi
-          echo "version=$NODE_VERSION" >> "$GITHUB_OUTPUT"
-
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ steps.node-version.outputs.version }}
+          node-version: '22.12.0'
           cache: npm
           cache-dependency-path: app/package-lock.json
 
