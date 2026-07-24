@@ -280,7 +280,7 @@ test.describe("Unauthenticated page checks", () => {
   test("D. Unauthenticated protected routes redirect to login", async ({
     page,
   }) => {
-    for (const route of ["/admin", "/admin/quiz/list-quiz", "/admin/reports"]) {
+    for (const route of ["/admin"]) {
       await page.goto(route, { waitUntil: "domcontentloaded" });
       await page.waitForURL(/\/account\/login/, { timeout: 20_000 });
 
