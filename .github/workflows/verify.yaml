@@ -107,7 +107,7 @@ jobs:
 
       - name: Install Frontend Dependencies
         working-directory: ./app
-        run: npm ci
+        run: npm install
 
       - name: Run Frontend Lint
         working-directory: ./app
@@ -147,7 +147,7 @@ jobs:
 
       - name: Install Frontend Dependencies
         working-directory: ./app
-        run: npm ci
+        run: npm install
 
       - name: Install Playwright Browsers and Deps
         working-directory: ./app
