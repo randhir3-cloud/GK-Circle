@@ -97,21 +97,40 @@ go run . api
 For local verification, Docker is the canonical environment for backend validation.
 
 ### Makefile Targets
-You can run verification tasks from the root directory or the `api/` directory:
-```powershell
-make -C api docker-test
-make -C api docker-test-race
-make -C api docker-vet
-make -C api docker-verify
-```
+You can run verification tasks depending on your current working directory:
+
+* **From the repository root**:
+  ```powershell
+  make -C api docker-vet
+  make -C api docker-test
+  make -C api docker-test-race
+  make -C api docker-verify  # Runs all three checks
+  ```
+* **From the `api/` directory**:
+  ```powershell
+  make docker-vet
+  make docker-test
+  make docker-test-race
+  make docker-verify  # Runs all three checks
+  ```
 
 ### Direct Docker Compose Commands
-Alternatively, you can run commands directly:
-```powershell
-docker compose --profile verify run --rm api-verify go test ./...
-docker compose --profile verify run --rm api-verify go test -race ./...
-docker compose --profile verify run --rm api-verify go vet ./...
-```
+If you do not have `make` installed, you can run the commands directly using `docker compose` from the repository root:
+
+* **Run all checks (vet, test, race) in a single run**:
+  ```powershell
+  docker compose --profile verify run --rm api-verify sh -c "go vet ./... && go test ./... && go test -race ./..."
+  ```
+* **Run individual checks**:
+  ```powershell
+  docker compose --profile verify run --rm api-verify go vet ./...
+  ```
+  ```powershell
+  docker compose --profile verify run --rm api-verify go test ./...
+  ```
+  ```powershell
+  docker compose --profile verify run --rm api-verify go test -race ./...
+  ```
 
 ### Windows Security Policy Warning
 > [!IMPORTANT]

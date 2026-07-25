@@ -30,8 +30,8 @@ To ensure that pull requests and merges do not introduce regressions:
 
 Ensure you have the following installed locally:
 * **Docker Desktop** (Windows/macOS) or **Docker Engine with Compose** (Linux)
-* **Node.js** (v22.9.0 - see [app/.tool-versions](file:///e:/GK%20Circle%20v2/app/.tool-versions))
-* **Go** (v1.23.0 - see [api/go.mod](file:///e:/GK%20Circle%20v2/api/go.mod)) - only required for native host runs.
+* **Node.js** (v22.9.0 - see [app/.tool-versions](../../app/.tool-versions))
+* **Go** (v1.23.0 - see [api/go.mod](../../api/go.mod)) - only required for native host runs.
 * **Make** (standard build tool, optional but recommended)
 
 ---
@@ -151,7 +151,7 @@ Run these commands to validate full integration E2E flows:
 
 ## 6. Continuous Integration (CI) Job Behavior
 
-The CI pipeline is defined in [.github/workflows/verify.yaml](file:///e:/GK%20Circle%20v2/.github/workflows/verify.yaml). It is split into three isolated, sequential jobs:
+The CI pipeline is defined in [.github/workflows/verify.yaml](../../.github/workflows/verify.yaml). It is split into three isolated, sequential jobs:
 1. **`backend-verify`**:
    * Executed on native Ubuntu runners for performance.
    * Runs `go vet`, `go test`, and `go test -race`.

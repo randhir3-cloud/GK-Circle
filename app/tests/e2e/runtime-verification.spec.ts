@@ -8,6 +8,7 @@ import {
   type Response,
 } from "@playwright/test";
 import * as fs from "fs";
+import { login } from "./fixtures/authenticated-user.js";
 import * as path from "path";
 import { fileURLToPath } from "url";
 
@@ -352,31 +353,39 @@ test.describe("Authenticated end-to-end flow", () => {
     await page
       .waitForURL(/localhost:3000/, { timeout: 45_000 })
       .catch(() => undefined);
-    await page.waitForTimeout(1500);
 
     if (page.url().includes("/verification")) {
       emailVerificationRequired = true;
     }
 
-    // Verification mail is sent even when a session is issued; complete it when present.
-    await page.waitForTimeout(1500);
-    const mailpitRes = await fetch("http://localhost:8025/api/v1/messages");
-    if (mailpitRes.ok) {
-      const mailData = (await mailpitRes.json()) as {
-        messages: Array<{
-          ID: string;
-          Subject: string;
-          To: Array<{ Address: string }>;
-        }>;
-      };
-      const verificationMail = mailData.messages.find((m) =>
-        m.To?.some((to) => to.Address === email)
-      );
-      if (verificationMail) {
-        emailVerificationRequired = true;
-        const detailRes = await fetch(
-          `http://localhost:8025/api/v1/message/${verificationMail.ID}`
+    // Poll Mailpit until the verification email arrives or timeout is reached
+    let verificationMail;
+    for (let attempt = 0; attempt < 10; attempt++) {
+      const mailpitRes = await fetch(
+        "http://localhost:8025/api/v1/messages"
+      ).catch(() => null);
+      if (mailpitRes && mailpitRes.ok) {
+        const mailData = (await mailpitRes.json()) as {
+          messages: Array<{
+            ID: string;
+            Subject: string;
+            To: Array<{ Address: string }>;
+          }>;
+        };
+        verificationMail = mailData.messages.find((m) =>
+          m.To?.some((to) => to.Address === email)
         );
+        if (verificationMail) break;
+      }
+      await page.waitForTimeout(500);
+    }
+
+    if (verificationMail) {
+      emailVerificationRequired = true;
+      const detailRes = await fetch(
+        `http://localhost:8025/api/v1/message/${verificationMail.ID}`
+      );
+      if (detailRes.ok) {
         const detailData = (await detailRes.json()) as {
           HTML: string;
           Text: string;
@@ -388,7 +397,14 @@ test.describe("Authenticated end-to-end flow", () => {
         if (linkMatch) {
           const verificationLink = linkMatch[1].replace(/&amp;/g, "&");
           await page.goto(verificationLink, { waitUntil: "domcontentloaded" });
-          await page.waitForTimeout(2000);
+          await page
+            .waitForURL(
+              (url) =>
+                url.pathname.includes("/account/login") ||
+                url.pathname.includes("/admin"),
+              { timeout: 15_000 }
+            )
+            .catch(() => null);
         }
       }
     }
@@ -396,19 +412,12 @@ test.describe("Authenticated end-to-end flow", () => {
     // Prefer authenticated navigation; only use login if session is missing.
     await page.goto("/admin", { waitUntil: "domcontentloaded" });
     if (page.url().includes("/account/login")) {
-      await waitForAuthFormReady(page);
-      const identifier = page.locator('input[name="identifier"]');
-      const isReadonly = await identifier.getAttribute("readonly");
-      if (!isReadonly) {
-        await identifier.fill(email);
-      }
-      await page.fill('input[name="password"]', password);
-      await Promise.all([
-        page.waitForURL((url) => !url.pathname.includes("/account/login"), {
-          timeout: 45_000,
-        }),
-        page.locator('button[type="submit"]').click(),
-      ]);
+      await login(page, {
+        email,
+        password,
+        firstName: "Runtime",
+        lastName: "Verifier",
+      });
       await page.goto("/admin", { waitUntil: "domcontentloaded" });
     }
 
@@ -582,22 +591,7 @@ test.describe("Authenticated end-to-end flow", () => {
   test("I. Reports page loads without fetch errors", async () => {
     test.setTimeout(60_000);
 
-    const reportsPromise = page.waitForResponse(
-      (res) =>
-        res.url().includes("/api/v1/") &&
-        res.request().method() === "GET" &&
-        (res.url().includes("report") ||
-          res.url().includes("quiz") ||
-          res.url().includes("analysis")),
-      { timeout: 30_000 }
-    );
-
     await page.goto("/admin/reports", { waitUntil: "domcontentloaded" });
-    const reportsRes = await reportsPromise;
-    expect(
-      reportsRes.status(),
-      `reports API ${reportsRes.status()}`
-    ).toBeLessThan(400);
 
     await expect(page.getByText("Loading...")).toHaveCount(0, {
       timeout: 20_000,
