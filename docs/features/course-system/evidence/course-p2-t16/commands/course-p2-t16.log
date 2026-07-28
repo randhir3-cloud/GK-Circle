@@ -1,0 +1,45 @@
+COURSE-P2-T16 sanitized verification log
+Date: 2026-07-27
+Starting commit: eeac599f05eaf936c7f61db4a3deeac3c9063f59
+
+PASS | focused Vitest
+Command: app/ npm test -- --run [Course, LearningItems, admin/learner composables, learner pages]
+Result: 9 files passed; 63 tests passed
+
+PASS | frontend lint
+Command: app/ npm run lint
+Result: exit 0
+
+INHERITED_BASELINE | full Vitest
+Command: app/ npm test -- --run
+Result: 17 legacy files failed; 16 files passed; 35 tests failed; 105 passed
+Classification: unchanged 35-failure baseline; every T16 test passed
+
+PASS | frontend production build
+Command: app/ npm run build
+Result: exit 0
+
+PASS | full Go suite
+Command: api/ go test ./...
+Result: exit 0
+Note: initial sandbox cache denial was retried with approved local cache access
+
+PASS | Compose configuration
+Command: docker compose config --quiet
+Result: exit 0
+
+PASS | Compose web build
+Command: docker compose build web
+Result: gkcirclev2-web image built
+Note: repository has no dedicated frontend verification service
+
+PASS | local runtime health
+Result: web, API, Kratos, PostgreSQL, and Redis healthy
+
+PASS | authenticated runtime and persistence
+Result: depth-4 admin CRUD, refresh read-back, update, cancellation, deletion,
+learner draft exclusion, renderer empty state, database cleanup, desktop/mobile,
+console review, and final signed-out denial
+
+PASS | production change audit
+Result: Production source modified: NO

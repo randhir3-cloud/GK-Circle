@@ -1,0 +1,5 @@
+go test ./... -count=1
+go build ./...
+cd ../app && npm test -- --run quiz_import_jobs.test.js QuizImportWizard.test.js
+cd ../app && npx eslint composables/quiz_import_jobs.js components/quiz-manage/QuizImportWizard.vue test/composables/quiz_import_jobs.test.js test/components/quiz-manage/QuizImportWizard.test.js --max-warnings 0
+cd ../app && npm run build

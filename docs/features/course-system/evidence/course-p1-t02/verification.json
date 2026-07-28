@@ -1,0 +1,168 @@
+{
+  "ledgerVersion": 1,
+  "schemaVersion": 1,
+  "taskId": "COURSE-P1-T02",
+  "generatedAt": "2026-07-25T11:39:03+05:30",
+  "environment": {
+    "workspace": "E:\\GK Circle v2",
+    "branch": "chore/ci-verification",
+    "commit": "eeac599f05eaf936c7f61db4a3deeac3c9063f59",
+    "host": "Windows PowerShell",
+    "hostGo": "go1.26.5 windows/amd64",
+    "verificationGo": "go1.23.11 linux/amd64",
+    "node": "v24.16.0",
+    "npm": "11.16.0",
+    "dockerEngine": "29.5.2",
+    "dockerCompose": "5.1.3",
+    "postgres": "15.2",
+    "productionTouched": false,
+    "nucTouched": false
+  },
+  "commands": [
+    {
+      "command": "docker compose build migration",
+      "startedAt": "2026-07-25T05:48:45.7944911Z",
+      "durationMs": 84632,
+      "exitCode": 0,
+      "workingDirectory": "E:\\GK Circle v2",
+      "environment": "Local Docker",
+      "classification": "PASSED"
+    },
+    {
+      "command": "docker compose run --rm -e DB_NAME=course_p1_t02_verify migration",
+      "startedAt": "2026-07-25T05:55:34.3373429Z",
+      "durationMs": 2573,
+      "exitCode": 0,
+      "workingDirectory": "E:\\GK Circle v2",
+      "environment": "Fresh temporary local PostgreSQL database",
+      "classification": "PASSED"
+    },
+    {
+      "command": "docker compose run --rm -e DB_NAME=course_p1_t02_verify migration ./gk-circle migrate down",
+      "startedAt": "2026-07-25T05:59:44.7031203Z",
+      "durationMs": 2396,
+      "exitCode": 0,
+      "workingDirectory": "E:\\GK Circle v2",
+      "environment": "Temporary local PostgreSQL database",
+      "classification": "FAILED_BASELINE",
+      "comparisonEvidence": "T02 courses table became ABSENT and T02 migration record count became 0 before the runner reached pre-existing invalid migration 20240513190411_rename_column_score_to_points.down.sql; the CLI incorrectly returned process exit 0 after printing the error."
+    },
+    {
+      "command": "docker compose run --rm -e DB_NAME=course_p1_t02_isolated_verify -e MIGRATION_DIR=/t02-migrations -v <workspace>/.tmp-course-p1-t02-migrations:/t02-migrations:ro migration",
+      "startedAt": "2026-07-25T06:03:11.5409589Z",
+      "durationMs": 2109,
+      "exitCode": 0,
+      "workingDirectory": "E:\\GK Circle v2",
+      "environment": "Isolated T02 sql-migrate files; temporary local PostgreSQL database",
+      "classification": "PASSED"
+    },
+    {
+      "command": "docker compose run --rm -e DB_NAME=course_p1_t02_isolated_verify -e MIGRATION_DIR=/t02-migrations -v <workspace>/.tmp-course-p1-t02-migrations:/t02-migrations:ro migration ./gk-circle migrate down",
+      "startedAt": "2026-07-25T06:04:52.4518066Z",
+      "durationMs": 1774,
+      "exitCode": 0,
+      "workingDirectory": "E:\\GK Circle v2",
+      "environment": "Isolated T02 sql-migrate files; temporary local PostgreSQL database",
+      "classification": "PASSED",
+      "comparisonEvidence": "courses changed from PRESENT to ABSENT and T02 migration record count changed from 2 to 0."
+    },
+    {
+      "command": "docker compose run --rm -e DB_NAME=course_p1_t02_isolated_verify -e MIGRATION_DIR=/t02-migrations -v <workspace>/.tmp-course-p1-t02-migrations:/t02-migrations:ro migration",
+      "startedAt": "2026-07-25T06:05:25.7678826Z",
+      "durationMs": 1719,
+      "exitCode": 0,
+      "workingDirectory": "E:\\GK Circle v2",
+      "environment": "Isolated T02 sql-migrate files; temporary local PostgreSQL database",
+      "classification": "PASSED"
+    },
+    {
+      "command": "docker compose exec -T db psql ... schema inspection",
+      "startedAt": "2026-07-25T06:05:37.6880329Z",
+      "durationMs": 371,
+      "exitCode": 0,
+      "workingDirectory": "E:\\GK Circle v2",
+      "environment": "Temporary local PostgreSQL database",
+      "classification": "PASSED"
+    },
+    {
+      "command": "docker compose --profile verify run --rm --build api-verify sh -c \"go vet ./... && go test ./... && go test -race ./...\"",
+      "startedAt": "2026-07-25T06:05:56.1636079Z",
+      "durationMs": 41736,
+      "exitCode": 0,
+      "workingDirectory": "E:\\GK Circle v2",
+      "environment": "Local Docker, Go 1.23.11",
+      "classification": "PASSED"
+    },
+    {
+      "command": "npm.cmd run lint",
+      "startedAt": "2026-07-25T06:06:44.5916900Z",
+      "durationMs": 1762,
+      "exitCode": 1,
+      "workingDirectory": "E:\\GK Circle v2",
+      "environment": "Local Node",
+      "classification": "NOT_AVAILABLE",
+      "comparisonEvidence": "Root package.json has no lint script; it contains only the two Course ledger scripts."
+    },
+    {
+      "command": "npm.cmd run lint",
+      "startedAt": "2026-07-25T06:06:55.8805271Z",
+      "durationMs": 14875,
+      "exitCode": 0,
+      "workingDirectory": "E:\\GK Circle v2\\app",
+      "environment": "Local Node",
+      "classification": "PASSED"
+    },
+    {
+      "command": "go mod tidy -diff",
+      "startedAt": "2026-07-25T06:08:53.8369661Z",
+      "durationMs": 168,
+      "exitCode": 1,
+      "workingDirectory": "E:\\GK Circle v2\\api",
+      "environment": "Local Go",
+      "classification": "FAILED_BASELINE",
+      "comparisonEvidence": "The diagnostic reports repository-wide api/go.sum normalization differences; api/go.sum has no T02 diff and the read-only command wrote no files."
+    },
+    {
+      "command": "git diff --check",
+      "startedAt": "2026-07-25T06:09:03.6317999Z",
+      "durationMs": 55,
+      "exitCode": 0,
+      "workingDirectory": "E:\\GK Circle v2",
+      "environment": "Local Git",
+      "classification": "PASSED"
+    },
+    {
+      "command": "npm.cmd run course-system:status:sync",
+      "startedAt": "2026-07-25T06:12:21.6686588Z",
+      "durationMs": 1014,
+      "exitCode": 0,
+      "workingDirectory": "E:\\GK Circle v2",
+      "environment": "Local Node",
+      "classification": "PASSED"
+    },
+    {
+      "command": "npm.cmd run course-system:status:check",
+      "startedAt": "2026-07-25T06:12:34.6952735Z",
+      "durationMs": 657,
+      "exitCode": 0,
+      "workingDirectory": "E:\\GK Circle v2",
+      "environment": "Local Node; read-only checker",
+      "classification": "PASSED"
+    }
+  ],
+  "outcome": "PASSED_WITH_INHERITED_BASELINE_FAILURES",
+  "migration": {
+    "apply": "PASSED",
+    "rollback": "PASSED_ISOLATED",
+    "reapply": "PASSED",
+    "productionRun": false
+  },
+  "scope": {
+    "courseModel": true,
+    "courseMigration": true,
+    "courseNode": false,
+    "api": false,
+    "frontend": false,
+    "phase2": false
+  }
+}

@@ -1,73 +1,58 @@
 import { describe, it, expect, vi } from "vitest";
 import { mount } from "@vue/test-utils";
 import WinnerCard from "@/components/WinnerCard.vue";
-import { getAvatarUrlByName } from "../../composables/avatar";
 
-const props = {
-  winner: {
-    rank: 1,
-    img_key: "Sophia",
-    firstname: "John",
-    username: "john_doe",
-    score: 8256,
-  },
+vi.mock("~~/composables/avatar", () => ({
+  getAvatarUrlByName: vi
+    .fn()
+    .mockImplementation(
+      (name) => `https://api.dicebear.com/9.x/bottts/svg?seed=${name || "Eden"}`
+    ),
+}));
+
+const baseWinner = {
+  rank: 1,
+  img_key: "Sophia",
+  firstname: "John",
+  username: "john_doe",
+  score: 8256,
 };
 
-const mountComponent = () => {
-  return mount(WinnerCard, {
-    props,
+const mountComponent = (winner = baseWinner) =>
+  mount(WinnerCard, {
+    props: { winner },
   });
-};
-
-let wrapper = mountComponent();
-
-vi.mock("../../composables/avatar.js", () => {
-  return {
-    getAvatarUrlByName: vi
-      .fn()
-      .mockReturnValue("https://api.dicebear.com/9.x/bottts/svg?seed=Sophia"),
-  };
-});
 
 describe("WinnerCard test", () => {
-  it("renders the correct medal for rank 1", () => {
-    const medal = wrapper.find("img.bg-image");
-    expect(medal.attributes("src")).toBe("/assets/images/medal/1.webp");
-  });
-
-  it("renders the correct medal for rank 2", async () => {
-    props.winner.rank = 2;
-    wrapper.unmount();
-    wrapper = mountComponent();
-
-    const medal = wrapper.find("img.bg-image");
-    expect(medal.attributes("src")).toBe("/assets/images/medal/2.webp");
-  });
-
-  it("renders the correct medal for rank 3", async () => {
-    props.winner.rank = 3;
-    wrapper.unmount();
-    wrapper = mountComponent();
-
-    const medal = wrapper.find("img.bg-image");
-    expect(medal.attributes("src")).toBe("/assets/images/medal/3.webp");
-  });
-
-  it("renders the correct avatar image", async () => {
-    wrapper.unmount();
-    wrapper = mountComponent();
-    expect(getAvatarUrlByName).toBeCalledWith(props.winner.img_key);
-    // await wrapper.vm.$nextTick();
-
-    const avatarImg = wrapper.find("img.avatar-image");
-    expect(avatarImg.attributes("src")).toContain(
-      "https://api.dicebear.com/9.x/bottts/svg?seed=Sophia"
+  it("renders the correct medal label for rank 1", () => {
+    const wrapper = mountComponent({ ...baseWinner, rank: 1 });
+    expect(wrapper.get('[role="article"]').attributes("aria-label")).toContain(
+      "1st place"
     );
+    expect(wrapper.text()).toContain("1st Place");
+  });
+
+  it("renders the correct medal label for rank 2", () => {
+    const wrapper = mountComponent({ ...baseWinner, rank: 2 });
+    expect(wrapper.text()).toContain("2nd Place");
+  });
+
+  it("renders the correct medal label for rank 3", () => {
+    const wrapper = mountComponent({ ...baseWinner, rank: 3 });
+    expect(wrapper.text()).toContain("3rd Place");
+  });
+
+  it("renders the correct avatar image", () => {
+    const wrapper = mountComponent();
+    const avatarImg = wrapper.find('img[alt="Avatar for John"]');
+    expect(avatarImg.exists()).toBe(true);
+    expect(avatarImg.attributes("src")).toContain("seed=Sophia");
   });
 
   it("renders winner details correctly", () => {
-    expect(wrapper.text()).toContain("JOHN");
-    expect(wrapper.text()).toContain("john_doe");
+    const wrapper = mountComponent();
+    expect(wrapper.text()).toContain("John");
+    expect(wrapper.text()).toContain("@john_doe");
     expect(wrapper.text()).toContain("8256");
   });
 });

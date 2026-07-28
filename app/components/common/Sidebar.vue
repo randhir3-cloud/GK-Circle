@@ -225,8 +225,10 @@
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import {
   BarChart3,
+  BookOpenText,
   HelpCircle,
   Home,
+  LibraryBig,
   LogOut,
   Menu,
   MoreVertical,
@@ -292,6 +294,12 @@ const isActiveRoute = (url) => {
   if (url === "/admin/reports") return route.path.startsWith("/admin/reports");
   if (url === "/admin/categories")
     return route.path.startsWith("/admin/categories");
+  if (url === "/admin/courses/learning-items")
+    return route.path.startsWith("/admin/courses/learning-items");
+  if (url === "/admin/courses/list")
+    return route.path.startsWith("/admin/courses/list");
+  if (url === "/admin/courses")
+    return route.path === "/admin/courses" || route.path === "/admin/courses/";
   if (url === "/admin") return route.path === "/admin";
 
   return route.path === url;
@@ -316,6 +324,24 @@ const navItems = computed(() => {
       ...(canManageCategories.value
         ? [
             {
+              label: "Courses",
+              url: "/admin/courses/list",
+              icon: LibraryBig,
+              active: isActiveRoute("/admin/courses/list"),
+            },
+            {
+              label: "Course Builder",
+              url: "/admin/courses",
+              icon: BookOpenText,
+              active: isActiveRoute("/admin/courses"),
+            },
+            {
+              label: "Course Content",
+              url: "/admin/courses/learning-items",
+              icon: BookOpenText,
+              active: isActiveRoute("/admin/courses/learning-items"),
+            },
+            {
               label: "Categories",
               url: "/admin/categories",
               icon: Tag,
@@ -332,7 +358,21 @@ const navItems = computed(() => {
     ];
   }
 
-  return [{ label: "Home", url: "/", icon: Home, active: true }];
+  return [
+    { label: "Home", url: "/", icon: Home, active: isActiveRoute("/") },
+    {
+      label: "Courses",
+      url: "/courses",
+      icon: BookOpenText,
+      active: isActiveRoute("/courses"),
+    },
+    {
+      label: "Analytics",
+      url: "/analytics",
+      icon: BarChart3,
+      active: isActiveRoute("/analytics"),
+    },
+  ];
 });
 
 const mobileNavItems = computed(() => {
@@ -353,6 +393,24 @@ const mobileNavItems = computed(() => {
       },
       ...(canManageCategories.value
         ? [
+            {
+              label: "Courses",
+              url: "/admin/courses/list",
+              icon: LibraryBig,
+              active: isActiveRoute("/admin/courses/list"),
+            },
+            {
+              label: "Course Builder",
+              url: "/admin/courses",
+              icon: BookOpenText,
+              active: isActiveRoute("/admin/courses"),
+            },
+            {
+              label: "Course Content",
+              url: "/admin/courses/learning-items",
+              icon: BookOpenText,
+              active: isActiveRoute("/admin/courses/learning-items"),
+            },
             {
               label: "Categories",
               url: "/admin/categories",

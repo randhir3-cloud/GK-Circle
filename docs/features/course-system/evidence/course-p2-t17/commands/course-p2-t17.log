@@ -1,0 +1,42 @@
+COURSE-P2-T17 sanitized command log
+Date: 2026-07-27
+Starting commit: eeac599f05eaf936c7f61db4a3deeac3c9063f59
+Branch: chore/ci-verification
+
+BASELINE
+- Environment URL identities: localhost-only — PASS
+- API overall/database health: 200 / 200
+- Web, Kratos public/admin, Mailpit: 200
+- Focused T17 baseline: spec absent
+- npx playwright test baseline: 10 passed
+- Windows note: npx.ps1/npm.ps1 blocked by execution policy; native
+  npx.cmd/npm.cmd launchers executed the same commands.
+
+IMPLEMENTATION ITERATIONS
+- Initial focused run: FAIL, timeout waiting for a signed-out redirect that the
+  learner page contract does not perform; retry reproduced; trace preserved.
+- Exact orphan cleanup: title validated, DELETE 200, GET 404 for both IDs.
+- Second focused run: FAIL, HTTP 401 and alert worked but assertion assumed
+  different public wording; retry reproduced.
+- Corrected focused run: 1 passed, no retry.
+- Screenshot-stabilized focused run: 1 passed, no retry.
+
+FINAL CHECKS
+- npx playwright test: PASS, 11 passed, no retries
+- focused Course/LearningItem Vitest: PASS, 9 files / 63 tests
+- npm test -- --run: INHERITED BASELINE, 35 failed / 105 passed
+- npm run lint: PASS
+- npm run build: PASS
+- focused Go learner/LearningItem tests: PASS
+- go test ./...: PASS
+- docker compose config --quiet: PASS
+- docker compose build web: PASS
+- local service health: PASS
+- PostgreSQL correlation:
+  deep_node_ancestor_count=4
+  temporary_t17_rows=0
+  deep_node_learning_items=2
+- git diff --check -- app docs/development docs/features: PASS
+- course-system status sync #1: PASS
+- course-system status sync #2: PASS, no changes required
+- course-system status check: PASS, consistent and unchanged

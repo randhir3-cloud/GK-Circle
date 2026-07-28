@@ -10,3 +10,11 @@
 - Back up databases before migrations and verify restoration procedures.
 - Do not disable validation, authentication, CORS protections, or tests to make a deployment pass.
 - Scan staged changes for private keys and provider tokens before every push.
+
+## Automated verification identities
+
+- Automated local verification must use an existing approved QA identity or a documented identity-provisioning workflow.
+- Never invent, expose, log, copy, or commit credentials, session cookies, recovery codes, tokens, or personal data.
+- Local fixture credentials must never be production credentials or reused in production.
+- Do not bypass Kratos, weaken authorization, disable validation, or alter security controls to make verification pass.
+- If the required identity or permission cannot be obtained through the approved workflow, record the blocker instead of simulating authenticated success.

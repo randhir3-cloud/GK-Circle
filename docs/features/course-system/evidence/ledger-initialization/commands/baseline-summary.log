@@ -1,0 +1,16 @@
+GK Circle Course System ledger initialization — sanitized command summary
+Date: 2026-07-25
+Environment: local Windows / Node / Docker Compose
+
+PASSED  git diff --check
+PASSED  docker compose config --quiet
+PASSED  docker compose --profile verify run --rm api-verify (go vet, test, race)
+PASSED  npm run lint (app)
+FAILED_BASELINE  npm test -- --run (17 files, 35 tests failed)
+PASSED  npm run build (app)
+PASSED  Playwright local workflow (10/10)
+NOT_AVAILABLE  Course migration apply/rollback
+
+Sandbox-only Docker and Chromium launch failures were rerun with approved local
+access. No secrets, user data, production endpoints, or NUC endpoints are
+included in this log.

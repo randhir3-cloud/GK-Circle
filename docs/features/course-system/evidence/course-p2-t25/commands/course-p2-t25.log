@@ -1,0 +1,20 @@
+COURSE-P2-T25 verification log
+Verified: 2026-07-26
+
+PASS go test ./controllers/api/v1/ -run "Publish.*Contract|Learner.*Publish|LearningItem.*Publish" -count=1
+PASS go test ./...
+PASS docker compose --profile verify run --rm api-verify go vet ./...
+PASS docker compose --profile verify run --rm api-verify go test ./...
+
+PASS npm run course-system:status:sync (updated three generated files)
+PASS npm run course-system:status:sync (no changes required)
+PASS npm run course-system:status:check (ledger consistent and unchanged)
+PASS git diff --check -- api docs/development docs/features
+
+Production guard:
+git diff --name-only -- api ":(exclude)api/controllers/api/v1/*_test.go" ":(exclude)api/models/*_test.go"
+
+Output (pre-existing dirty baseline, not T25 changes):
+api/constants/constant.go
+api/go.mod
+api/routes/main.go

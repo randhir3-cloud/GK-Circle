@@ -38,7 +38,7 @@ Do not hardcode one state commission into platform architecture. State-specific 
 ## Technology
 
 - `app/`: Nuxt 3, Vue 3, Pinia, Tailwind, Vitest.
-- `api/`: Go 1.23, Fiber, SQL migrations, WebSockets.
+- `api/`: Go 1.25, Fiber, SQL migrations, WebSockets.
 - PostgreSQL: application and Kratos schemas.
 - Ory Kratos: registration, login, recovery, verification, sessions.
 - Redis-compatible service: cache and live coordination.

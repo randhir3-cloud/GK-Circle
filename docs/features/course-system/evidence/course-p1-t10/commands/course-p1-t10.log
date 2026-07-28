@@ -1,0 +1,26 @@
+COURSE-P1-T10 SANITIZED COMMAND RECORD
+Date: 2026-07-26
+
+PASSED | gofmt on T10 Go sources
+PASSED | go test ./models ./controllers/api/v1 ./pkg/structs -count=1
+PASSED | git diff --check on T10 sources
+PASSED | docker compose --profile verify run --rm api-verify go vet ./...
+PASSED | docker compose --profile verify run --rm api-verify go test ./... -count=1
+PASSED | docker compose --profile verify run --rm api-verify go test -race ./models ./controllers/api/v1 ./pkg/structs -count=1
+PASSED | docker compose --profile verify run --rm api-verify go build ./...
+PASSED | docker compose config --quiet
+PASSED | npm run course-system:status:sync
+PASSED | npm run course-system:status:check
+
+NOT_APPLICABLE | frontend lint/unit/build/Playwright
+Reason: T10 changes no frontend surface.
+
+Hierarchy mutation APIs implemented: Yes
+Course APIs modified: No
+CourseNode read APIs modified: No
+Archive implemented: No
+Frontend implemented: No
+Database Migration: NONE
+Production touched: No
+NUC touched: No
+Breaking Changes: NO

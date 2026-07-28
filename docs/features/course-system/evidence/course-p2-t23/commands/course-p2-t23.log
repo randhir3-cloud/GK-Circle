@@ -1,0 +1,66 @@
+$ cd api && go test ./models/ -run "LearningChain|ChainProjection" -count=1
+ok  	github.com/randhir3-cloud/GK-Circle-v2/api/models	2.474s
+
+$ go test ./...
+?   	github.com/randhir3-cloud/GK-Circle-v2/api	[no test files]
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/cli	[no test files]
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/config	[no test files]
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/constants	[no test files]
+ok  	github.com/randhir3-cloud/GK-Circle-v2/api/controllers/api/v1	1.012s
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/database	[no test files]
+ok  	github.com/randhir3-cloud/GK-Circle-v2/api/helpers/utils	(cached)
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/logger	[no test files]
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/middlewares	[no test files]
+ok  	github.com/randhir3-cloud/GK-Circle-v2/api/models	2.575s
+ok  	github.com/randhir3-cloud/GK-Circle-v2/api/pkg/jwt	(cached)
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/pkg/prometheus	[no test files]
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/pkg/redis	[no test files]
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/pkg/response	[no test files]
+ok  	github.com/randhir3-cloud/GK-Circle-v2/api/pkg/structs	(cached)
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/pkg/templates	[no test files]
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/routes	[no test files]
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/routinewrapper	[no test files]
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/services	[no test files]
+ok  	github.com/randhir3-cloud/GK-Circle-v2/api/utils	(cached)
+
+$ cd ..
+
+$ docker compose --profile verify run --rm api-verify go vet ./...
+ Container gkcirclev2-api-verify-run-d5bae114cc5d Creating 
+ Container gkcirclev2-api-verify-run-d5bae114cc5d Created 
+
+$ docker compose --profile verify run --rm api-verify go test ./...
+ Container gkcirclev2-api-verify-run-ff70627c2925 Creating 
+ Container gkcirclev2-api-verify-run-ff70627c2925 Created 
+?   	github.com/randhir3-cloud/GK-Circle-v2/api	[no test files]
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/cli	[no test files]
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/config	[no test files]
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/constants	[no test files]
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/database	[no test files]
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/logger	[no test files]
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/middlewares	[no test files]
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/pkg/prometheus	[no test files]
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/pkg/redis	[no test files]
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/pkg/response	[no test files]
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/pkg/templates	[no test files]
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/routes	[no test files]
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/routinewrapper	[no test files]
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/services	[no test files]
+ok  	github.com/randhir3-cloud/GK-Circle-v2/api/controllers/api/v1	0.051s
+ok  	github.com/randhir3-cloud/GK-Circle-v2/api/helpers/utils	(cached)
+ok  	github.com/randhir3-cloud/GK-Circle-v2/api/models	0.058s
+ok  	github.com/randhir3-cloud/GK-Circle-v2/api/pkg/jwt	(cached)
+ok  	github.com/randhir3-cloud/GK-Circle-v2/api/pkg/structs	(cached)
+ok  	github.com/randhir3-cloud/GK-Circle-v2/api/utils	(cached)
+
+$ npm run course-system:status:sync
+Sync successful: updated 3 generated file(s).
+
+$ npm run course-system:status:sync
+Sync successful: no changes required.
+
+$ npm run course-system:status:check
+Check successful: Course System ledger is consistent and unchanged.
+
+$ git diff --check -- api docs/development docs/features
+(exited with 0)

@@ -1,0 +1,15 @@
+{
+  "taskId": "COURSE-P2-T15",
+  "status": "VERIFIED",
+  "verifiedOn": "2026-07-27",
+  "branch": "chore/ci-verification",
+  "databaseMigration": "NONE",
+  "breakingChanges": false,
+  "checks": {
+    "goTestAll": "PASSED",
+    "enrollmentRegressions": "PASSED",
+    "reorderMoveVisibilityChain": "PASSED"
+  },
+  "dependsOn": ["COURSE-P2-T12"],
+  "productionTouched": false
+}

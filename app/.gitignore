@@ -15,3 +15,9 @@ dist
 .nitro
 .cache
 dist
+
+# Generated test / coverage artefacts (must not be linted)
+playwright-report
+test-results
+coverage
+.nyc_output

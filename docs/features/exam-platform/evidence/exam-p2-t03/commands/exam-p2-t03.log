@@ -1,0 +1,10 @@
+EXAM-P2-T03 verification log (2026-07-27)
+
+go test ./models/ -run "PlayedQuizReview|HasQuizReview|CanAccessReview" -count=1
+→ PASS (3 tests)
+
+go test ./middlewares/ -run "VerifyPlayedQuizReview" -count=1
+→ PASS (3 tests)
+
+go build ./...
+→ PASS

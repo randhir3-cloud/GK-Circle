@@ -1,6 +1,6 @@
 # GK Circle Maintainer Guide
 
-Version: 3.0
+Version: 3.2
 
 Status: Mandatory
 
@@ -11,17 +11,18 @@ GK Circle is a production-oriented State PCS examination preparation platform bu
 Before changing the repository:
 
 1. Read this file and `CLAUDE.MD`.
-2. Read `docs/standards/index.md` and the standards relevant to the task.
-3. Inspect the current implementation and search before creating parallel code.
-4. Write a scoped plan. Obtain approval for architectural, database, deployment, security, or destructive work.
-5. Verify before claiming completion.
+2. Read `docs/standards/index.md` and follow its mandatory reading order.
+3. Before implementation or verification, report the standards loaded, the task-specific standards, and any conflict or stop condition.
+4. Inspect the current implementation and search before creating parallel code.
+5. Write a scoped plan. Obtain approval for architectural, database, deployment, security, or destructive work.
+6. Verify before claiming completion.
 
 ## Actual architecture
 
 | Area | Technology | Location |
 |---|---|---|
 | Web application | Nuxt 3, Vue 3, TypeScript/JavaScript, Pinia | `app/` |
-| API | Go 1.23, Fiber v2 | `api/` |
+| API | Go 1.25, Fiber v2 | `api/` |
 | Database | PostgreSQL 15, SQL migrations | `api/database/migrations/` |
 | Authentication | Ory Kratos | `api/pkg/kratos/` |
 | Cache and coordination | Redis-compatible service | Compose service `redis` |
@@ -84,6 +85,8 @@ Runtime:   health checks and workflow smoke tests
 ```
 
 For UI or end-to-end workflow changes, verify authentication, practice/test creation, joining, answering, scoring, results, and reports in a real running stack. Do not use dummy success responses or disable checks.
+
+Feature completion evidence must exercise the real Nuxt client, Go API, Ory Kratos authentication, and PostgreSQL persistence where those layers are in scope. Mocks and isolated fixtures remain valid for unit tests, but they are not substitutes for real-system completion evidence. Development seed data is permitted only through documented, local-only seed or QA workflows that persist through the normal application data path.
 
 If a required tool is unavailable or an inherited test is failing, report it precisely. Do not claim the task is complete.
 

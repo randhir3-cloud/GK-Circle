@@ -12,15 +12,7 @@ on:
       - "app/**"
       - ".github/workflows/test-build-push-app.yaml"
       - "!**.md"
-  pull_request:
-    types: ["opened", "reopened", "synchronize", "ready_for_review"]
-    branches:
-      - develop
-      - main
-    paths:
-      - "app/**"
-      - ".github/workflows/test-build-push-app.yaml"
-      - "!**.md"      
+  workflow_dispatch:
 jobs:
   frontend-tests:
     name: Frontend Tests

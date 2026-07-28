@@ -24,6 +24,12 @@
         v-else
         class="jv-border-rough border-2 border-jv-ink bg-jv-white p-4 shadow-brutal sm:p-6"
       >
+        <NuxtLink
+          :to="`/admin/quiz/list-quiz/${quizId}`"
+          class="mb-4 inline-flex text-[14px] font-semibold text-jv-coral underline-offset-2 hover:underline"
+        >
+          ← Back to quiz
+        </NuxtLink>
         <QuizEditQuestion
           :question="questionData?.data"
           :quiz-id="quizId"

@@ -1,0 +1,69 @@
+COURSE-P2-T09 SANITIZED COMMAND RECORD
+Generated: 2026-07-26T21:09:24+05:30
+
+PASSED | npm test -- --run test/components/Course
+Result: 3 files, 12 tests passed.
+
+FAILED | npm test -- --run
+Result: 35 failed, 54 passed across 27 files; all T09 tests passed.
+Scope: failures are inherited legacy component expectations outside T09.
+
+PASSED | npm run lint
+Result: exit 0 after formatting T09 files.
+
+PASSED | npm run build
+Result: Nuxt production build completed; dependency warnings only.
+
+PASSED | docker compose config --quiet
+Result: exit 0.
+
+PASSED | docker compose build web
+Result: gkcirclev2-web:latest built successfully.
+
+PASSED | docker compose up -d --no-deps web
+Result: local web service recreated from the new image.
+
+PASSED | docker compose ps --format json
+Result: api, web, kratos, database, and redis reported healthy.
+
+BLOCKED | authenticated deep-node CRUD smoke and screenshots
+Reason: in-app browser has no authenticated local admin session; Chrome control
+is unavailable. No credentials or session storage were inspected.
+
+NOT RUN | docker compose build app
+Reason: repository has no app service. Approved replacement web build passed.
+
+COURSE-P2-VERIFY-01 CLOSURE AUDIT
+Generated: 2026-07-27T04:42:38+05:30
+
+PASSED | npm test -- --run test/components/Course
+Result: 3 files and 12 tests passed.
+
+BASELINE | npm test -- --run
+Result: 17 files failed, 14 passed; 35 tests failed, 94 passed.
+Classification: failures are in unrelated legacy quiz/report components; all
+T09 and T14 tests passed.
+
+PASSED | npm run lint
+PASSED | npm run build
+PASSED | docker compose config --quiet
+PASSED | docker compose build web
+PASSED | rebuilt web container health
+PASSED | source and frozen-acceptance implementation audit
+
+BLOCKED | authenticated admin CRUD, desktop screenshot, mobile screenshot
+Reason: the visible in-app browser remained signed out.
+
+PASSED | evidence hash verification
+PASSED | technical-verification JSON parse
+PASSED | api/app production-state guard (73 entries; baseline hash matched)
+PASSED | git diff --check -- app docs/development docs/features
+PASSED | npm run course-system:status:check
+
+DECISION | COURSE-P2-T09 remains IN_PROGRESS.
+
+
+## CLOSE-02 continuation
+See commands/close-02-automated.log and auth-blocker.md
+CLOSE-02 decision: IN_PROGRESS (allowlisted credentials unavailable)
+

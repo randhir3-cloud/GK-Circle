@@ -1,0 +1,8 @@
+{
+  "private": true,
+  "scripts": {
+    "course-system:status:check": "node scripts/course-system-status.js --check",
+    "course-system:status:sync": "node scripts/course-system-status.js --sync",
+    "seed:local-course-admin": "node scripts/seed-local-course-admin.cjs"
+  }
+}

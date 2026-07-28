@@ -1,0 +1,57 @@
+{
+  "ledgerVersion": 1,
+  "schemaVersion": 1,
+  "runId": "2026-07-25_course-p1-t01a-checker-integrity",
+  "environment": "Isolated exported HEAD with authorized overlay",
+  "negativeCases": [
+    {
+      "case": "inconsistent-status",
+      "expectedExitCode": 1,
+      "actualExitCode": 1,
+      "result": "PASSED",
+      "message": "PROJECT_INDEX.md has inconsistent next task"
+    },
+    {
+      "case": "multiple-in-progress",
+      "expectedExitCode": 1,
+      "actualExitCode": 1,
+      "result": "PASSED",
+      "message": "Multiple tasks are IN_PROGRESS without parallel=true"
+    },
+    {
+      "case": "invalid-weights",
+      "expectedExitCode": 1,
+      "actualExitCode": 1,
+      "result": "PASSED",
+      "message": "Phase weights do not total 100%"
+    },
+    {
+      "case": "verified-missing-evidence",
+      "expectedExitCode": 1,
+      "actualExitCode": 1,
+      "result": "PASSED",
+      "message": "VERIFIED task has no evidence"
+    },
+    {
+      "case": "verified-unchecked-criteria",
+      "expectedExitCode": 1,
+      "actualExitCode": 1,
+      "result": "PASSED",
+      "message": "VERIFIED task has unchecked acceptance criteria"
+    },
+    {
+      "case": "verified-unresolved-blocker",
+      "expectedExitCode": 1,
+      "actualExitCode": 1,
+      "result": "PASSED",
+      "message": "VERIFIED task has an unresolved blocker"
+    }
+  ],
+  "initialLedgerDefectDetected": {
+    "file": "docs/development/modules/course-system/phases/phase-02-learning-items.md",
+    "declaredPoints": 85,
+    "calculatedPoints": 83,
+    "correctedDeclaredPoints": 83
+  },
+  "productionOrNuc": false
+}

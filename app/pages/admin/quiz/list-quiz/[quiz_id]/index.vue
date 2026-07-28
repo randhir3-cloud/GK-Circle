@@ -267,6 +267,16 @@
         </div>
       </div>
 
+      <VisualTestBuilder
+        v-if="canEditQuiz"
+        :quiz-id="quizId"
+        :questions="questions"
+        :can-edit="canEditQuiz"
+        :default-points="Number(settings.points)"
+        :default-duration="Number(settings.duration_in_seconds)"
+        @question-created="handleBuilderQuestionCreated"
+      />
+
       <QuestionFormCard
         v-if="showNewQuestionForm && canEditQuiz"
         mode="create"
@@ -325,6 +335,8 @@
               v-if="editingQuestionId === question.question_id"
               mode="edit"
               :question="question"
+              :quiz-id="quizId"
+              :question-id="question.question_id"
               :saving="savingQuestionId === question.question_id"
               @save="(data) => saveExistingQuestion(question, data)"
               @cancel="editingQuestionId = ''"
@@ -348,6 +360,18 @@
                       class="text-[12px] font-bold uppercase tracking-[0.14em] text-jv-coral"
                     >
                       Question {{ index + 1 }}
+                      <span
+                        v-if="question.answer_review_status"
+                        class="ml-2 rounded-full border border-jv-ink/20 bg-jv-canvas px-2 py-0.5 text-[10px] font-bold tracking-[0.12em] text-jv-muted"
+                      >
+                        {{ question.answer_review_status }}
+                      </span>
+                      <span
+                        v-if="question.revision_number"
+                        class="ml-1 text-[10px] font-semibold text-jv-muted"
+                      >
+                        · rev {{ question.revision_number }}
+                      </span>
                     </p>
                     <h2
                       class="mt-1 break-words text-[20px] font-bold leading-snug text-jv-ink sm:text-[22px]"
@@ -450,100 +474,11 @@
       </draggable>
     </section>
 
-    <Teleport to="body">
-      <div
-        v-if="importModalOpen"
-        class="fixed inset-0 z-50 grid place-items-center bg-jv-ink/35 px-4 py-6 backdrop-blur-[2px]"
-        @click.self="closeImportModal"
-      >
-        <form
-          class="w-full max-w-[680px] rotate-[-0.4deg] border-[4px] border-jv-ink bg-jv-white shadow-brutal-lg"
-          @submit.prevent="importCsv"
-        >
-          <div
-            class="flex items-center justify-between gap-4 border-b-[3px] border-jv-ink bg-jv-ink px-5 py-4 text-jv-white sm:px-6"
-          >
-            <h2
-              class="font-body text-[24px] font-black leading-none text-jv-white sm:text-[28px]"
-            >
-              Add Question to Quiz
-            </h2>
-            <button
-              type="button"
-              class="grid size-9 place-items-center text-jv-white transition-transform hover:rotate-[6deg]"
-              aria-label="Close import CSV modal"
-              @click="closeImportModal"
-            >
-              <X class="size-6" :stroke-width="2.4" />
-            </button>
-          </div>
-
-          <div class="grid gap-4 px-5 py-6 sm:px-8">
-            <label class="grid gap-2">
-              <span
-                class="text-[13px] font-black uppercase tracking-[0.16em] text-jv-ink"
-              >
-                Choose CSV File <span class="text-jv-coral">*</span>
-              </span>
-              <span
-                class="flex h-14 cursor-pointer border-[3px] border-jv-ink bg-jv-canvas"
-              >
-                <span
-                  class="inline-flex h-full items-center gap-2 bg-jv-ink px-4 text-[16px] font-black text-jv-white"
-                >
-                  <Upload class="size-4" :stroke-width="2.4" />
-                  Choose File
-                </span>
-                <span
-                  class="flex min-w-0 flex-1 items-center px-4 text-[15px] font-semibold text-jv-muted"
-                >
-                  {{ csvFileName || "No file chosen" }}
-                </span>
-                <input
-                  type="file"
-                  class="hidden"
-                  accept=".csv,text/csv"
-                  required
-                  @change="handleCsvFile"
-                />
-              </span>
-            </label>
-            <p class="text-[15px] leading-[1.6] text-jv-muted">
-              Upload a CSV file containing additional questions. New rows will
-              be appended to this quiz.
-            </p>
-            <NavigationLink
-              url="/files/demo.csv"
-              url-name="Download Sample"
-              external
-              download="demo.csv"
-              class="w-fit rounded-[999px] bg-jv-white"
-            >
-              <Download class="size-4" :stroke-width="2.4" />
-            </NavigationLink>
-          </div>
-
-          <div
-            class="flex flex-col-reverse gap-3 border-t-[3px] border-jv-ink bg-jv-canvas px-5 py-4 sm:flex-row sm:justify-end sm:px-8"
-          >
-            <button
-              type="button"
-              class="inline-flex h-12 items-center justify-center border-[3px] border-jv-ink bg-jv-white px-6 text-[17px] font-black text-jv-ink shadow-brutal-sm transition-transform hover:rotate-[-1deg] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
-              @click="closeImportModal"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              class="inline-flex h-12 items-center justify-center border-[3px] border-jv-ink bg-jv-accent-green px-6 text-[17px] font-black text-jv-ink shadow-brutal-sm transition-transform hover:rotate-[1deg] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none disabled:cursor-not-allowed disabled:opacity-60"
-              :disabled="importPending"
-            >
-              {{ importPending ? "Adding..." : "Add Questions" }}
-            </button>
-          </div>
-        </form>
-      </div>
-    </Teleport>
+    <QuizImportWizard
+      v-model:open="importModalOpen"
+      :quiz-id="quizId"
+      @imported="handleImportComplete"
+    />
 
     <ShareQuizModal v-model="shareModalOpen" :quiz-id="quizId" />
   </main>
@@ -553,7 +488,6 @@
 import { computed, onMounted, ref, watch } from "vue";
 import {
   Check,
-  Download,
   Globe,
   GripVertical,
   Image as ImageIcon,
@@ -564,11 +498,12 @@ import {
   Share2,
   Trash2,
   Upload,
-  X,
 } from "lucide-vue-next";
 import { usePush } from "notivue";
 import draggable from "vuedraggable";
 import QuestionFormCard from "@/components/quiz-manage/QuestionFormCard.vue";
+import QuizImportWizard from "@/components/quiz-manage/QuizImportWizard.vue";
+import VisualTestBuilder from "@/components/quiz-manage/VisualTestBuilder.vue";
 import CodeBlockComponent from "@/components/CodeBlockComponent.vue";
 import ShareQuizModal from "@/components/Quiz/ShareQuizModal.vue";
 import { useListUserstore } from "~/store/userlist";
@@ -603,9 +538,6 @@ const listUserStore = useListUserstore();
 const quizId = computed(() => route.params.quiz_id || "");
 const importModalOpen = ref(false);
 const shareModalOpen = ref(false);
-const importPending = ref(false);
-const csvFile = ref(null);
-const csvFileName = ref("");
 const showNewQuestionForm = ref(false);
 const showAddAnother = ref(false);
 const savingNewQuestion = ref(false);
@@ -823,6 +755,15 @@ const saveNewQuestion = async ({ payload }) => {
   }
 };
 
+const handleBuilderQuestionCreated = async ({ linkedToCollection }) => {
+  await refresh();
+  toast.success(
+    linkedToCollection
+      ? "Question added to the bank and STATIC collection."
+      : "Question added to the Question Bank."
+  );
+};
+
 const saveExistingQuestion = async (question, { payload }) => {
   const questionId = question.question_id;
 
@@ -893,51 +834,9 @@ const deleteQuiz = async () => {
   }
 };
 
-const handleCsvFile = (event) => {
-  const file = event.target.files?.[0];
-  csvFile.value = file || null;
-  csvFileName.value = file?.name || "";
-};
-
-const closeImportModal = () => {
-  importModalOpen.value = false;
-  csvFile.value = null;
-  csvFileName.value = "";
-};
-
-const importCsv = async () => {
-  if (!csvFile.value) {
-    toast.error("Please select a CSV file.");
-    return;
-  }
-
-  try {
-    importPending.value = true;
-    const formData = new FormData();
-    formData.append("attachment", csvFile.value);
-
-    await $fetch(`${url.apiUrl}/quizzes/${quizId.value}/questions/upload`, {
-      method: "POST",
-      headers: {
-        Accept: "application/json",
-      },
-      body: formData,
-      credentials: "include",
-    });
-
-    toast.success("Questions imported successfully.");
-    closeImportModal();
-    refresh();
-  } catch (error) {
-    toast.error(
-      error?.data?.data ||
-        error?.data?.message ||
-        error?.message ||
-        "Failed to import CSV."
-    );
-  } finally {
-    importPending.value = false;
-  }
+const handleImportComplete = async () => {
+  toast.success("Questions imported successfully.");
+  await refresh();
 };
 
 const handleShareQuiz = () => {

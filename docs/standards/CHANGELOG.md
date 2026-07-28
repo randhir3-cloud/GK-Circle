@@ -15,6 +15,28 @@ Format for every entry:
 
 ---
 
+## [3.2] - 2026-07-27 - Real-data completion and verification
+
+| Field | Value |
+|-------|-------|
+| **Files Changed** | `AGENTS.md`, `docs/standards/index.md`, `docs/standards/ai-rules.md`, `docs/standards/testing-rules.md`, `docs/standards/backend-rules.md`, `docs/standards/frontend-rules.md`, `docs/standards/security-rules.md`, `docs/standards/course-rules.md`, `docs/standards/rag-rules.md`, `docs/standards/CHANGELOG.md` |
+| **Reason** | Require the mandatory reading order (`AGENTS.md`, `CLAUDE.MD`, standards index, architecture, security, AI, testing, then task standards), task-start declaration, repository-scope blocker resolution, production-shaped data-flow verification, documented persisted development seeds, and truthful separation of unit mocks from feature-completion evidence. Clarify that authorized agent automation may verify tasks while formal module certification retains its human procedure. Application behaviour is unchanged. |
+| **Breaking Changes** | **YES** — agents must load and report the mandatory standards before implementation or verification and must use real authenticated API and persistence paths for applicable completion evidence. |
+| **Migration Required** | **NO** — governance workflow only. No application behavior, database migration, deployment, authentication, or Compose change. |
+
+---
+
+## [3.1] - 2026-07-25 - Canonical Course hierarchy
+
+| Field | Value |
+|-------|-------|
+| **Files Changed** | `docs/standards/course-rules.md`, `docs/standards/CHANGELOG.md`, `docs/architecture/ADR/README.md`, `docs/architecture/ADR/ADR-023-canonical-course-hierarchy-model.md` |
+| **Reason** | Resolve the CourseNode versus CourseSubject/CourseTopic conflict by making typed CourseNode rows canonical persistence while retaining Subject and Topic domain/API vocabulary. |
+| **Breaking Changes** | **NO** — the decision is additive and existing Course persistence, identifiers, ownership, lifecycle, and APIs remain unchanged. |
+| **Migration Required** | **NO** — T02B is documentation and governance only; CourseNode migration work remains separately gated by COURSE-P1-T03. |
+
+---
+
 ## [3.0] - 2026-07-22 - GK Circle v2 foundation
 
 | Field | Value |

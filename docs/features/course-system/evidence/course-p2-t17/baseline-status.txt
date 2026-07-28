@@ -1,0 +1,112 @@
+ M .env.example
+ M .gitignore
+ M AGENTS.md
+ M api/.env.example
+ M api/constants/constant.go
+A  api/database/migrations/20260723100000_alter_quizzes_add_self_paced_columns.down.sql
+A  api/database/migrations/20260723100000_alter_quizzes_add_self_paced_columns.up.sql
+A  api/database/migrations/20260723100100_create_table_assessment_attempts.down.sql
+A  api/database/migrations/20260723100100_create_table_assessment_attempts.up.sql
+A  api/database/migrations/20260723100200_create_table_attempt_answers.down.sql
+A  api/database/migrations/20260723100200_create_table_attempt_answers.up.sql
+ M api/go.mod
+ M api/routes/main.go
+ M app/components/common/Sidebar.vue
+ M docker-compose.override.yml
+ M docs/standards/CHANGELOG.md
+ M docs/standards/ai-rules.md
+ M docs/standards/backend-rules.md
+ M docs/standards/course-rules.md
+ M docs/standards/frontend-rules.md
+ M docs/standards/index.md
+ M docs/standards/rag-rules.md
+ M docs/standards/security-rules.md
+ M docs/standards/testing-rules.md
+?? .cursor/
+?? api/controllers/api/v1/course_admin_auth.go
+?? api/controllers/api/v1/course_controller.go
+?? api/controllers/api/v1/course_controller_test.go
+?? api/controllers/api/v1/course_node_controller.go
+?? api/controllers/api/v1/course_node_controller_test.go
+?? api/controllers/api/v1/learner_course_enrollment_controller.go
+?? api/controllers/api/v1/learner_course_enrollment_controller_test.go
+?? api/controllers/api/v1/learner_learning_item_controller.go
+?? api/controllers/api/v1/learner_learning_item_controller_test.go
+?? api/controllers/api/v1/learner_learning_item_previous_next_test.go
+?? api/controllers/api/v1/learner_learning_item_publish_contract_test.go
+?? api/controllers/api/v1/learner_learning_item_visibility_test.go
+?? api/controllers/api/v1/learning_item_backend_suite_test.go
+?? api/controllers/api/v1/learning_item_controller.go
+?? api/controllers/api/v1/learning_item_controller_test.go
+?? api/controllers/api/v1/learning_item_draft_filtering_test.go
+?? api/database/migrations/20260725110500_create_courses_table.down.sql
+?? api/database/migrations/20260725110500_create_courses_table.up.sql
+?? api/database/migrations/20260725134707_create_course_nodes_table.down.sql
+?? api/database/migrations/20260725134707_create_course_nodes_table.up.sql
+?? api/database/migrations/20260726083000_create_learning_items_table.down.sql
+?? api/database/migrations/20260726083000_create_learning_items_table.up.sql
+?? api/database/migrations/20260726094500_alter_learning_items_add_publish_state.down.sql
+?? api/database/migrations/20260726094500_alter_learning_items_add_publish_state.up.sql
+?? api/database/migrations/20260727100000_create_course_enrollments_table.down.sql
+?? api/database/migrations/20260727100000_create_course_enrollments_table.up.sql
+?? api/models/course.go
+?? api/models/course_enrollment.go
+?? api/models/course_enrollment_test.go
+?? api/models/course_node.go
+?? api/models/course_node_delete_test.go
+?? api/models/course_node_hierarchy_test.go
+?? api/models/course_node_move_test.go
+?? api/models/course_node_reorder_test.go
+?? api/models/course_node_test.go
+?? api/models/course_test.go
+?? api/models/learning_item.go
+?? api/models/learning_item_adjacent_test.go
+?? api/models/learning_item_backend_suite_test.go
+?? api/models/learning_item_chain_projection_test.go
+?? api/models/learning_item_draft_filtering_test.go
+?? api/models/learning_item_metadata.go
+?? api/models/learning_item_metadata_test.go
+?? api/models/learning_item_move_test.go
+?? api/models/learning_item_ownership_test.go
+?? api/models/learning_item_placeholders.go
+?? api/models/learning_item_placeholders_test.go
+?? api/models/learning_item_reorder_test.go
+?? api/models/learning_item_test.go
+?? api/models/learning_item_visibility.go
+?? api/models/learning_item_visibility_runtime.go
+?? api/models/learning_item_visibility_runtime_test.go
+?? api/models/learning_item_visibility_test.go
+?? api/pkg/structs/course_node_requests.go
+?? api/pkg/structs/course_requests.go
+?? api/pkg/structs/learning_item_requests.go
+?? api/pkg/structs/optional_integer.go
+?? api/pkg/structs/optional_integer_test.go
+?? api/pkg/structs/optional_json.go
+?? api/pkg/structs/optional_json_test.go
+?? api/pkg/structs/optional_string.go
+?? api/pkg/structs/optional_string_test.go
+?? app/components/course/
+?? app/components/learning-items/
+?? app/composables/course_learning_items.js
+?? app/composables/learner_learning_items.js
+?? app/pages/admin/courses/
+?? app/pages/courses/
+?? app/playwright-report/
+?? app/test-results/
+?? app/test/components/Course/
+?? app/test/components/LearningItems/
+?? app/test/composables/
+?? app/test/pages/
+?? app/utils/
+?? demo.csv
+?? docs/api/course-learning-items-v1.md
+?? docs/architecture/
+?? docs/development/
+?? docs/features/
+?? e2e_job.log
+?? e2e_job_utf8.log
+?? package.json
+?? playwright-report/
+?? scripts/course-system-status.js
+?? scripts/node_modules/
+?? scripts/seed-local-course-admin.cjs

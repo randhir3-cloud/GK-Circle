@@ -1,0 +1,36 @@
+COURSE-P1-T03 SANITIZED COMMAND RECORD
+Date: 2026-07-25
+Workspace: repository root unless stated
+
+PASSED | npm.cmd run course-system:status:sync
+PASSED | npm.cmd run course-system:status:check
+PASSED | gofmt -w models/course_node.go models/course_node_test.go
+PASSED | gofmt -l models/course_node.go models/course_node_test.go (no output)
+PASSED | go test ./models -count=1
+PASSED | go vet ./...
+PASSED | go test ./... -count=1
+PASSED | go build ./...
+PASSED | docker compose config --quiet
+PASSED | docker compose --profile verify run --rm api-verify go vet ./...
+PASSED | docker compose --profile verify run --rm api-verify go test ./... -count=1
+PASSED | docker compose --profile verify run --rm api-verify go test -race ./... -count=1
+PASSED | docker compose --profile verify run --rm api-verify go build ./...
+PASSED | repository migration runner apply against temporary local PostgreSQL
+PASSED | psql schema, constraint, and existing-Course checksum inspection
+PASSED | T03 down SQL against temporary local PostgreSQL
+PASSED | repository migration runner reapply against temporary local PostgreSQL
+
+DISCARDED | combined Docker sh wrapper | exit 2
+Reason: nested shell quoting failed before any Go command began. Direct Compose
+commands above are the canonical results.
+
+DIAGNOSTIC | T03-only overlay initial runner attempt | exit 0 with an
+"unknown migration" message for prior T02 metadata.
+Reason: the runner requires the prior migration files to remain visible.
+Canonical apply/reapply used the explicit combined T02+T03 overlay and passed.
+
+NOT_APPLICABLE | frontend lint/unit/build/Playwright
+Reason: T03 changed no frontend or HTTP API surface.
+
+All database names, IDs, and paths in this record are local test identifiers.
+No credential, production target, or NUC target is included.

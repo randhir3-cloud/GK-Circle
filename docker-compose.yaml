@@ -10,7 +10,7 @@ services:
     ports:
       - 5432:5432
     volumes:
-      - ./pkg/kratos/kratos-pg-init-script:/docker-entrypoint-initdb.d
+      - ./api/pkg/kratos/kratos-pg-init-script:/docker-entrypoint-initdb.d
       - pgdata:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U app"]
@@ -90,7 +90,7 @@ services:
     env_file:
       - ./api/.env.kratos
       - ./.env
-    command: serve -c /etc/config/kratos/kratos.yml --watch-courier
+    command: serve -c /etc/config/kratos/kratos.yml --watch-courier --dev
     restart: always
     depends_on:
       db:
@@ -129,6 +129,27 @@ services:
       MP_SENDMAIL_SMTP_ADDR: mailpit:1025
       MP_SENDMAIL_FROM: test@test.com
 
+  api-verify:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+      target: build
+    working_dir: /gk-circle
+    volumes:
+      - ./api:/gk-circle
+      - go-build-cache:/root/.cache/go-build
+      - go-module-cache:/go/pkg/mod
+    environment:
+      CGO_ENABLED: "1"
+    entrypoint: []
+    command: ["go", "version"]
+    profiles:
+      - verify
+    stdin_open: false
+    tty: false
+
 volumes:
   pgdata:
   redisdata:
+  go-build-cache:
+  go-module-cache:

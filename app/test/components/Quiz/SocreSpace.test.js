@@ -1,9 +1,17 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { mount } from "@vue/test-utils";
+import { createTestingPinia } from "@pinia/testing";
 import ScoreSpace from "~/components/Quiz/ScoreSpace.vue";
-import { VProgressLinear } from "vuetify/components";
 
-const props = {
+vi.mock("~~/composables/avatar", () => ({
+  getAvatarUrlByName: vi
+    .fn()
+    .mockImplementation(
+      (name) => `https://api.dicebear.com/9.x/bottts/svg?seed=${name || "Eden"}`
+    ),
+}));
+
+const buildProps = (overrides = {}) => ({
   data: {
     status: "success",
     data: {
@@ -18,6 +26,8 @@ const props = {
       question: "What is the color of the Strawberry?",
       question_media: "text",
       quiz_id: "1",
+      question_no: 1,
+      totalQuestions: 5,
       rankList: [
         {
           rank: 1,
@@ -31,7 +41,6 @@ const props = {
         },
       ],
       resource: "",
-      totalQuestions: 5,
       userResponses: [
         {
           id: "user1",
@@ -51,71 +60,75 @@ const props = {
   selectedAnswer: 0,
   analysisTab: "ranking",
   quizState: "running",
-};
-
-let wrapper = mount(ScoreSpace, {
-  props,
-  global: {
-    stubs: {
-      VProgressLinear: true,
-      FontAwesomeIcon: true,
-    },
-  },
+  ...overrides,
 });
+
+const mountComponent = (props = buildProps()) =>
+  mount(ScoreSpace, {
+    props,
+    global: {
+      plugins: [
+        createTestingPinia({
+          createSpy: vi.fn,
+          initialState: {
+            music: { music: false },
+          },
+        }),
+      ],
+      stubs: {
+        CodeBlockComponent: true,
+        AnswerSubmissionChart: true,
+      },
+    },
+  });
 
 describe("ScoreSpace test", () => {
   it("renders correctly with default props", () => {
-    expect(wrapper.find("h1").exists()).toBe(true);
-    expect(wrapper.findComponent(VProgressLinear).exists()).toBe(true);
+    const wrapper = mountComponent();
+    expect(wrapper.find("h3").text()).toContain(
+      "What is the color of the Strawberry?"
+    );
+    expect(wrapper.find('[aria-hidden="true"]').exists()).toBe(true);
   });
 
   it("renders the correct answer and selected incorrect answer", async () => {
-    expect(wrapper.findAll(".option-box").length).toBe(4);
-
-    const correctOption = wrapper.find(".bg-light-success");
-
-    expect(correctOption.exists()).toBe(true);
-    expect(correctOption.text()).toContain(props.data.data.options[2].value);
-
-    props.selectedAnswer = 3;
-    props.isAdmin = false;
-
-    await wrapper.setProps(props);
-    await wrapper.vm.$nextTick();
-
-    const incorrectOption = wrapper.find(".bg-light-danger");
-
-    expect(incorrectOption.exists()).toBe(true);
-    expect(incorrectOption.text()).toContain(
-      props.data.data.options[props.selectedAnswer].value
+    const wrapper = mountComponent(
+      buildProps({
+        selectedAnswer: 3,
+        isAdmin: false,
+      })
     );
+    expect(wrapper.get('[aria-label="Correct answer"]').exists()).toBe(true);
+    expect(wrapper.text()).toContain("Red");
+    expect(wrapper.get('[aria-label="Your incorrect answer"]').exists()).toBe(
+      true
+    );
+    expect(wrapper.text()).toContain("Green");
   });
 
-  it("emits 'askSkipTimer' when the skip button is clicked", async () => {
-    props.isAdmin = true;
-    await wrapper.setProps(props);
-    await wrapper.vm.$nextTick();
-
-    const skipButton = wrapper.find("button.btn-primary");
+  it("emits askSkipTimer when the skip button is clicked", async () => {
+    const wrapper = mountComponent();
+    const skipButton = wrapper
+      .findAll("button")
+      .find((button) => button.text().includes("Skip"));
+    expect(skipButton).toBeTruthy();
     await skipButton.trigger("click");
     expect(wrapper.emitted("askSkipTimer")).toBeTruthy();
     expect(skipButton.attributes("disabled")).toBeDefined();
   });
 
   it("changes the analysis tab when a tab is clicked", async () => {
-    const chartTab = wrapper.find("#pills-chart-tab");
+    const wrapper = mountComponent();
+    const chartTab = wrapper
+      .findAll("button")
+      .find((button) => button.text().includes("Chart"));
     await chartTab.trigger("click");
-
     expect(wrapper.emitted("changeAnalysisTab")[0]).toEqual(["chart"]);
   });
 
   it("renders the rank list correctly", () => {
-    const rows = wrapper.findAll("table tbody tr");
-    expect(rows.length).toBe(1);
-
-    const firstRow = rows[0];
-    expect(firstRow.text()).toContain("1");
-    expect(firstRow.text()).toContain("doe");
-    expect(firstRow.text()).toContain("0");
+    const wrapper = mountComponent();
+    expect(wrapper.text()).toContain("doe");
+    expect(wrapper.text()).toContain("1");
   });
 });

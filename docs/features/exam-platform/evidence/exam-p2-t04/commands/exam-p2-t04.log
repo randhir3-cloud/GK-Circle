@@ -1,0 +1,16 @@
+EXAM-P2-T04 verification log (2026-07-27)
+
+go test ./security/... ./utils/ -run "AnswerKey|Live|Protected|PreRelease" -count=1
+→ PASS
+
+go test ./controllers/api/v1/ -run "AnswerKey" -count=1
+→ PASS (8 tests)
+
+go test ./middlewares/ -run "VerifyPlayedQuizReview" -count=1
+→ PASS (4 tests)
+
+go test ./... -count=1
+→ PASS
+
+go build ./...
+→ PASS

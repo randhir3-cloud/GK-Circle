@@ -1,0 +1,224 @@
+#!/usr/bin/env node
+/**
+ * Seed a local-only allowlisted Course admin for automated verification.
+ *
+ * Creates (or updates) a Kratos identity and writes a gitignored API env
+ * snippet that sets PUBLIC_QUIZ_ADMIN_EMAILS. Does not print passwords.
+ *
+ * Local defaults (development only — never use in production):
+ *   email:    local.course.admin@gk-circle.local
+ *   password: LocalDev!CourseAdmin1
+ *
+ * Usage:
+ *   node scripts/seed-local-course-admin.mjs
+ *   LOCAL_COURSE_ADMIN_PASSWORD='...' node scripts/seed-local-course-admin.mjs
+ */
+
+const fs = require("fs");
+const path = require("path");
+const http = require("http");
+const https = require("https");
+
+const ROOT = path.resolve(__dirname, "..");
+const ENV_SNIPPET = path.join(ROOT, "api", ".env.local.course-admin");
+const E2E_SNIPPET = path.join(ROOT, ".env.e2e.local");
+
+const EMAIL =
+  process.env.LOCAL_COURSE_ADMIN_EMAIL || "local.course.admin@gk-circle.local";
+const PASSWORD =
+  process.env.LOCAL_COURSE_ADMIN_PASSWORD || "LocalDev!CourseAdmin1";
+const FIRST = process.env.LOCAL_COURSE_ADMIN_FIRST || "Local";
+const LAST = process.env.LOCAL_COURSE_ADMIN_LAST || "CourseAdmin";
+const KRATOS_ADMIN =
+  process.env.KRATOS_ADMIN_URL || "http://localhost:4434";
+
+function request(method, urlString, body, redirectCount = 0) {
+  return new Promise((resolve, reject) => {
+    const url = new URL(urlString);
+    const lib = url.protocol === "https:" ? https : http;
+    const payload = body ? JSON.stringify(body) : null;
+    const req = lib.request(
+      {
+        protocol: url.protocol,
+        hostname: url.hostname,
+        port: url.port,
+        path: url.pathname + url.search,
+        method,
+        headers: {
+          Accept: "application/json",
+          ...(payload
+            ? {
+                "Content-Type": "application/json",
+                "Content-Length": Buffer.byteLength(payload),
+              }
+            : {}),
+        },
+      },
+      (res) => {
+        const status = res.statusCode || 0;
+        if (
+          [301, 302, 307, 308].includes(status) &&
+          res.headers.location &&
+          redirectCount < 5
+        ) {
+          const next = new URL(res.headers.location, url).toString();
+          res.resume();
+          resolve(request(method, next, body, redirectCount + 1));
+          return;
+        }
+        const chunks = [];
+        res.on("data", (c) => chunks.push(c));
+        res.on("end", () => {
+          const text = Buffer.concat(chunks).toString("utf8");
+          let json = null;
+          try {
+            json = text ? JSON.parse(text) : null;
+          } catch {
+            json = null;
+          }
+          resolve({ status, text, json });
+        });
+      }
+    );
+    req.on("error", reject);
+    if (payload) req.write(payload);
+    req.end();
+  });
+}
+
+function writeUtf8(filePath, contents) {
+  fs.writeFileSync(filePath, contents, { encoding: "utf8" });
+}
+
+async function findIdentityByEmail(email) {
+  const res = await request(
+    "GET",
+    `${KRATOS_ADMIN}/admin/identities?credentials_identifier=${encodeURIComponent(email)}`
+  );
+  if (res.status >= 200 && res.status < 300 && Array.isArray(res.json)) {
+    return res.json.find(
+      (id) =>
+        String(id?.traits?.email || "").toLowerCase() === email.toLowerCase()
+    );
+  }
+  // Fallback: list all (local only; small N)
+  const all = await request("GET", `${KRATOS_ADMIN}/admin/identities`);
+  if (all.status >= 200 && all.status < 300 && Array.isArray(all.json)) {
+    return all.json.find(
+      (id) =>
+        String(id?.traits?.email || "").toLowerCase() === email.toLowerCase()
+    );
+  }
+  return null;
+}
+
+async function ensureIdentity() {
+  const existing = await findIdentityByEmail(EMAIL);
+  const payload = {
+    schema_id: "default",
+    traits: {
+      email: EMAIL,
+      name: { first: FIRST, last: LAST },
+    },
+    credentials: {
+      password: {
+        config: {
+          password: PASSWORD,
+        },
+      },
+    },
+    verifiable_addresses: [
+      {
+        value: EMAIL,
+        verified: true,
+        via: "email",
+        status: "completed",
+      },
+    ],
+  };
+
+  if (existing?.id) {
+    const updated = await request(
+      "PUT",
+      `${KRATOS_ADMIN}/admin/identities/${existing.id}`,
+      payload
+    );
+    if (updated.status < 200 || updated.status >= 300) {
+      throw new Error(
+        `Failed to update identity (HTTP ${updated.status}): ${updated.text.slice(0, 300)}`
+      );
+    }
+    return { id: existing.id, created: false };
+  }
+
+  const created = await request(
+    "POST",
+    `${KRATOS_ADMIN}/admin/identities`,
+    payload
+  );
+  if (created.status < 200 || created.status >= 300) {
+    throw new Error(
+      `Failed to create identity (HTTP ${created.status}): ${created.text.slice(0, 300)}`
+    );
+  }
+  return { id: created.json?.id || null, created: true };
+}
+
+function writeEnvSnippets() {
+  writeUtf8(
+    ENV_SNIPPET,
+    [
+      "# Generated by scripts/seed-local-course-admin.mjs — local development only.",
+      "# Do not commit. Do not use these values in production.",
+      `PUBLIC_QUIZ_ADMIN_EMAILS=${EMAIL}`,
+      "",
+    ].join("\n")
+  );
+
+  writeUtf8(
+    E2E_SNIPPET,
+    [
+      "# Generated by scripts/seed-local-course-admin.mjs — local E2E / runtime verification only.",
+      "# Do not commit. Source this file before Playwright or agent browser login.",
+      "PLAYWRIGHT_BASE_URL=http://localhost:3000",
+      "PLAYWRIGHT_API_BASE_URL=http://localhost:3010",
+      `E2E_CREATOR_EMAIL=${EMAIL}`,
+      `E2E_TEST_PASSWORD=${PASSWORD}`,
+      `E2E_STUDENT_EMAIL=local.course.learner@gk-circle.local`,
+      `E2E_OTHER_STUDENT_EMAIL=local.course.learner2@gk-circle.local`,
+      `E2E_OTHER_CREATOR_EMAIL=local.course.admin2@gk-circle.local`,
+      `LOCAL_COURSE_ADMIN_EMAIL=${EMAIL}`,
+      `LOCAL_COURSE_ADMIN_PASSWORD=${PASSWORD}`,
+      "",
+    ].join("\n")
+  );
+}
+
+async function main() {
+  const health = await request("GET", `${KRATOS_ADMIN}/admin/identities?per_page=1`);
+  if (health.status < 200 || health.status >= 300) {
+    throw new Error(
+      `Kratos admin not ready at ${KRATOS_ADMIN} (HTTP ${health.status})`
+    );
+  }
+
+  const identity = await ensureIdentity();
+  writeEnvSnippets();
+
+  console.log("Local course admin seed complete.");
+  console.log(`  email: ${EMAIL}`);
+  console.log(`  identity: ${identity.created ? "created" : "updated"}`);
+  console.log(`  api env snippet: ${path.relative(ROOT, ENV_SNIPPET)}`);
+  console.log(`  e2e env snippet: ${path.relative(ROOT, E2E_SNIPPET)}`);
+  console.log(
+    "  next: docker compose up -d api  # reload PUBLIC_QUIZ_ADMIN_EMAILS"
+  );
+  console.log(
+    "  password: see .env.e2e.local (LOCAL_COURSE_ADMIN_PASSWORD) — not printed here"
+  );
+}
+
+main().catch((err) => {
+  console.error(err.message || err);
+  process.exit(1);
+});

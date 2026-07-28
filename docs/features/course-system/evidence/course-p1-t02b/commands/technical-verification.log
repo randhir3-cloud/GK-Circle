@@ -1,0 +1,67 @@
+COURSE-P1-T02B TECHNICAL VERIFICATION
+Environment: local Windows / PowerShell
+Working directory: E:\GK Circle v2
+Branch: chore/ci-verification
+Commit: eeac599f05eaf936c7f61db4a3deeac3c9063f59
+
+2026-07-25T07:21:09.1415178Z | 112 ms | exit 0
+node --check scripts/course-system-status.js
+
+2026-07-25T07:21:09.2694210Z | 120 ms | exit 0
+node -e "for (const f of process.argv.slice(1)) JSON.parse(require('fs').readFileSync(f,'utf8'));" docs/development/modules/course-system/status.json docs/development/modules/course-system/manifest.json docs/features/course-system/evidence/course-p1-t02b/technical-verification.json
+
+2026-07-25T07:21:09.3904570Z | 183 ms | exit 0
+git diff --check
+
+2026-07-25T07:21:22.1293026Z | 71 ms | exit 1 (PASSED_NO_MATCHES)
+rg -n -i -e 'type CourseNode' -e 'course_nodes' -e 'type CourseSubject' -e 'course_subjects' -e 'type CourseTopic' -e 'course_topics' api app -g '!node_modules/**' -g '!playwright-report/**' -g '!test-results/**'
+
+2026-07-25T07:21:09.9779268Z | 1396 ms | exit 0
+npm.cmd run course-system:status:sync
+Sync successful: no changes required.
+
+2026-07-25T07:21:11.4171584Z | 1139 ms | exit 0
+npm.cmd run course-system:status:check
+Check successful: Course System ledger is consistent and unchanged.
+
+Initial recursive verification-scope digest:
+ee491948d2ea26b51cc2f364ab22dd8ec421e449748104d4f2a5eed4504ffc09
+
+The digest was identical before/after sync and before/after check.
+
+2026-07-25T07:24:38.3013606Z | 1528 ms | exit 0
+npm.cmd run course-system:status:sync
+Sync successful: updated 3 generated file(s).
+
+2026-07-25T07:24:53.9857459Z | 1052 ms | exit 0
+npm.cmd run course-system:status:check
+Check successful: Course System ledger is consistent and unchanged.
+
+2026-07-25T07:25:04.9022548Z | 991 ms | exit 0
+npm.cmd run course-system:status:sync
+Sync successful: no changes required.
+
+Accepted-state recursive verification-scope digest:
+51579bf140b5d33003647889a387624fda67c342d3299b1f301d72b2a0b31711
+
+Final stable recursive ledger-control scope:
+docs/development/**
+docs/architecture/ADR/**
+docs/standards/course-rules.md
+docs/standards/CHANGELOG.md
+scripts/course-system-status.js
+package.json
+
+2026-07-25T07:26:26.9499170Z | 1392 ms | exit 0
+npm.cmd run course-system:status:check
+Check successful: Course System ledger is consistent and unchanged.
+
+2026-07-25T07:26:28.3812779Z | 961 ms | exit 0
+npm.cmd run course-system:status:sync
+Sync successful: no changes required.
+
+Stable 35-file ledger-control digest:
+444364b7af0f1bea3f92b75a95b986eae206eb18b866237f128687e14f284dbd
+
+The digest was identical before/after check and before/after sync. The evidence
+output directory was excluded to prevent self-reference.

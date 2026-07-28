@@ -1,0 +1,130 @@
+COURSE-P2-T14 SANITIZED COMMAND RECORD
+Generated: 2026-07-26T21:44:07+05:30
+
+PASSED | npm test -- --run focused T14 paths
+Result: 4 files, 40 tests passed.
+
+FAILED | npm test -- --run
+Result: 17 files failed, 14 passed; 35 tests failed, 94 passed.
+Scope: all T14 tests passed; failures reproduce the inherited legacy baseline.
+
+PASSED | npm run lint
+Result: exit 0.
+
+PASSED | npm run build
+Result: Nuxt production build completed; dependency warnings only.
+
+PASSED | docker compose config --quiet
+Result: exit 0; local Docker config access warning did not invalidate config.
+
+PASSED | docker compose build web
+Result: gkcirclev2-web:latest built successfully.
+
+PASSED | docker compose up -d --no-deps web
+Result: local web service recreated from the verified image.
+
+PASSED | docker compose ps --format json
+Result: api, web, kratos, database, and redis reported healthy.
+
+BLOCKED | authenticated learner list/detail smoke and screenshots
+Reason: in-app browser has no authenticated local session; Chrome control is
+unavailable. No credentials or browser storage were inspected.
+
+NOT APPLICABLE | dedicated frontend Compose verification service
+Reason: repository has no such service. Approved `web` build passed without
+changing Compose architecture.
+
+PASSED | npm run course-system:status:sync (first run)
+Result: ledger generated files synchronized.
+
+PASSED | npm run course-system:status:sync (second run)
+Result: no further changes required.
+
+PASSED | npm run course-system:status:check
+Result: ledger consistent and unchanged; T14 remains IN_PROGRESS.
+
+PASSED | git diff --check -- app docs/development docs/features
+Result: exit 0.
+
+COURSE-P2-VERIFY-01 CLOSURE AUDIT
+Generated: 2026-07-27T04:42:38+05:30
+
+PASSED | focused T14 Vitest paths
+Result: 4 files and 40 tests passed.
+
+BASELINE | npm test -- --run
+Result: 17 files failed, 14 passed; 35 tests failed, 94 passed.
+Classification: failures are in unrelated legacy quiz/report components; all
+T09 and T14 tests passed.
+
+PASSED | npm run lint
+PASSED | npm run build
+PASSED | docker compose config --quiet
+PASSED | docker compose build web
+PASSED | rebuilt web container health
+PASSED | source and frozen-acceptance implementation audit
+
+BLOCKED | authenticated learner flow, desktop screenshot, mobile screenshot
+Reason: the visible in-app browser remained signed out.
+
+PASSED | evidence hash verification
+PASSED | technical-verification JSON parse
+PASSED | api/app production-state guard (73 entries; baseline hash matched)
+PASSED | git diff --check -- app docs/development docs/features
+PASSED | npm run course-system:status:check
+
+DECISION | COURSE-P2-T14 remains IN_PROGRESS.
+
+COURSE-P2-T14 DEPENDENCY COMPLETION
+Generated: 2026-07-27
+
+PASSED | focused T14 Vitest paths
+Result: 4 files and 42 tests passed, including T12 enrollment regressions and
+responsive page-root assertions.
+
+BASELINE | npm test -- --run
+Result: 17 files failed, 14 passed; 35 tests failed, 96 passed.
+Classification: unchanged unrelated legacy quiz/report baseline; every T14
+test passed.
+
+PASSED | npm run lint
+PASSED | npm run build
+PASSED | workspace-local-cache go test ./...
+PASSED | focused learner Go tests
+PASSED | docker compose config --quiet
+PASSED | docker compose build web
+PASSED | rebuilt web/API/Kratos/PostgreSQL/Redis health
+
+PASSED | authenticated learner runtime
+Result: normal Kratos login, enrollment-required response, real UI enrollment,
+depth-4 list/detail, server order, draft exclusion, renderer blocks, backend
+adjacency, null boundary omission, refresh persistence, empty state, and final
+signed-out denial.
+
+PASSED | persistence correlation and cleanup
+Result: PostgreSQL positions/states matched the UI; temporary API-authored
+renderer/navigation fixture was removed, retained item restored, residue zero.
+
+PASSED | desktop/mobile screenshots
+Result: seven screenshots captured at 1280x900 and 360x800.
+
+PASSED | browser console
+Result: no warning or error entries during the authenticated flow.
+
+PASSED | responsive runtime regression repair
+Result: learner page root and inner max-width container now retain full width in
+signed-out/error states; final screenshot confirms the correction.
+
+PASSED | final npm run build and docker compose build web
+Result: final corrected source built successfully; recreated web service healthy.
+
+PASSED | npm run course-system:status:sync (first)
+Result: three generated status artifacts updated.
+
+PASSED | npm run course-system:status:sync (second)
+Result: no changes required.
+
+PASSED | npm run course-system:status:check
+Result: ledger consistent after the derived MASTER_PLAN completion update.
+
+DECISION | COURSE-P2-T14 VERIFIED; COURSE-P2-T16 UNBLOCKED.

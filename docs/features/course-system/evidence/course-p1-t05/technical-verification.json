@@ -1,0 +1,24 @@
+{
+  "ledgerVersion": 1,
+  "schemaVersion": 1,
+  "taskId": "COURSE-P1-T05",
+  "date": "2026-07-25",
+  "branch": "chore/ci-verification",
+  "commit": "eeac599f05eaf936c7f61db4a3deeac3c9063f59",
+  "databaseMigration": "NONE",
+  "environments": {
+    "backend": "Local Docker Compose api-verify; Go 1.23 Linux",
+    "database": "Temporary local PostgreSQL database course_p1_t05_verify_20260725; deleted after verification"
+  },
+  "checks": [
+    {"name":"go-test-models","command":"go test ./models -count=1","exitCode":0,"classification":"PASSED"},
+    {"name":"docker-vet","command":"docker compose --profile verify run --rm api-verify go vet ./...","exitCode":0,"classification":"PASSED"},
+    {"name":"docker-test","command":"docker compose --profile verify run --rm api-verify go test ./... -count=1","exitCode":0,"classification":"PASSED"},
+    {"name":"docker-race","command":"docker compose --profile verify run --rm api-verify go test -race ./... -count=1","exitCode":0,"classification":"PASSED"},
+    {"name":"docker-build","command":"docker compose --profile verify run --rm api-verify go build ./...","exitCode":0,"classification":"PASSED"},
+    {"name":"frontend","command":null,"exitCode":null,"classification":"NOT_APPLICABLE","reason":"No frontend or HTTP API surface changed."}
+  ],
+  "productionTouched": false,
+  "nucTouched": false,
+  "breakingChanges": false
+}

@@ -1,0 +1,6 @@
+npm test -- --run test/composables/quiz_collections.test.js test/utils/question_collection.test.js test/components/quiz-manage/VisualTestBuilder.test.js
+Test Files  3 passed (3)
+Tests  13 passed (13)
+
+npx eslint --fix (changed T02 files) → PASS
+npm run build → PASS (Nuxt 3.21.9)

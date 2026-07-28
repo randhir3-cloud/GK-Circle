@@ -1,0 +1,31 @@
+# COURSE-P2-T11 command transcript
+# Date: 2026-07-26
+
+cd api
+go test ./models/ -run "LearningItemMove|MoveLearningItems" -count=1
+# exit 0
+
+go test ./controllers/api/v1/ -run LearningItem -count=1
+# exit 0
+
+go test ./... -count=1
+# exit 0
+
+cd ..
+docker compose config --quiet
+# exit 0
+
+docker compose --profile verify run --rm api-verify go vet ./...
+# exit 0
+
+docker compose --profile verify run --rm api-verify go test ./...
+# exit 0
+
+npm run course-system:status:sync
+# updated 3 generated file(s)
+
+npm run course-system:status:sync
+# second run no-op
+
+npm run course-system:status:check
+# exit 0

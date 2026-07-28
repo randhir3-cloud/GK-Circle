@@ -1,0 +1,16 @@
+EXAM-P3-T01 verification log (2026-07-27)
+
+go test ./utils/ -run "PreviewQuestions|ExtractQuestionsFromCSV" -count=1
+→ PASS
+
+go test ./models/ -run "ImportPreview|QuestionImportJob" -count=1
+→ PASS
+
+go test ./controllers/api/v1/ -run "QuestionImportJob" -count=1
+→ PASS
+
+go test ./... -count=1
+→ PASS
+
+go build ./...
+→ PASS

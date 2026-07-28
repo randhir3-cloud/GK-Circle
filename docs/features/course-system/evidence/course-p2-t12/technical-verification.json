@@ -1,0 +1,28 @@
+{
+  "taskId": "COURSE-P2-T12",
+  "status": "VERIFIED",
+  "verifiedOn": "2026-07-27",
+  "branch": "chore/ci-verification",
+  "decision": "D-006",
+  "databaseMigration": "20260727100000_create_course_enrollments_table",
+  "breakingChanges": true,
+  "productionBehaviourChanges": true,
+  "checks": {
+    "governanceDecision": "PASSED",
+    "migrationPresent": "PASSED",
+    "migrationApplied": "PASSED",
+    "modelTests": "PASSED",
+    "unenrolledDenial": "PASSED",
+    "enrolledDelivery": "PASSED",
+    "selfEnrollAPI": "PASSED",
+    "learnerControllerSuites": "PASSED",
+    "frontendTransportTest": "PASSED",
+    "apiImageRebuild": "PASSED",
+    "browserCookieRuntimeSmoke": "ATTEMPTED"
+  },
+  "documentedDenial": {
+    "httpStatus": 404,
+    "message": "course enrollment required"
+  },
+  "productionTouched": false
+}

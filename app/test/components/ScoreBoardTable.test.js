@@ -1,83 +1,79 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { mount } from "@vue/test-utils";
 import ScoreBoardTable from "~/components/ScoreBoardTable.vue";
-import constants from "../constants";
+
+vi.mock("~~/composables/avatar", () => ({
+  getAvatarUrlByName: vi
+    .fn()
+    .mockImplementation(
+      (name) => `https://api.dicebear.com/9.x/bottts/svg?seed=${name || "Eden"}`
+    ),
+}));
 
 describe("ScoreBoardTable.vue", () => {
-  const props = {
-    scoreboardData: [
-      {
-        rank: 1,
-        username: "john_doe",
-        firstname: "John",
-        score: 150,
-        img_key: "Sophia",
-      },
-      {
-        rank: 2,
-        username: "jane_doe",
-        firstname: "Jane",
-        score: 140,
-        img_key: "Jude",
-      },
-    ],
-    isAdmin: true,
-    userName: "",
-  };
+  const scoreboardData = [
+    {
+      rank: 1,
+      username: "john_doe",
+      firstname: "John",
+      score: 150,
+      img_key: "Sophia",
+    },
+    {
+      rank: 2,
+      username: "jane_doe",
+      firstname: "Jane",
+      score: 140,
+      img_key: "Jude",
+    },
+  ];
 
-  const mountComponent = () => {
-    return mount(ScoreBoardTable, {
-      props,
-      global: {
-        stubs: {
-          VCard: constants.slotTemplate,
-          VCardItem: constants.slotTemplate,
-        },
+  const mountComponent = (props = {}) =>
+    mount(ScoreBoardTable, {
+      props: {
+        scoreboardData,
+        isAdmin: true,
+        userName: "",
+        ...props,
       },
     });
-  };
 
-  let wrapper = mountComponent();
-
-  it("renders the table with the correct data", () => {
-    const rows = wrapper.findAll("tbody tr");
+  it("renders the rankings with the correct data", () => {
+    const wrapper = mountComponent();
+    const rows = wrapper.findAll("li");
     expect(rows.length).toBe(2);
-
-    const firstRow = rows[0];
-    expect(firstRow.html()).toContain("1");
-    expect(firstRow.html()).toContain("John");
-    expect(firstRow.html()).toContain("150");
+    expect(rows[0].text()).toContain("John");
+    expect(rows[0].text()).toContain("150");
+    expect(wrapper.get('[aria-label="First place"]').exists()).toBe(true);
   });
 
   it("does not highlight any row when the user is an admin", () => {
-    const highlightedRow = wrapper.find("tr.table-primary");
-    expect(highlightedRow.exists()).toBe(false);
+    const wrapper = mountComponent({ isAdmin: true, userName: "jane_doe" });
+    expect(wrapper.html()).not.toContain("bg-jv-yellow-soft");
   });
 
-  it("displays additional user information for admins", () => {
-    const adminRow = wrapper.find("tbody tr");
-    expect(adminRow.html()).toContain("John (john_doe)");
+  it("displays username for admins", () => {
+    const wrapper = mountComponent({ isAdmin: true });
+    expect(wrapper.text()).toContain("@john_doe");
   });
 
-  it("highlights the current user row when not an admin", async () => {
-    props.userName = "jane_doe";
-    props.isAdmin = false;
-
-    await wrapper.setProps(props);
-    await wrapper.vm.$nextTick();
-
-    const highlightedRow = wrapper.find("tr.table-primary");
-    expect(highlightedRow.exists()).toBe(true);
-    expect(highlightedRow.html()).toContain("Jane");
+  it("highlights the current user row when not an admin", () => {
+    const wrapper = mountComponent({
+      isAdmin: false,
+      userName: "jane_doe",
+    });
+    const highlighted = wrapper
+      .findAll("li")
+      .find((row) => row.classes().includes("bg-jv-yellow-soft"));
+    expect(highlighted).toBeTruthy();
+    expect(highlighted.text()).toContain("Jane");
+    expect(highlighted.text()).toContain("You");
   });
 
   it("renders avatar URLs correctly", () => {
+    const wrapper = mountComponent();
     const avatars = wrapper.findAll("img");
-    expect(avatars[0].attributes("src")).toBe(
-      "https://api.dicebear.com/9.x/bottts/svg?seed=Sophia&scale=75"
-    );
-    expect(avatars[1].attributes("src")).toBe(
-      "https://api.dicebear.com/9.x/bottts/svg?seed=Jude&scale=75"
-    );
+    expect(avatars[0].attributes("src")).toContain("seed=Sophia");
+    expect(avatars[1].attributes("src")).toContain("seed=Jude");
   });
 });

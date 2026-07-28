@@ -1,7 +1,7 @@
 <template>
   <div class="lg:flex lg:h-screen lg:overflow-hidden">
     <Sidebar v-if="!hideSidebar" />
-    <div class="lg:flex-1 lg:overflow-y-auto">
+    <div class="min-w-0 w-full lg:flex-1 lg:overflow-y-auto">
       <slot></slot>
     </div>
   </div>

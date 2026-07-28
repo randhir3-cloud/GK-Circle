@@ -1,0 +1,128 @@
+# COURSE-P2-T13 verification commands
+# Captured: 2026-07-26
+## go test ./models/ -run LearningItemVisibilityRuntime -count=1
+ok  	github.com/randhir3-cloud/GK-Circle-v2/api/models	0.481s
+
+## go test ./controllers/api/v1/ -run LearningItemVisibility|LearnerLearningItem -count=1
+ok  	github.com/randhir3-cloud/GK-Circle-v2/api/controllers/api/v1	0.896s
+
+## go test ./...
+?   	github.com/randhir3-cloud/GK-Circle-v2/api	[no test files]
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/cli	[no test files]
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/config	[no test files]
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/constants	[no test files]
+ok  	github.com/randhir3-cloud/GK-Circle-v2/api/controllers/api/v1	(cached)
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/database	[no test files]
+ok  	github.com/randhir3-cloud/GK-Circle-v2/api/helpers/utils	(cached)
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/logger	[no test files]
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/middlewares	[no test files]
+ok  	github.com/randhir3-cloud/GK-Circle-v2/api/models	(cached)
+ok  	github.com/randhir3-cloud/GK-Circle-v2/api/pkg/jwt	(cached)
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/pkg/prometheus	[no test files]
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/pkg/redis	[no test files]
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/pkg/response	[no test files]
+ok  	github.com/randhir3-cloud/GK-Circle-v2/api/pkg/structs	(cached)
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/pkg/templates	[no test files]
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/routes	[no test files]
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/routinewrapper	[no test files]
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/services	[no test files]
+ok  	github.com/randhir3-cloud/GK-Circle-v2/api/utils	(cached)
+
+## docker compose config --quiet
+exit=0
+
+## docker compose --profile verify run --rm api-verify go vet ./...
+ Container gkcirclev2-api-verify-run-ca21d41a8e4d Creating 
+ Container gkcirclev2-api-verify-run-ca21d41a8e4d Created 
+
+## docker compose --profile verify run --rm api-verify go test ./...
+ Container gkcirclev2-api-verify-run-7897d2655c9b Creating 
+ Container gkcirclev2-api-verify-run-7897d2655c9b Created 
+?   	github.com/randhir3-cloud/GK-Circle-v2/api	[no test files]
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/cli	[no test files]
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/config	[no test files]
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/constants	[no test files]
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/database	[no test files]
+ok  	github.com/randhir3-cloud/GK-Circle-v2/api/controllers/api/v1	(cached)
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/logger	[no test files]
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/middlewares	[no test files]
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/pkg/prometheus	[no test files]
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/pkg/redis	[no test files]
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/pkg/response	[no test files]
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/pkg/templates	[no test files]
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/routes	[no test files]
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/routinewrapper	[no test files]
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/services	[no test files]
+ok  	github.com/randhir3-cloud/GK-Circle-v2/api/helpers/utils	(cached)
+ok  	github.com/randhir3-cloud/GK-Circle-v2/api/models	(cached)
+ok  	github.com/randhir3-cloud/GK-Circle-v2/api/pkg/jwt	(cached)
+ok  	github.com/randhir3-cloud/GK-Circle-v2/api/pkg/structs	(cached)
+ok  	github.com/randhir3-cloud/GK-Circle-v2/api/utils	(cached)
+
+## hashes before-check captured
+
+## npm run course-system:status:sync (1)
+npm warn Unknown env config "devdir". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+> course-system:status:sync
+> node scripts/course-system-status.js --sync
+
+Sync successful: updated 3 generated file(s).
+npm notice
+npm notice New major version of npm available! 11.16.0 -> 12.0.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.0.1
+npm notice To update run: npm install -g npm@12.0.1
+npm notice
+
+## npm run course-system:status:sync (2)
+npm warn Unknown env config "devdir". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+> course-system:status:sync
+> node scripts/course-system-status.js --sync
+
+Sync successful: no changes required.
+
+## npm run course-system:status:check
+npm warn Unknown env config "devdir". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+> course-system:status:check
+> node scripts/course-system-status.js --check
+
+Course System ledger error: docs\development\PROJECT_INDEX.md has inconsistent next task.
+
+
+## ledger surfaces repaired (PROJECT_INDEX/AI_CONTEXT/MASTER_PLAN)
+
+## hashes before-check (post-repair)
+## npm run course-system:status:sync (1 final)
+npm warn Unknown env config "devdir". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+> course-system:status:sync
+> node scripts/course-system-status.js --sync
+
+Sync successful: no changes required.
+
+## npm run course-system:status:sync (2 final)
+npm warn Unknown env config "devdir". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+> course-system:status:sync
+> node scripts/course-system-status.js --sync
+
+Sync successful: no changes required.
+
+## npm run course-system:status:check (final)
+npm warn Unknown env config "devdir". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+> course-system:status:check
+> node scripts/course-system-status.js --check
+
+Check successful: Course System ledger is consistent and unchanged.
+
+## git diff --check -- api docs/development docs/features
+warning: in the working copy of 'api/constants/constant.go', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'api/go.mod', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'api/routes/main.go', LF will be replaced by CRLF the next time Git touches it
+exit=0
+
+## hashes after-check captured
+## COURSE-P2-T13 verification COMPLETE

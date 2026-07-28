@@ -1,0 +1,42 @@
+{
+  "taskId": "COURSE-P2-T17",
+  "status": "VERIFIED",
+  "verifiedOn": "2026-07-27",
+  "startingCommit": "eeac599f05eaf936c7f61db4a3deeac3c9063f59",
+  "branch": "chore/ci-verification",
+  "databaseMigration": "NONE",
+  "breakingChanges": false,
+  "productionSourceModified": false,
+  "frozenAcceptance": {
+    "playwrightDeepNodeCreatePublishLearnerView": "PASSED",
+    "canonicalEvidenceBundle": "PASSED"
+  },
+  "checks": {
+    "focusedPlaywright": "PASSED: 1/1, no retry",
+    "fullPlaywright": "PASSED: 11/11, no retries",
+    "focusedVitest": "PASSED: 9 files, 63 tests",
+    "fullVitest": "INHERITED_BASELINE: 35 failed, 105 passed",
+    "lint": "PASSED",
+    "nuxtBuild": "PASSED",
+    "focusedGo": "PASSED",
+    "fullGo": "PASSED",
+    "composeConfig": "PASSED",
+    "composeWebBuild": "PASSED",
+    "serviceHealth": "PASSED",
+    "persistenceCorrelation": "PASSED",
+    "cleanup": "PASSED",
+    "screenshots": "PASSED",
+    "productionAudit": "PASSED"
+  },
+  "runtime": {
+    "courseNodeDepth": 4,
+    "adminCreateState": "DRAFT",
+    "learnerDraftVisible": 0,
+    "adminPublishedState": "PUBLISHED",
+    "learnerPublishedVisible": 1,
+    "rendererState": "No content available.",
+    "temporaryRowsRemaining": 0,
+    "signedOutStatus": 401
+  },
+  "decision": "VERIFIED"
+}

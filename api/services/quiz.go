@@ -192,7 +192,7 @@ func (quizSvc *QuizService) UpdateQuizSettings(quizId string, points int16, dura
 
 // Edit question by creating a new question row and rewiring quiz_questions to the new id.
 // This preserves historical sessions and reports that still point to the old question id.
-func (quizSvc *QuizService) EditQuestionById(quizId, oldQuestionId string, question models.Question) (string, error) {
+func (quizSvc *QuizService) EditQuestionById(quizId, oldQuestionId string, question models.Question, createdBy string) (string, error) {
 	isOk := false
 	transaction, err := quizSvc.db.Begin()
 	if err != nil {
@@ -213,7 +213,15 @@ func (quizSvc *QuizService) EditQuestionById(quizId, oldQuestionId string, quest
 		}
 	}()
 
-	newQuestionId, err := quizSvc.questionModel.CreateQuestion(transaction, question)
+	lineageMeta, err := quizSvc.questionModel.GetLineageMeta(oldQuestionId)
+	if err != nil {
+		return "", err
+	}
+
+	question.LineageID = lineageMeta.LineageID
+	question.RevisionNumber = lineageMeta.RevisionNumber + 1
+
+	newQuestionId, err := quizSvc.questionModel.CreateQuestion(transaction, question, createdBy)
 	if err != nil {
 		return "", err
 	}

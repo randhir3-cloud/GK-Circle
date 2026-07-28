@@ -1,0 +1,34 @@
+{
+  "taskId": "COURSE-P2-T25",
+  "status": "VERIFIED",
+  "verifiedOn": "2026-07-26",
+  "branch": "chore/ci-verification",
+  "commit": "eeac599f05eaf936c7f61db4a3deeac3c9063f59",
+  "databaseMigration": "NONE",
+  "productionCodeChanged": false,
+  "checks": {
+    "focusedControllerContractTests": "PASSED",
+    "unauthenticated401NoQueries": "PASSED",
+    "authenticatedRepositoryDelegation": "PASSED",
+    "controllerDoesNotPublishFilter": "PASSED",
+    "controllerPreservesRepositoryOrder": "PASSED",
+    "detailWrapperAndNavigation": "PASSED",
+    "projectedMetadataForwarding": "PASSED",
+    "errorMapping404And500": "PASSED",
+    "localGoTest": "PASSED",
+    "dockerApiVerifyVet": "PASSED",
+    "dockerApiVerifyTest": "PASSED",
+    "ledgerSyncCheck": "PASSED",
+    "frontend": "NOT_APPLICABLE"
+  },
+  "wholeWorktreeGuard": {
+    "result": "PRE_EXISTING_DIRTY_FILES",
+    "files": [
+      "api/constants/constant.go",
+      "api/go.mod",
+      "api/routes/main.go"
+    ]
+  },
+  "breakingChanges": false,
+  "productionTouched": false
+}

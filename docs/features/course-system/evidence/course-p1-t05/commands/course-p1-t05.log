@@ -1,0 +1,21 @@
+COURSE-P1-T05 SANITIZED COMMAND RECORD
+Date: 2026-07-25
+
+PASSED | npm.cmd run course-system:status:sync
+PASSED | npm.cmd run course-system:status:check
+PASSED | gofmt -w models/course_node.go models/course_node_move_test.go
+PASSED | go test ./models -count=1
+PASSED | go vet ./...
+PASSED | go test ./... -count=1
+PASSED | go build ./...
+PASSED | docker compose --profile verify run --rm api-verify go vet ./...
+PASSED | docker compose --profile verify run --rm api-verify go test ./... -count=1
+PASSED | docker compose --profile verify run --rm api-verify go test -race ./... -count=1
+PASSED | docker compose --profile verify run --rm api-verify go build ./...
+PASSED | docker compose config --quiet
+PASSED | temporary PostgreSQL transactional boundary-safe subtree move
+
+NOT_APPLICABLE | frontend lint/unit/build/Playwright
+Reason: T05 changes no frontend or HTTP API surface.
+
+Database Migration: NONE. No production or NUC target was accessed.

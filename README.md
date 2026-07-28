@@ -92,23 +92,49 @@ go run . migrate up
 go run . api
 ```
 
-Common verification:
+## Verification Workflow
 
-```powershell
-cd app
-npm run lint
-npm test -- --run
-npm run build
-```
+For local verification, Docker is the canonical environment for backend validation.
 
-```powershell
-cd api
-go test ./...
-```
+### Makefile Targets
+You can run verification tasks depending on your current working directory:
 
-```powershell
-docker compose config --quiet
-```
+* **From the repository root**:
+  ```powershell
+  make -C api docker-vet
+  make -C api docker-test
+  make -C api docker-test-race
+  make -C api docker-verify  # Runs all three checks
+  ```
+* **From the `api/` directory**:
+  ```powershell
+  make docker-vet
+  make docker-test
+  make docker-test-race
+  make docker-verify  # Runs all three checks
+  ```
+
+### Direct Docker Compose Commands
+If you do not have `make` installed, you can run the commands directly using `docker compose` from the repository root:
+
+* **Run all checks (vet, test, race) in a single run**:
+  ```powershell
+  docker compose --profile verify run --rm api-verify sh -c "go vet ./... && go test ./... && go test -race ./..."
+  ```
+* **Run individual checks**:
+  ```powershell
+  docker compose --profile verify run --rm api-verify go vet ./...
+  ```
+  ```powershell
+  docker compose --profile verify run --rm api-verify go test ./...
+  ```
+  ```powershell
+  docker compose --profile verify run --rm api-verify go test -race ./...
+  ```
+
+### Windows Security Policy Warning
+> [!IMPORTANT]
+> Windows Smart App Control or WDAC may block unsigned temporary Go test executables generated under `%TEMP%\go-build`. This is a host application-control policy restriction, not a GK Circle test failure. Docker or WSL is the supported backend verification environment on affected Windows systems. Do not disable Smart App Control, Defender, WDAC, or AppLocker on your host system.
 
 ## NUC deployment
 

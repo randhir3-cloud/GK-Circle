@@ -192,7 +192,7 @@ function loop(now) {
 }
 
 function resize() {
-  if (!canvas.value) return;
+  if (!canvas.value || !ctx) return;
   // Cap DPR at 2 — beyond that the extra pixels cost fps for no visible gain.
   dpr = Math.min(window.devicePixelRatio || 1, 2);
   viewW = window.innerWidth;
@@ -237,6 +237,8 @@ watch(
 onMounted(() => {
   if (!canvas.value) return;
   ctx = canvas.value.getContext("2d");
+  // Unit environments may lack a real 2d context; skip the animation loop.
+  if (!ctx) return;
   resize();
   window.addEventListener("resize", resize, { passive: true });
   document.addEventListener("visibilitychange", onVisibility);

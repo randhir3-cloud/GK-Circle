@@ -1,0 +1,9 @@
+{
+  "ledgerVersion": 1,
+  "schemaVersion": 1,
+  "canonicalEvidenceRoot": "docs/features/course-system/evidence/ledger-initialization",
+  "repositoryAssessment": "docs/features/course-system/evidence/ledger-initialization/repository-assessment.md",
+  "baselineVerification": "docs/features/course-system/evidence/ledger-initialization/baseline-verification.json",
+  "checkerIntegrity": "docs/features/course-system/evidence/ledger-initialization/checker-integrity.json",
+  "isolatedCleanCopy": "docs/features/course-system/evidence/ledger-initialization/isolated-clean-copy.json"
+}

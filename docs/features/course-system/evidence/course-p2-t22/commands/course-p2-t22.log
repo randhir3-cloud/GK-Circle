@@ -1,0 +1,58 @@
+$ cd api && go test ./models/ -run "LearningItemPreviousNext|AdjacentLearningItem" -count=1
+ok  	github.com/randhir3-cloud/GK-Circle-v2/api/models	0.581s
+
+$ cd api && go test ./controllers/api/v1/ -run "LearningItemPreviousNext|LearnerLearningItem" -count=1
+ok  	github.com/randhir3-cloud/GK-Circle-v2/api/controllers/api/v1	0.998s
+
+$ cd api && go test ./...
+?   	github.com/randhir3-cloud/GK-Circle-v2/api	[no test files]
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/cli	[no test files]
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/config	[no test files]
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/constants	[no test files]
+ok  	github.com/randhir3-cloud/GK-Circle-v2/api/controllers/api/v1	0.870s
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/database	[no test files]
+ok  	github.com/randhir3-cloud/GK-Circle-v2/api/helpers/utils	(cached)
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/logger	[no test files]
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/middlewares	[no test files]
+ok  	github.com/randhir3-cloud/GK-Circle-v2/api/models	(cached)
+ok  	github.com/randhir3-cloud/GK-Circle-v2/api/pkg/jwt	(cached)
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/pkg/prometheus	[no test files]
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/pkg/redis	[no test files]
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/pkg/response	[no test files]
+ok  	github.com/randhir3-cloud/GK-Circle-v2/api/pkg/structs	(cached)
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/pkg/templates	[no test files]
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/routes	[no test files]
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/routinewrapper	[no test files]
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/services	[no test files]
+ok  	github.com/randhir3-cloud/GK-Circle-v2/api/utils	(cached)
+
+$ docker compose --profile verify run --rm api-verify go vet ./...
+ Container gkcirclev2-api-verify-run-90170a2456b2 Creating 
+ Container gkcirclev2-api-verify-run-90170a2456b2 Created 
+
+$ docker compose --profile verify run --rm api-verify go test ./...
+ Container gkcirclev2-api-verify-run-66bb168de39e Creating 
+ Container gkcirclev2-api-verify-run-66bb168de39e Created 
+?   	github.com/randhir3-cloud/GK-Circle-v2/api	[no test files]
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/cli	[no test files]
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/config	[no test files]
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/constants	[no test files]
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/database	[no test files]
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/logger	[no test files]
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/middlewares	[no test files]
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/pkg/prometheus	[no test files]
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/pkg/redis	[no test files]
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/pkg/response	[no test files]
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/pkg/templates	[no test files]
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/routes	[no test files]
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/routinewrapper	[no test files]
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/services	[no test files]
+ok  	github.com/randhir3-cloud/GK-Circle-v2/api/controllers/api/v1	0.047s
+ok  	github.com/randhir3-cloud/GK-Circle-v2/api/helpers/utils	(cached)
+ok  	github.com/randhir3-cloud/GK-Circle-v2/api/models	0.056s
+ok  	github.com/randhir3-cloud/GK-Circle-v2/api/pkg/jwt	(cached)
+ok  	github.com/randhir3-cloud/GK-Circle-v2/api/pkg/structs	(cached)
+ok  	github.com/randhir3-cloud/GK-Circle-v2/api/utils	(cached)
+
+$ git diff --check -- api docs/development docs/features
+(no whitespace errors returned, exits with 0)

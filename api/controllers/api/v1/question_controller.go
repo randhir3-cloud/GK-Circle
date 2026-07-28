@@ -3,6 +3,7 @@ package v1
 import (
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"os"
 	"strconv"
@@ -25,6 +26,7 @@ type QuestionController struct {
 	quizModel       *models.QuizModel
 	activeQuizModel *models.ActiveQuizModel
 	quizSvc         *services.QuizService
+	importSvc       *services.QuestionImportService
 	appConfig       *config.AppConfig
 	logger          *zap.Logger
 }
@@ -36,12 +38,14 @@ func InitQuestionController(db *goqu.Database, logger *zap.Logger, appConfig *co
 	activeQuizModel := models.InitActiveQuizModel(db, logger)
 
 	quizSvc := services.NewQuizService(db, logger)
+	importSvc := services.NewQuestionImportService(db, logger)
 
 	return &QuestionController{
 		questionModel:   questionModel,
 		quizModel:       quizModel,
 		activeQuizModel: activeQuizModel,
 		quizSvc:         quizSvc,
+		importSvc:       importSvc,
 		appConfig:       appConfig,
 		logger:          logger,
 	}, nil
@@ -167,18 +171,26 @@ func (ctrl *QuestionController) CreateQuestion(c *fiber.Ctx) error {
 
 	questionIds, err := ctrl.quizSvc.AppendQuestionsToQuiz(quizId, []models.Question{
 		{
-			Question:          questionReq.Question,
-			Type:              questionReq.Type,
-			Options:           questionReq.Options,
-			Answers:           questionReq.Answers,
-			Points:            points,
-			DurationInSeconds: durationInSeconds,
-			QuestionMedia:     questionReq.QuestionMedia,
-			OptionsMedia:      questionReq.OptionsMedia,
-			Resource:          sql.NullString{String: questionReq.Resource, Valid: questionReq.Resource != ""},
+			Question:              questionReq.Question,
+			Type:                  questionReq.Type,
+			Options:               questionReq.Options,
+			Answers:               questionReq.Answers,
+			Points:                points,
+			DurationInSeconds:     durationInSeconds,
+			QuestionMedia:         questionReq.QuestionMedia,
+			OptionsMedia:          questionReq.OptionsMedia,
+			Resource:              sql.NullString{String: questionReq.Resource, Valid: questionReq.Resource != ""},
+			OfficialAnswer:        questionReq.OfficialAnswer,
+			AuthoritativeAnswer:     questionReq.AuthoritativeAnswer,
+			AnswerReviewStatus:    questionReq.AnswerReviewStatus,
+			AnswerRevisionReason:  questionReq.AnswerRevisionReason,
+			AnswerRevisionSource:  questionReq.AnswerRevisionSource,
 		},
 	})
 	if err != nil {
+		if err.Error() == constants.ErrAnswerReviewStatusInvalid {
+			return utils.JSONFail(c, http.StatusBadRequest, err.Error())
+		}
 		ctrl.logger.Error("error occured while creating question by admin", zap.Error(err))
 		return utils.JSONError(c, http.StatusInternalServerError, err.Error())
 	}
@@ -214,6 +226,15 @@ func (ctrl *QuestionController) ImportQuestionsByCsv(c *fiber.Ctx) error {
 		return utils.JSONFail(c, http.StatusBadRequest, err.Error())
 	}
 
+	validQuestions, duplicateErrors, err := ctrl.importSvc.FilterLegacyImportDuplicates(quizId, validQuestions)
+	if err != nil {
+		ctrl.logger.Error("duplicate detection failed during legacy import", zap.Error(err))
+		return utils.JSONError(c, http.StatusInternalServerError, err.Error())
+	}
+	if len(duplicateErrors) > 0 {
+		return utils.JSONFail(c, http.StatusBadRequest, services.FormatImportDuplicateErrors(duplicateErrors))
+	}
+
 	_, err = ctrl.quizModel.GetQuizById(quizId)
 	if err != nil {
 		ctrl.logger.Error("error occured while getting quiz settings", zap.Error(err))
@@ -227,6 +248,78 @@ func (ctrl *QuestionController) ImportQuestionsByCsv(c *fiber.Ctx) error {
 	}
 
 	return utils.JSONSuccess(c, http.StatusAccepted, questionIds)
+}
+
+// CreateQuestionImportJob validates a CSV upload and stores a preview job without
+// persisting questions into the bank (EXAM-P3-T01).
+func (ctrl *QuestionController) CreateQuestionImportJob(c *fiber.Ctx) error {
+	quizId := c.Params(constants.QuizId)
+	filePath := c.Locals(constants.FileName).(string)
+	userID := quizUtilsHelper.GetString(c.Locals(constants.ContextUid))
+
+	defer func() {
+		if err := os.Remove(filePath); err != nil {
+			ctrl.logger.Error("error in deleting import preview file", zap.Error(err))
+		}
+	}()
+
+	job, err := ctrl.importSvc.CreatePreviewJob(
+		quizId,
+		userID,
+		filePath,
+		ctrl.appConfig.Quiz.QuestionTimeLimit,
+	)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return utils.JSONFail(c, http.StatusNotFound, constants.ErrQuizNotFound)
+		}
+		ctrl.logger.Error("import preview validation failed", zap.Error(err))
+		return utils.JSONFail(c, http.StatusBadRequest, err.Error())
+	}
+
+	return utils.JSONSuccess(c, http.StatusCreated, job)
+}
+
+// GetQuestionImportJob returns a previously created CSV import preview job.
+func (ctrl *QuestionController) GetQuestionImportJob(c *fiber.Ctx) error {
+	quizId := c.Params(constants.QuizId)
+	jobId := c.Params(constants.ImportJobId)
+
+	job, err := ctrl.importSvc.GetPreviewJob(quizId, jobId)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return utils.JSONFail(c, http.StatusNotFound, "import job not found")
+		}
+		ctrl.logger.Error("failed to load import preview job", zap.Error(err))
+		return utils.JSONError(c, http.StatusInternalServerError, err.Error())
+	}
+
+	return utils.JSONSuccess(c, http.StatusOK, job)
+}
+
+// CommitQuestionImportJob persists eligible preview rows into the question bank (EXAM-P3-T02).
+func (ctrl *QuestionController) CommitQuestionImportJob(c *fiber.Ctx) error {
+	quizId := c.Params(constants.QuizId)
+	jobId := c.Params(constants.ImportJobId)
+
+	job, err := ctrl.importSvc.CommitPreviewJob(quizId, jobId)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return utils.JSONFail(c, http.StatusNotFound, "import job not found")
+		}
+		switch {
+		case errors.Is(err, models.ErrImportJobCommitInProgress):
+			return utils.JSONFail(c, http.StatusConflict, err.Error())
+		case errors.Is(err, models.ErrImportJobNotCommitable), errors.Is(err, models.ErrImportJobNoValidRows):
+			return utils.JSONFail(c, http.StatusBadRequest, err.Error())
+		case errors.Is(err, models.ErrImportCommitDuplicates):
+			return utils.JSONFail(c, http.StatusConflict, err.Error())
+		}
+		ctrl.logger.Error("failed to commit import preview job", zap.Error(err))
+		return utils.JSONError(c, http.StatusInternalServerError, err.Error())
+	}
+
+	return utils.JSONSuccess(c, http.StatusOK, job)
 }
 
 // GetQuestionById to get question and thier options with answer.
@@ -293,23 +386,51 @@ func (ctrl *QuestionController) UpdateQuestionById(c *fiber.Ctx) error {
 	}
 
 	_, err = ctrl.quizSvc.EditQuestionById(QuizId, QuestionId, models.Question{
-		Question:          questionReq.Question,
-		Type:              questionReq.Type,
-		Options:           questionReq.Options,
-		Answers:           questionReq.Answers,
-		Points:            questionReq.Points,
-		DurationInSeconds: questionReq.DurationInSeconds,
-		QuestionMedia:     questionReq.QuestionMedia,
-		OptionsMedia:      questionReq.OptionsMedia,
-		Resource:          sql.NullString{String: questionReq.Resource, Valid: true},
-	})
+		Question:              questionReq.Question,
+		Type:                  questionReq.Type,
+		Options:               questionReq.Options,
+		Answers:               questionReq.Answers,
+		Points:                questionReq.Points,
+		DurationInSeconds:     questionReq.DurationInSeconds,
+		QuestionMedia:         questionReq.QuestionMedia,
+		OptionsMedia:          questionReq.OptionsMedia,
+		Resource:              sql.NullString{String: questionReq.Resource, Valid: true},
+		OfficialAnswer:        questionReq.OfficialAnswer,
+		AuthoritativeAnswer:     questionReq.AuthoritativeAnswer,
+		AnswerReviewStatus:    questionReq.AnswerReviewStatus,
+		AnswerRevisionReason:  questionReq.AnswerRevisionReason,
+		AnswerRevisionSource:  questionReq.AnswerRevisionSource,
+	}, ctrl.actorUserId(c))
 	if err != nil {
+		if err.Error() == constants.ErrAnswerReviewStatusInvalid {
+			return utils.JSONFail(c, http.StatusBadRequest, err.Error())
+		}
 		ctrl.logger.Error("error occured while update question by admin", zap.Error(err))
 		return utils.JSONError(c, http.StatusInternalServerError, err.Error())
 	}
 
 	ctrl.logger.Debug("QuizController.UpdateQuestionById success", zap.Any("QuestionId", QuestionId))
 	return utils.JSONSuccess(c, http.StatusOK, "question update success")
+}
+
+func (ctrl *QuestionController) ListQuestionRevisions(c *fiber.Ctx) error {
+	questionId := c.Params(constants.QuestionId)
+	ctrl.logger.Debug("QuestionController.ListQuestionRevisions called", zap.Any(constants.QuestionId, questionId))
+
+	revisions, err := ctrl.questionModel.ListRevisionsByQuestionId(questionId)
+	if err != nil {
+		ctrl.logger.Error("error listing question revisions", zap.Error(err))
+		return utils.JSONError(c, http.StatusInternalServerError, err.Error())
+	}
+
+	return utils.JSONSuccess(c, http.StatusOK, revisions)
+}
+
+func (ctrl *QuestionController) actorUserId(c *fiber.Ctx) string {
+	if uid, ok := c.Locals(constants.ContextUid).(string); ok {
+		return uid
+	}
+	return ""
 }
 
 // DeleteQuestionById to delete question only if no active quiz is present.

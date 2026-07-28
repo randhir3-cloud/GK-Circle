@@ -1,4 +1,4 @@
-FROM golang:1.23.11-alpine3.22 AS build
+FROM golang:1.25.0-alpine3.22 AS build
 WORKDIR /gk-circle
 RUN apk update && apk add build-base
 COPY go.mod go.sum ./

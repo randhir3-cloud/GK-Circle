@@ -1,0 +1,22 @@
+COURSE-P2-T07 sanitized command record
+Generated: 2026-07-26T09:40:00+05:30
+
+PASS  gofmt LearningItem publish-state sources
+PASS  go vet ./...
+PASS  go test ./... -count=1
+PASS  go build ./...
+PASS  docker compose config --quiet
+PASS  docker api-verify: go vet ./...
+PASS  docker api-verify: go test ./... -count=1
+PASS  docker api-verify: go test -race ./models ./controllers/api/v1 ./pkg/structs -count=1
+PASS  docker api-verify: go build ./...
+PASS  isolated postgres:15 apply/inspect/rollback/reapply publish_state
+PASS  npm run course-system:status:sync
+PASS  npm run course-system:status:check (read-only)
+PASS  no-op second sync (byte-identical)
+
+Database Migration: ONE (publish_state)
+Constraint: learning_items_publish_state_check
+Learner LearningItem HTTP: deferred (displaced from T07; not cancelled)
+Frontend was not implemented.
+Production and NUC were not touched.

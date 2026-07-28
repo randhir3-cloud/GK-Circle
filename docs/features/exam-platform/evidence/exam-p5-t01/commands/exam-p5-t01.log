@@ -1,0 +1,33 @@
+﻿# EXAM-P5-T01 verification log
+Date: 2026-07-28
+
+## go test (scoped)
+ok  	github.com/randhir3-cloud/GK-Circle-v2/api/models	0.454s
+ok  	github.com/randhir3-cloud/GK-Circle-v2/api/services	0.455s
+ok  	github.com/randhir3-cloud/GK-Circle-v2/api/controllers/api/v1	0.607s
+
+## go test ./... -count=1
+?   	github.com/randhir3-cloud/GK-Circle-v2/api	[no test files]
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/cli	[no test files]
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/config	[no test files]
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/constants	[no test files]
+ok  	github.com/randhir3-cloud/GK-Circle-v2/api/controllers/api/v1	0.851s
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/database	[no test files]
+ok  	github.com/randhir3-cloud/GK-Circle-v2/api/helpers/utils	1.544s
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/logger	[no test files]
+ok  	github.com/randhir3-cloud/GK-Circle-v2/api/middlewares	0.562s
+ok  	github.com/randhir3-cloud/GK-Circle-v2/api/models	0.534s
+ok  	github.com/randhir3-cloud/GK-Circle-v2/api/pkg/jwt	0.294s
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/pkg/prometheus	[no test files]
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/pkg/redis	[no test files]
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/pkg/response	[no test files]
+ok  	github.com/randhir3-cloud/GK-Circle-v2/api/pkg/structs	0.209s
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/pkg/templates	[no test files]
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/routes	[no test files]
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/routinewrapper	[no test files]
+ok  	github.com/randhir3-cloud/GK-Circle-v2/api/security	0.200s
+ok  	github.com/randhir3-cloud/GK-Circle-v2/api/services	0.594s
+ok  	github.com/randhir3-cloud/GK-Circle-v2/api/utils	0.453s
+
+## go build ./...
+EXIT:0

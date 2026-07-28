@@ -14,6 +14,25 @@ load-test/results
 
 # Local environment and agent tooling (never commit)
 **/.env
+api/.env.local.course-admin
+.env.e2e.local
 /.agent/
 node_modules/
 **/node_modules/
+
+# Database backup dumps (never commit — may contain sensitive data)
+*.dump
+*-reconciliation*.dump
+
+# E2E run logs and artefacts (generated at runtime)
+e2e_job.log
+e2e_job_utf8.log
+playwright-report/
+test-results/
+
+# Root-level generated/scratch artefacts
+artifacts/
+demo.csv
+
+# Scripts dependency directory
+scripts/node_modules/
