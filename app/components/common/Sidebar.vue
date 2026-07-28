@@ -288,12 +288,16 @@ const userAvatar = computed(() =>
   getAvatarUrlByName(currentUser.value?.avatar)
 );
 
+const activeHash = ref("");
+
+const currentHash = computed(() => route.hash || activeHash.value);
+
 const isActiveRoute = (url) => {
-  const currentHash = route.hash;
+  const hashVal = currentHash.value;
   if (url.includes("#")) {
     const [path, hash] = url.split("#");
     const matchPath = path || "/";
-    return route.path === matchPath && currentHash === `#${hash}`;
+    return route.path === matchPath && hashVal === `#${hash}`;
   }
   if (url === "/") {
     const isHashActive = [
@@ -301,8 +305,8 @@ const isActiveRoute = (url) => {
       "#community",
       "#ai-assistant",
       "#platform",
-    ].includes(currentHash);
-    return route.path === "/" && (!currentHash || !isHashActive);
+    ].includes(hashVal);
+    return route.path === "/" && (!hashVal || !isHashActive);
   }
   if (url === "/admin/quiz/list-quiz")
     return route.path.startsWith("/admin/quiz");
@@ -525,41 +529,46 @@ const mobileNavItems = computed(() => {
       icon: Users,
       active: isActiveRoute("/#community"),
     },
-    {
-      label: "Analytics",
-      url: "/analytics",
-      icon: BarChart3,
-      active: isActiveRoute("/analytics"),
-    },
-    {
-      label: "AI Assistant",
-      url: "/#ai-assistant",
-      icon: Bot,
-      active: isActiveRoute("/#ai-assistant"),
-    },
-    {
-      label: "Leaderboard",
-      url: "/admin/scoreboard",
-      icon: Trophy,
-      active: isActiveRoute("/admin/scoreboard"),
-    },
-    {
-      label: "Profile",
-      url: "/admin",
-      icon: UserRound,
-      active: isActiveRoute("/admin"),
-    },
-    {
-      label: "Settings",
-      url: "/account/change-password",
-      icon: Settings,
-      active: isActiveRoute("/account/change-password"),
-    },
-    {
-      label: "Sign In",
-      url: "/account/login",
-      active: isActiveRoute("/account/login"),
-    },
+    ...(isLoggedIn.value
+      ? [
+          {
+            label: "Analytics",
+            url: "/analytics",
+            icon: BarChart3,
+            active: isActiveRoute("/analytics"),
+          },
+          {
+            label: "AI Assistant",
+            url: "/#ai-assistant",
+            icon: Bot,
+            active: isActiveRoute("/#ai-assistant"),
+          },
+          {
+            label: "Leaderboard",
+            url: "/admin/scoreboard",
+            icon: Trophy,
+            active: isActiveRoute("/admin/scoreboard"),
+          },
+          {
+            label: "Profile",
+            url: "/admin",
+            icon: UserRound,
+            active: isActiveRoute("/admin"),
+          },
+          {
+            label: "Settings",
+            url: "/account/change-password",
+            icon: Settings,
+            active: isActiveRoute("/account/change-password"),
+          },
+        ]
+      : [
+          {
+            label: "Sign In",
+            url: "/account/login",
+            active: isActiveRoute("/account/login"),
+          },
+        ]),
   ];
 });
 
@@ -579,6 +588,12 @@ const handleMobileLogout = async () => {
   await handleLogout();
 };
 
+const syncHash = () => {
+  if (typeof window !== "undefined") {
+    activeHash.value = window.location.hash;
+  }
+};
+
 let breakpointMql = null;
 const closeAllMenus = () => {
   desktopMenuOpen.value = false;
@@ -590,12 +605,17 @@ onMounted(async () => {
   await setUserDataStore();
   mounted.value = true;
   if (typeof window !== "undefined") {
+    activeHash.value = window.location.hash;
+    window.addEventListener("hashchange", syncHash);
     breakpointMql = window.matchMedia("(min-width: 1024px)");
     breakpointMql.addEventListener("change", closeAllMenus);
   }
 });
 
 onBeforeUnmount(() => {
+  if (typeof window !== "undefined") {
+    window.removeEventListener("hashchange", syncHash);
+  }
   if (breakpointMql) {
     breakpointMql.removeEventListener("change", closeAllMenus);
   }
