@@ -1,25 +1,21 @@
 <script setup>
+import ErrorLayout from "@/error.vue";
+
 definePageMeta({
   layout: "empty",
 });
 
-useSeoMeta({
-  title: "Page Not Found - GK Circle",
-  description:
-    "The page you are looking for could not be found. Return to GK Circle to host or join a quiz.",
-  robots: "noindex, nofollow",
-});
-
 const route = useRoute();
 
-const status = ref(
-  route.query.status || "Something went wrong. Please try again later."
-);
-const message = ref(route.query.error);
+const errorObj = computed(() => {
+  return {
+    statusCode: route.query.statusCode || 404,
+    statusMessage: route.query.status || "Page or resource not found",
+    message: route.query.error || route.query.message || "",
+  };
+});
 </script>
 
 <template>
-  <div class="bg-jv-canvas">
-    <Frame :page-title="status?.toUpperCase()" :page-message="message" />
-  </div>
+  <ErrorLayout :error="errorObj" />
 </template>
