@@ -318,7 +318,7 @@ import {
 import NavigationLink from "@/components/common/NavigationLink.vue";
 
 definePageMeta({
-  layout: false,
+  layout: "empty",
 });
 
 const route = useRoute();

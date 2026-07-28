@@ -294,7 +294,21 @@ const userAvatar = computed(() =>
 );
 
 const isActiveRoute = (url) => {
-  if (url === "/") return route.path === "/";
+  const currentHash = route.hash;
+  if (url.includes("#")) {
+    const [path, hash] = url.split("#");
+    const matchPath = path || "/";
+    return route.path === matchPath && currentHash === `#${hash}`;
+  }
+  if (url === "/") {
+    const isHashActive = [
+      "#practice",
+      "#community",
+      "#ai-assistant",
+      "#platform",
+    ].includes(currentHash);
+    return route.path === "/" && (!currentHash || !isHashActive);
+  }
   if (url === "/admin/quiz/list-quiz")
     return route.path.startsWith("/admin/quiz");
   if (url === "/admin/reports") return route.path.startsWith("/admin/reports");
@@ -306,7 +320,10 @@ const isActiveRoute = (url) => {
     return route.path.startsWith("/admin/courses/list");
   if (url === "/admin/courses")
     return route.path === "/admin/courses" || route.path === "/admin/courses/";
+  if (url === "/admin/scoreboard")
+    return route.path.startsWith("/admin/scoreboard");
   if (url === "/admin") return route.path === "/admin";
+  if (url === "/join") return route.path.startsWith("/join");
 
   return route.path === url;
 };
@@ -376,7 +393,7 @@ const navItems = computed(() => {
       label: "Practice",
       url: "/#practice",
       icon: Activity,
-      active: false,
+      active: isActiveRoute("/#practice"),
     },
     {
       label: "Live Quiz",
@@ -388,7 +405,7 @@ const navItems = computed(() => {
       label: "Community",
       url: "/#community",
       icon: Users,
-      active: false,
+      active: isActiveRoute("/#community"),
     },
     {
       label: "Analytics",
@@ -400,7 +417,7 @@ const navItems = computed(() => {
       label: "AI Assistant",
       url: "/#ai-assistant",
       icon: Bot,
-      active: false,
+      active: isActiveRoute("/#ai-assistant"),
     },
     {
       label: "Leaderboard",
@@ -489,36 +506,66 @@ const mobileNavItems = computed(() => {
       icon: BookOpenText,
       active: isActiveRoute("/courses"),
     },
-    { label: "Practice", url: "/#practice", icon: Activity },
+    {
+      label: "Practice",
+      url: "/#practice",
+      icon: Activity,
+      active: isActiveRoute("/#practice"),
+    },
     {
       label: "Live Quiz",
       url: "/join",
       icon: Radio,
       active: isActiveRoute("/join"),
     },
-    { label: "Community", url: "/#community", icon: Users },
+    {
+      label: "Community",
+      url: "/#community",
+      icon: Users,
+      active: isActiveRoute("/#community"),
+    },
     {
       label: "Analytics",
       url: "/analytics",
       icon: BarChart3,
       active: isActiveRoute("/analytics"),
     },
-    { label: "AI Assistant", url: "/#ai-assistant", icon: Bot },
-    { label: "Leaderboard", url: "/admin/scoreboard", icon: Trophy },
-    { label: "Profile", url: "/admin", icon: UserRound },
+    {
+      label: "AI Assistant",
+      url: "/#ai-assistant",
+      icon: Bot,
+      active: isActiveRoute("/#ai-assistant"),
+    },
+    {
+      label: "Leaderboard",
+      url: "/admin/scoreboard",
+      icon: Trophy,
+      active: isActiveRoute("/admin/scoreboard"),
+    },
+    {
+      label: "Profile",
+      url: "/admin",
+      icon: UserRound,
+      active: isActiveRoute("/admin"),
+    },
     {
       label: "Settings",
       url: "/account/change-password",
       icon: Settings,
+      active: isActiveRoute("/account/change-password"),
     },
-    { label: "Sign In", url: "/account/login" },
+    {
+      label: "Sign In",
+      url: "/account/login",
+      active: isActiveRoute("/account/login"),
+    },
   ];
 });
 
 const navItemClass = (item) =>
   item.active
-    ? "rounded-full border-2 border-dashed border-jv-ink/40 bg-jv-yellow/20 text-jv-ink shadow-none hover:rotate-0"
-    : "border-0 bg-transparent shadow-none hover:rotate-0";
+    ? "!rounded-full !border-2 !border-dashed !border-jv-ink/40 !bg-jv-yellow !text-jv-ink !shadow-none hover:rotate-0"
+    : "!border-0 !bg-transparent !shadow-none hover:rotate-0";
 
 const handleDesktopLogout = async () => {
   desktopMenuOpen.value = false;
