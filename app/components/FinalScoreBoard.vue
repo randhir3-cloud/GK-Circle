@@ -71,9 +71,27 @@ const getFinalScoreboardDetails = async (endpoint) => {
     });
     scoreboardData.value = response?.data || [];
   } catch (error) {
-    toast.error(
-      error?.data?.message || error?.message || "Failed to load scoreboard"
-    );
+    const status =
+      error?.statusCode || error?.status || error?.response?.status || 0;
+    const message = (
+      error?.data?.message ||
+      error?.message ||
+      ""
+    ).toLowerCase();
+    const isAuthError =
+      status === 401 ||
+      status === 403 ||
+      message.includes("authentication required") ||
+      message.includes("unauthenticated") ||
+      message.includes("user identity");
+
+    if (!isAuthError) {
+      toast.error(
+        error?.data?.message || error?.message || "Failed to load scoreboard"
+      );
+    }
+    // Auth errors are silently ignored — no active quiz or unauthenticated
+    // session is a normal state for the admin scoreboard landing.
   } finally {
     requestPending.value = false;
   }

@@ -101,7 +101,7 @@ const features = [
 <template>
   <section id="platform" class="scroll-mt-6">
     <div class="max-w-3xl">
-      <p class="text-xs font-black uppercase tracking-wide text-jv-coral">
+      <p class="text-xs font-semibold uppercase tracking-widest text-jv-coral">
         One connected learning system
       </p>
       <h2 class="mt-2 font-headings text-3xl sm:text-5xl">

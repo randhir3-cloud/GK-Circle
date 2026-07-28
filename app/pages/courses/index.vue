@@ -51,7 +51,7 @@ onMounted(async () => {
 <template>
   <div class="min-h-screen bg-jv-cream px-4 py-6 text-jv-ink sm:px-6 lg:px-8">
     <header class="mx-auto w-full max-w-7xl">
-      <p class="text-xs font-black uppercase tracking-wide text-jv-coral">
+      <p class="text-xs font-semibold uppercase tracking-widest text-jv-coral">
         Structured learning
       </p>
       <h1 class="mt-1 font-headings text-3xl sm:text-5xl">Courses</h1>
