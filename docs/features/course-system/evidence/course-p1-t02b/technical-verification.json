@@ -1,0 +1,109 @@
+{
+  "taskId": "COURSE-P1-T02B",
+  "status": "TECHNICALLY_VERIFIED",
+  "adrVersion": 1,
+  "schemaVersion": 1,
+  "technicalVerification": "PASSED",
+  "architecturalAcceptance": "ACCEPTED",
+  "acceptedAt": "2026-07-25T12:52:50.0300196+05:30",
+  "environment": {
+    "os": "Microsoft Windows NT 10.0.26200.0",
+    "powerShell": "5.1.26100.8875",
+    "node": "v24.16.0",
+    "npm": "11.13.0",
+    "git": "git version 2.54.0.windows.1",
+    "workingDirectory": "E:\\GK Circle v2",
+    "timezone": "India Standard Time",
+    "branch": "chore/ci-verification",
+    "commit": "eeac599f05eaf936c7f61db4a3deeac3c9063f59"
+  },
+  "commands": [
+    {
+      "command": "node --check scripts/course-system-status.js",
+      "timestamp": "2026-07-25T07:21:09.1415178Z",
+      "durationMs": 112,
+      "exitCode": 0,
+      "classification": "PASSED"
+    },
+    {
+      "command": "node -e \"for (const f of process.argv.slice(1)) JSON.parse(require('fs').readFileSync(f,'utf8'));\" docs/development/modules/course-system/status.json docs/development/modules/course-system/manifest.json docs/features/course-system/evidence/course-p1-t02b/technical-verification.json",
+      "timestamp": "2026-07-25T07:21:09.2694210Z",
+      "durationMs": 120,
+      "exitCode": 0,
+      "classification": "PASSED"
+    },
+    {
+      "command": "git diff --check",
+      "timestamp": "2026-07-25T07:21:09.3904570Z",
+      "durationMs": 183,
+      "exitCode": 0,
+      "classification": "PASSED"
+    },
+    {
+      "command": "rg -n -i -e 'type CourseNode' -e 'course_nodes' -e 'type CourseSubject' -e 'course_subjects' -e 'type CourseTopic' -e 'course_topics' api app -g '!node_modules/**' -g '!playwright-report/**' -g '!test-results/**'",
+      "timestamp": "2026-07-25T07:21:22.1293026Z",
+      "durationMs": 71,
+      "exitCode": 1,
+      "classification": "PASSED_NO_MATCHES"
+    },
+    {
+      "command": "npm.cmd run course-system:status:sync",
+      "timestamp": "2026-07-25T07:21:09.9779268Z",
+      "durationMs": 1396,
+      "exitCode": 0,
+      "classification": "PASSED_NO_CHANGES"
+    },
+    {
+      "command": "npm.cmd run course-system:status:check",
+      "timestamp": "2026-07-25T07:21:11.4171584Z",
+      "durationMs": 1139,
+      "exitCode": 0,
+      "classification": "PASSED_READ_ONLY"
+    },
+    {
+      "command": "npm.cmd run course-system:status:sync",
+      "timestamp": "2026-07-25T07:24:38.3013606Z",
+      "durationMs": 1528,
+      "exitCode": 0,
+      "classification": "PASSED_GENERATED_OUTPUTS_UPDATED"
+    },
+    {
+      "command": "npm.cmd run course-system:status:check",
+      "timestamp": "2026-07-25T07:24:53.9857459Z",
+      "durationMs": 1052,
+      "exitCode": 0,
+      "classification": "PASSED_READ_ONLY"
+    },
+    {
+      "command": "npm.cmd run course-system:status:sync",
+      "timestamp": "2026-07-25T07:25:04.9022548Z",
+      "durationMs": 991,
+      "exitCode": 0,
+      "classification": "PASSED_NO_CHANGES"
+    }
+  ],
+  "initialIntegrity": {
+    "beforeSyncSha256": "ee491948d2ea26b51cc2f364ab22dd8ec421e449748104d4f2a5eed4504ffc09",
+    "afterSyncSha256": "ee491948d2ea26b51cc2f364ab22dd8ec421e449748104d4f2a5eed4504ffc09",
+    "syncByteIdentical": true,
+    "beforeCheckSha256": "ee491948d2ea26b51cc2f364ab22dd8ec421e449748104d4f2a5eed4504ffc09",
+    "afterCheckSha256": "ee491948d2ea26b51cc2f364ab22dd8ec421e449748104d4f2a5eed4504ffc09",
+    "checkByteIdentical": true
+  },
+  "acceptedStateIntegrity": {
+    "scopeFileCount": 35,
+    "scope": "docs/development/**; docs/architecture/ADR/**; docs/standards/course-rules.md; docs/standards/CHANGELOG.md; scripts/course-system-status.js; package.json",
+    "beforeCheckSha256": "444364b7af0f1bea3f92b75a95b986eae206eb18b866237f128687e14f284dbd",
+    "afterCheckSha256": "444364b7af0f1bea3f92b75a95b986eae206eb18b866237f128687e14f284dbd",
+    "checkByteIdentical": true,
+    "firstSyncSha256": "444364b7af0f1bea3f92b75a95b986eae206eb18b866237f128687e14f284dbd",
+    "secondSyncSha256": "444364b7af0f1bea3f92b75a95b986eae206eb18b866237f128687e14f284dbd",
+    "syncByteIdentical": true,
+    "evidenceOutputDirectoryExcludedFromScope": true
+  },
+  "courseNodeImplemented": false,
+  "courseNodeMigrationCreated": false,
+  "productionTouched": false,
+  "nucTouched": false,
+  "breakingChanges": false
+}

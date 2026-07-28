@@ -1,36 +1,39 @@
 import { defineConfig, devices } from "@playwright/test";
 
-/**
- * Playwright config for GK Circle local Docker verification.
- * Docker Compose owns the web server — do not start one from Playwright.
- * Intended local base URL from compose override: http://localhost:3000
- */
 export default defineConfig({
   testDir: "./tests/e2e",
-  timeout: 30_000,
+  timeout: 8 * 60 * 60 * 1000, // 8 hours for human observation & inspection pauses
   expect: {
-    timeout: 10_000,
+    timeout: 15_000,
   },
   fullyParallel: false,
-  forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 1,
   workers: 1,
-  reporter: [
-    ["html", { outputFolder: "playwright-report", open: "never" }],
-    ["list"],
-  ],
-  outputDir: "test-results/",
+  retries: 0,
+  reporter: [["line"]],
   use: {
-    baseURL: process.env.PLAYWRIGHT_BASE_URL || "http://localhost:3000",
-    trace: "on-first-retry",
+    ...devices["Desktop Chrome"],
+    headless: false,
+    viewport: {
+      width: 1920,
+      height: 1080,
+    },
+    launchOptions: {
+      slowMo: Number(process.env.E2E_SLOW_MO_MS ?? "300"),
+    },
+    video: "on",
     screenshot: "only-on-failure",
-    video: "retain-on-failure",
-    headless: true,
+    trace: "retain-on-failure",
   },
   projects: [
     {
-      name: "chromium",
-      use: { ...devices["Desktop Chrome"] },
+      name: "chromium-observation",
+      use: {
+        browserName: "chromium",
+        headless: false,
+        launchOptions: {
+          slowMo: Number(process.env.E2E_SLOW_MO_MS ?? "300"),
+        },
+      },
     },
   ],
 });

@@ -1,0 +1,23 @@
+# EXAM-P1-T03 command log
+
+Date: 2026-07-27
+
+```text
+# Backend — course status + enrollment gate
+go test ./models/ -run "Course|Enrollment" -count=1
+# ok
+
+go test ./controllers/api/v1/ -run "Course|Enrollment" -count=1
+# ok
+
+# Frontend — composable transport smoke
+cd app && npm test -- --run CourseLearningItemsApi LearnerLearningItemsApi
+# 6 passed
+
+# Frontend — scoped lint
+cd app && npx eslint pages/admin/courses/index.vue pages/courses/index.vue \
+  "pages/courses/[course_id]/index.vue" \
+  composables/course_learning_items.js composables/learner_learning_items.js \
+  components/common/Sidebar.vue --max-warnings 0
+# exit 0
+```

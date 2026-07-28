@@ -1,0 +1,6 @@
+npm test -- --run test/components/quiz-manage/VisualTestBuilder.test.js
+Test Files  1 passed (1)
+Tests  6 passed (6)
+
+eslint --fix (T03 changed files) → PASS
+npm run build → PASS (Nuxt 3.21.9)

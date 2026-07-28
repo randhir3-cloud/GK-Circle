@@ -12,6 +12,7 @@
     "lint-fix": "eslint --fix --ext \".ts,.js,.vue\" --ignore-path .gitignore .",
     "prepare": "cd .. && husky install",
     "test": "vitest",
+    "e2e:human-observation": "playwright test tests/e2e/exam-full-browser-operator-learner-readiness.spec.ts --project=chromium-observation --headed --workers=1 --retries=0 --trace=retain-on-failure",
     "start": "node .output/server/index.mjs"
   },
   "devDependencies": {

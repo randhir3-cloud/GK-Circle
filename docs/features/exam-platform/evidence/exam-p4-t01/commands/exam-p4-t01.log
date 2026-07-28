@@ -1,0 +1,11 @@
+go test ./models/ -run "QuestionCollection|CollectionDynamic" -count=1
+ok  	github.com/randhir3-cloud/GK-Circle-v2/api/models	0.730s
+
+go test ./controllers/api/v1/ -run "QuestionCollection" -count=1
+ok  	github.com/randhir3-cloud/GK-Circle-v2/api/controllers/api/v1	1.054s
+
+go test ./... -count=1
+(all packages PASS — 2026-07-27)
+
+go build ./...
+(success — 2026-07-27)

@@ -1,0 +1,14 @@
+go test ./models/ -run "TestTestSnapshot" -count=1
+ok
+
+go test ./services/ -run "TestTestSnapshot" -count=1
+ok
+
+go test ./controllers/api/v1/ -run "TestCreateTestSnapshot|TestGetLearnerTestSnapshot" -count=1
+ok
+
+go test ./... -count=1
+(all packages PASS — 2026-07-27)
+
+go build ./...
+(success — 2026-07-27)

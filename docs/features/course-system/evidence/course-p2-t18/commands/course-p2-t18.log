@@ -1,0 +1,38 @@
+# COURSE-P2-T18 Command Log
+
+Status: VERIFIED
+
+Planned / executed commands (record outputs and confirmed empty diffs here):
+- git status --short > baseline-status.txt (captured at start; see baseline files)
+- git diff --name-only > baseline-diff.txt (captured at start; see baseline files)
+- npm run course-system:status:sync (first sync)
+- second sync idempotence guard:
+  - git status --short before + after
+  - sha256sum of status surfaces before + after
+  - diff outputs must be empty
+- npm run course-system:status:check
+- git diff --check -- docs/development docs/features
+
+## Executed outputs (summary)
+
+### course-system:status:sync (first)
+- `Sync successful: updated 3 generated file(s).`
+
+### course-system:status:sync (second idempotence guard)
+- `Sync successful: no changes required.`
+- `--- STATUS DIFF ---`
+  - `EMPTY`
+- `--- HASH DIFF ---`
+  - `EMPTY`
+
+### course-system:status:check
+- `Check successful: Course System ledger is consistent and unchanged.`
+
+### git diff --check
+- No output (no whitespace / formatting errors).
+
+### Baseline-relative API attribution
+- API status baseline vs current (filtered `api/` entries): `EQUAL` (baselineApiCount=73, afterApiCount=73).
+- API diff-name baseline vs current (filtered `api/*` entries): `EQUAL`.
+- Therefore: `Production source modified by T18: NO` (baseline-relative).
+

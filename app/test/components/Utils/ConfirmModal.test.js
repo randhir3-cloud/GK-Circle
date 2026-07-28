@@ -1,6 +1,6 @@
 import { mount } from "@vue/test-utils";
-import { describe, it, expect, vi } from "vitest";
-import ConfirmModal from "~/components/utils/ConfirmModal.vue";
+import { afterEach, describe, expect, it } from "vitest";
+import ConfirmModal from "~/components/Utils/ConfirmModal.vue";
 
 const props = {
   modalTitle: "Test Modal",
@@ -9,46 +9,53 @@ const props = {
   modelNegativeMessage: "this is negative messsage",
 };
 
-const wrapper = mount(ConfirmModal, {
-  props,
-  global: {
-    mocks: {
-      $bootstrap: {
-        Modal: vi.fn(() => ({
-          show: vi.fn(),
-          hide: vi.fn(),
-          _element: {
-            addEventListener: vi.fn(),
-          },
-        })),
-      },
-    },
-  },
-});
-
 describe("ConfirmModal test", () => {
+  let wrapper;
+  let host;
+
+  afterEach(() => {
+    wrapper?.unmount();
+    host?.remove();
+  });
+
+  const mountModal = () => {
+    host = document.createElement("div");
+    document.body.appendChild(host);
+    wrapper = mount(ConfirmModal, {
+      props,
+      attachTo: host,
+    });
+    return wrapper;
+  };
+
   it("renders with props", async () => {
-    // Assert default props
+    mountModal();
+    await wrapper.vm.$nextTick();
+
     expect(wrapper.props("modalTitle")).toBe("Test Modal");
     expect(wrapper.props("modalMessage")).toBe("test message");
-    expect(wrapper.props("modelPositiveMessage")).toBe(
-      "this is positive message"
-    );
-    expect(wrapper.props("modelNegativeMessage")).toBe(
-      "this is negative messsage"
-    );
 
-    // Assert modal DOM structure
-    expect(wrapper.find("#confirmModal").exists()).toBe(true);
-    expect(wrapper.find(".modal-title").text()).toBe("Test Modal");
-    expect(wrapper.find(".modal-body").text()).toBe("test message");
+    const dialog = document.body.querySelector('[role="dialog"]');
+    expect(dialog).toBeTruthy();
+    expect(dialog.getAttribute("aria-modal")).toBe("true");
+    expect(dialog.querySelector("#confirmModalLabel")?.textContent).toContain(
+      "Test Modal"
+    );
+    expect(dialog.textContent).toContain("test message");
   });
 
   it("emits confirmMessage event on positive button click", async () => {
-    const positiveButton = wrapper.find(".btn-primary");
-    await positiveButton.trigger("click");
+    mountModal();
+    await wrapper.vm.$nextTick();
 
-    // Assert the event is emitted with the correct value
+    const buttons = Array.from(document.body.querySelectorAll("button"));
+    const positive = buttons.find(
+      (button) => button.textContent?.trim() === props.modelPositiveMessage
+    );
+    expect(positive).toBeTruthy();
+    await positive.click();
+    await wrapper.vm.$nextTick();
+
     expect(wrapper.emitted("confirmMessage")).toBeTruthy();
     expect(wrapper.emitted("confirmMessage")[0]).toEqual([true]);
   });

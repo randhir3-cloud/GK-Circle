@@ -1,0 +1,21 @@
+COURSE-P2-T08 sanitized command record
+Generated: 2026-07-26T09:50:00+05:30
+
+PASS  gofmt LearningItem learner sources
+PASS  git diff --check (LearningItem learner sources)
+PASS  go vet ./...
+PASS  go test ./... -count=1
+PASS  docker compose config --quiet
+PASS  docker api-verify: go vet ./...
+PASS  docker api-verify: go test ./... -count=1
+PASS  docker api-verify: go test -race ./models ./controllers/api/v1 ./pkg/structs -count=1
+PASS  docker api-verify: go build ./...
+PASS  npm run course-system:status:sync
+PASS  npm run course-system:status:check (read-only)
+PASS  no-op second sync (byte-identical)
+
+Database Migration: NONE
+Admin LearningItem CRUD behavior was not modified.
+Publish filtering is repository-owned.
+Frontend was not implemented.
+Production and NUC were not touched.

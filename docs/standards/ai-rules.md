@@ -1,6 +1,6 @@
 # GK Circle AI Rules
 
-Version: 1.1
+Version: 1.2
 
 Status: Mandatory
 
@@ -44,6 +44,24 @@ Always optimize for being correct.
 Mock authentication, mock APIs, mock database records, mock email delivery, placeholder implementations, simulated success, and bypass mechanisms are forbidden for feature completion.
 
 Real systems must be implemented, verified, and proven to work end-to-end.
+
+Mock JSON, hardcoded frontend arrays, fake repositories or services, simulated CRUD, fake success responses, fallback demo records, fabricated authentication or permissions, backend-replacing API interception, in-memory persistence presented as database persistence, and generated payloads that conceal broken data flow are forbidden as feature-acceptance evidence.
+
+Mocks, stubs, fakes, and isolated fixtures remain valid inside explicitly bounded unit tests. They must never be represented as runtime, integration, persistence, authentication, or feature-completion evidence. Development seed records are not mocks when they are created through a documented local-only seed or QA workflow, persist in PostgreSQL through the approved data path, satisfy normal constraints, contain no secrets or production personal data, and are verified through the real API.
+
+---
+
+# Real Data Flow Rule
+
+For a data-reading feature, prove the applicable chain:
+
+`PostgreSQL -> established data-access layer -> Go service -> Fiber handler -> HTTP contract -> Nuxt API client/composable -> state -> component -> rendered UI`
+
+For a data-writing feature, prove the applicable chain:
+
+`UI input -> frontend validation -> HTTP request -> server validation -> authorization -> Go service -> transaction/query -> PostgreSQL persistence -> read-back -> browser refresh -> persisted value rendered`
+
+Do not rewrite, intercept, hardcode, or mutate the data to make either chain appear successful. An optimistic UI update alone is never completion evidence.
 
 ---
 
@@ -288,6 +306,19 @@ Production Ready
 Verified
 
 until evidence exists.
+
+## Project Completion Rule
+
+When a required workflow exposes a blocker within the authorized repository scope, the AI must:
+
+1. reproduce the blocker;
+2. classify it as implementation, configuration, governance, or external;
+3. correct it when the current authorization permits;
+4. rerun the failed check and relevant regressions;
+5. resume the original workflow; and
+6. repeat until acceptance passes or an exact stop condition remains.
+
+Do not abandon an authorized task merely because the first verification attempt fails. Do not exceed the task's authority to remove a blocker. For a destructive, security-sensitive, architectural, database-execution, deployment, credential, or genuinely external blocker, stop and report the precise condition and the authority needed.
 
 ---
 

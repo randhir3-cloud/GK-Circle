@@ -1,0 +1,28 @@
+{
+  "ledgerVersion": 1,
+  "schemaVersion": 1,
+  "taskId": "COURSE-P2-T06",
+  "date": "2026-07-26",
+  "branch": "chore/ci-verification",
+  "commit": "eeac599f05eaf936c7f61db4a3deeac3c9063f59",
+  "databaseMigration": "NONE",
+  "learningItemHttpApis": true,
+  "repositoryModified": false,
+  "metadataValidation": "repository-owned",
+  "frontendImplemented": false,
+  "environments": {
+    "backend": "Local Docker Compose api-verify; Go 1.23 Linux",
+    "tests": "sqlmock Fiber controller tests + LearningItem model regression"
+  },
+  "checks": [
+    {"name":"gofmt-diff-check","command":"gofmt -w ... && git diff --check","exitCode":0,"classification":"PASSED"},
+    {"name":"go-vet","command":"go vet ./...","exitCode":0,"classification":"PASSED"},
+    {"name":"go-test","command":"go test ./... -count=1","exitCode":0,"classification":"PASSED"},
+    {"name":"docker-compose-config","command":"docker compose config --quiet","exitCode":0,"classification":"PASSED"},
+    {"name":"docker-verify","command":"docker compose --profile verify run --rm api-verify sh -c \"go vet ./... && go test ./... -count=1 && go test -race ./models ./controllers/api/v1 ./pkg/structs -count=1 && go build ./...\"","exitCode":0,"classification":"PASSED"},
+    {"name":"frontend","command":null,"exitCode":null,"classification":"NOT_APPLICABLE","reason":"No frontend surface changed."}
+  ],
+  "productionTouched": false,
+  "nucTouched": false,
+  "breakingChanges": false
+}

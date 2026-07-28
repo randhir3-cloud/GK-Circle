@@ -1,0 +1,19 @@
+COURSE-P2-T03 sanitized command record
+Generated: 2026-07-26T09:55:00+05:30
+
+PASS  gofmt models/learning_item*.go
+PASS  git diff --check (LearningItem metadata sources)
+PASS  go test ./models -count=1 -run LearningItem
+PASS  go test ./models ./controllers/api/v1 ./pkg/structs -count=1
+PASS  docker compose config --quiet
+PASS  docker api-verify: go vet ./...
+PASS  docker api-verify: go test ./... -count=1
+PASS  docker api-verify: go test -race ./models ./controllers/api/v1 ./pkg/structs -count=1
+PASS  docker api-verify: go build ./...
+PASS  npm run course-system:status:sync
+PASS  npm run course-system:status:check (read-only)
+PASS  no-op second sync (byte-identical)
+
+Database Migration: NONE
+No HTTP controllers, routes, or DTOs were added.
+Production and NUC were not touched.

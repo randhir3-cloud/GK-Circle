@@ -1,0 +1,25 @@
+COURSE-P1-T09 SANITIZED COMMAND RECORD
+Date: 2026-07-26
+
+PASSED | gofmt on T09 Go sources
+PASSED | go test ./models ./controllers/api/v1 ./pkg/structs -count=1
+PASSED | git diff --check on T09 sources
+PASSED | docker compose --profile verify run --rm api-verify go vet ./...
+PASSED | docker compose --profile verify run --rm api-verify go test ./... -count=1
+PASSED | docker compose --profile verify run --rm api-verify go test -race ./models ./controllers/api/v1 ./pkg/structs -count=1
+PASSED | docker compose --profile verify run --rm api-verify go build ./...
+PASSED | docker compose config --quiet
+PASSED | npm run course-system:status:sync
+PASSED | npm run course-system:status:check
+
+NOT_APPLICABLE | frontend lint/unit/build/Playwright
+Reason: T09 changes no frontend surface.
+
+CourseNode Admin APIs implemented: Yes
+Hierarchy mutation APIs implemented: No
+Archive/restore implemented: No
+Frontend implemented: No
+Database Migration: NONE
+Production touched: No
+NUC touched: No
+Breaking Changes: NO

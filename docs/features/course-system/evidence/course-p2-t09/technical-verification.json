@@ -1,0 +1,30 @@
+{
+  "taskId": "COURSE-P2-T09",
+  "status": "VERIFIED",
+  "verifiedOn": "2026-07-27",
+  "branch": "chore/ci-verification",
+  "commit": "eeac599f05eaf936c7f61db4a3deeac3c9063f59",
+  "databaseMigration": "NONE",
+  "breakingChanges": false,
+  "productionBehaviourChanges": false,
+  "checks": {
+    "implementationAudit": "PASSED",
+    "focusedVitest": "PASSED: 3 files, 12 tests",
+    "fullVitest": "INHERITED_BASELINE: 35 failed, 94 passed; T09 Course tests passed",
+    "lint": "PASSED",
+    "nuxtBuild": "PASSED",
+    "composeConfig": "PASSED",
+    "composeWebBuild": "PASSED",
+    "allowlistedAuthenticatedRuntime": "PASSED",
+    "authenticatedCrudSmoke": "PASSED",
+    "desktopMobileScreenshots": "PASSED",
+    "signedOutDenial": "PASSED",
+    "localCourseAdminSeed": "PASSED"
+  },
+  "localVerificationInfra": {
+    "seedScript": "scripts/seed-local-course-admin.cjs",
+    "docs": "docs/development/local-course-admin.md",
+    "identityEmail": "local.course.admin@gk-circle.local"
+  },
+  "productionTouched": false
+}

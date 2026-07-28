@@ -256,6 +256,73 @@ func (model *QuizModel) GetQuizById(quizId string) (QuizWithQuestions, error) {
 	return quiz, nil
 }
 
+// QuizSelfPacedMeta carries assessment-mode fields used by the self-paced attempt engine.
+type QuizSelfPacedMeta struct {
+	ID                       uuid.UUID      `db:"id"`
+	Title                    string         `db:"title"`
+	Description              sql.NullString `db:"description"`
+	CreatorID                sql.NullString `db:"creator_id"`
+	IsPublic                 bool           `db:"is_public"`
+	AssessmentMode           string         `db:"assessment_mode"`
+	Status                   string         `db:"status"`
+	DurationSeconds          sql.NullInt64  `db:"duration_seconds"`
+	MaxAttempts              int            `db:"max_attempts"`
+	NegativeMarksPerQuestion float64        `db:"negative_marks_per_question"`
+	AllowAnswerReview        bool           `db:"allow_answer_review"`
+	ResultReleasePolicy      string         `db:"result_release_policy"`
+	ResultsReleased          bool           `db:"results_released"`
+	ResultsScheduledAt       sql.NullTime   `db:"results_scheduled_at"`
+	ResultsReleasedAt        sql.NullTime   `db:"results_released_at"`
+	ShowScore                bool           `db:"show_score"`
+	ShowPassFail             bool           `db:"show_pass_fail"`
+	ShowCorrectness          bool           `db:"show_correctness"`
+	ShowExplanations         bool           `db:"show_explanations"`
+}
+
+func (model *QuizModel) GetSelfPacedMetaByID(quizID uuid.UUID) (QuizSelfPacedMeta, error) {
+	var quiz QuizSelfPacedMeta
+	found, err := model.db.From(QuizzesTable).
+		Select(
+			"id",
+			"title",
+			"description",
+			"creator_id",
+			"is_public",
+			"assessment_mode",
+			"status",
+			"duration_seconds",
+			"max_attempts",
+			"negative_marks_per_question",
+			"allow_answer_review",
+			"result_release_policy",
+			"results_released",
+			"results_scheduled_at",
+			"results_released_at",
+			"show_score",
+			"show_pass_fail",
+			"show_correctness",
+			"show_explanations",
+		).
+		Where(goqu.Ex{"id": quizID}).
+		Limit(1).
+		ScanStruct(&quiz)
+	if err != nil {
+		return quiz, err
+	}
+	if !found {
+		return quiz, sql.ErrNoRows
+	}
+	if decoded, err := url.QueryUnescape(quiz.Title); err == nil {
+		quiz.Title = decoded
+	}
+	if quiz.Description.Valid {
+		if decoded, err := url.QueryUnescape(quiz.Description.String); err == nil {
+			quiz.Description.String = decoded
+		}
+	}
+	return quiz, nil
+}
+
 func (model *QuizModel) GetSharedQuestions(invitationCode int) ([]Question, sql.NullTime, error) {
 
 	var QuestionDeliveryTime sql.NullTime = sql.NullTime{}

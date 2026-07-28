@@ -1,0 +1,21 @@
+COURSE-P1-T02 sanitized command record
+Generated: 2026-07-25T11:39:03+05:30
+
+PASS  docker compose build migration
+PASS  full clean-chain migration apply to temporary local PostgreSQL
+BASELINE  full historical rollback reached invalid 2024 down migration after removing T02
+PASS  isolated T02 apply
+PASS  isolated T02 rollback
+PASS  isolated T02 reapply
+PASS  isolated schema inspection
+PASS  docker api-verify: go vet ./..., go test ./..., go test -race ./...
+NOT_AVAILABLE  root npm lint script
+PASS  app npm lint
+BASELINE  go mod tidy -diff reports inherited go.sum normalization diff
+PASS  git diff --check
+PASS  npm run course-system:status:sync
+PASS  npm run course-system:status:check (read-only)
+
+Database credentials and unrelated working-tree paths are intentionally omitted.
+Exact timestamps, durations, exit codes, working directories, and comparison
+evidence are recorded in ../verification.json.

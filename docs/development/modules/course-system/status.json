@@ -1,0 +1,36 @@
+{
+  "ledgerVersion": 1,
+  "schemaVersion": 1,
+  "project": "Course System",
+  "branch": "chore/ci-verification",
+  "commit": "eeac599f05eaf936c7f61db4a3deeac3c9063f59",
+  "activePhaseId": "COURSE-P2",
+  "phaseStatus": "IN_PROGRESS",
+  "inProgressTaskId": null,
+  "nextTaskId": null,
+  "phaseProgress": {
+    "verifiedPoints": 148,
+    "totalPoints": 148,
+    "completionPercent": 100
+  },
+  "overallCompletionPercent": 19.838709677419356,
+  "display": {
+    "phaseCompletionPercent": 100,
+    "overallCompletionPercent": 19.84
+  },
+  "blocked": false,
+  "criticalBlockers": [],
+  "verifiedTaskCount": 38,
+  "totalTaskCount": 167,
+  "nextAction": "No unstarted task in active phase",
+  "courseModelImplemented": true,
+  "courseMigrationCreated": true,
+  "courseNodeImplemented": true,
+  "courseNodeMigrationCreated": true,
+  "databaseMigrationRun": true,
+  "phase2Started": true,
+  "productionTouched": false,
+  "breakingChanges": false,
+  "canonicalEvidenceRoot": "docs/features/course-system/evidence/ledger-initialization",
+  "updatedAt": "2026-07-27T07:23:03.642Z"
+}

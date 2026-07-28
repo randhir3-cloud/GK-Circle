@@ -7,71 +7,69 @@ import { useListUserstore } from "~/store/userlist";
 import { mockNuxtImport } from "@nuxt/test-utils/runtime";
 import usecopyToClipboard from "~/composables/copy_to_clipboard";
 
-const mock = vi.hoisted(() => {
-  return {
-    usecopyToClipboard: vi.fn(),
-  };
-});
+const mock = vi.hoisted(() => ({
+  usecopyToClipboard: vi.fn(),
+}));
 
-// Mock composable for clipboard functionality
-vi.mock("../../../composables/copy_to_clipboard.js", () => {
-  return {
-    default: mock.usecopyToClipboard,
-  };
-});
+vi.mock("../../../composables/copy_to_clipboard.js", () => ({
+  default: mock.usecopyToClipboard,
+}));
 
 mockNuxtImport("useRuntimeConfig", () => {
-  return () => {
-    return {
-      public: { baseUrl: "https//quiz.example.com" },
-    };
-  };
+  return () => ({
+    public: { baseUrl: "https://quiz.example.com" },
+  });
 });
 
 vi.stubGlobal("useNuxtApp", () => ({}));
-const pinia = createTestingPinia({
-  createSpy: vi.fn,
-});
-const invitationCodeStore = useInvitationCodeStore(pinia);
-invitationCodeStore.invitationCode = "123456";
-
-const listUserStore = useListUserstore(pinia);
-
-const mountComponent = () =>
-  mount(WaitingSpace, {
-    props: {
-      data: { status: "success", data: "Welcome" },
-      isAdmin: true,
-    },
-    global: {
-      plugins: [pinia],
-      stubs: {
-        FontAwesomeIcon: true,
-      },
-    },
-  });
 
 describe("WaitingSpace test", () => {
+  let pinia;
+  let invitationCodeStore;
+
+  const mountComponent = (props = {}) => {
+    pinia = createTestingPinia({ createSpy: vi.fn });
+    invitationCodeStore = useInvitationCodeStore(pinia);
+    invitationCodeStore.invitationCode = "123456";
+    useListUserstore(pinia);
+
+    return mount(WaitingSpace, {
+      props: {
+        data: { status: "success", data: "Welcome", quizTitle: "Demo Quiz" },
+        isAdmin: true,
+        ...props,
+      },
+      global: {
+        plugins: [pinia],
+        stubs: {
+          NuxtLink: true,
+          QrCode: true,
+          QrFullscreenOverlay: true,
+          ListJoinUser: true,
+        },
+      },
+    });
+  };
+
   afterEach(() => {
-    vi.unstubAllGlobals();
-    vi.restoreAllMocks();
+    vi.clearAllMocks();
   });
 
-  it("renders properly", async () => {
+  it("renders properly", () => {
     const wrapper = mountComponent();
-    expect(wrapper.find(".join-page-title").text()).toBe("Ready Steady Go");
-    expect(wrapper.find('button[type="submit"]').text()).toBe("Start Quiz");
+    expect(wrapper.text()).toContain("Quiz Lobby");
+    expect(wrapper.text()).toContain("Demo Quiz");
+    expect(wrapper.find('button[type="submit"]').text()).toContain(
+      "Start Quiz"
+    );
   });
 
   it("shows correct invitation code", () => {
-    const wrapper = mountComponent({
-      data: { status: "success", data: "Welcome" },
-      isAdmin: true,
-    });
+    const wrapper = mountComponent();
     expect(wrapper.find(".code").text()).toBe("123456");
   });
 
-  it("calls `start_quiz` when the Start Quiz button is clicked", async () => {
+  it("calls start_quiz when the Start Quiz button is clicked", async () => {
     const wrapper = mountComponent();
     await wrapper.find("form").trigger("submit.prevent");
     expect(wrapper.emitted().startQuiz).toBeTruthy();
@@ -82,9 +80,6 @@ describe("WaitingSpace test", () => {
     const copyBtn = wrapper.find("#OTP-input-container");
     expect(copyBtn.exists()).toBe(true);
     await copyBtn.trigger("click");
-    await copyBtn.trigger("click");
-
-    expect(usecopyToClipboard).toHaveBeenCalled();
     expect(usecopyToClipboard).toHaveBeenCalledWith("123456");
   });
 
@@ -93,7 +88,7 @@ describe("WaitingSpace test", () => {
     const urlCopyBtn = wrapper.find("#URL-input-container");
     await urlCopyBtn.trigger("click");
     expect(usecopyToClipboard).toHaveBeenCalledWith(
-      "https//quiz.example.com/join?code=123456"
+      "https://quiz.example.com/join?code=123456"
     );
   });
 
@@ -101,31 +96,32 @@ describe("WaitingSpace test", () => {
     const pauseMock = vi.fn();
     const wrapper = mountComponent();
     wrapper.vm.waitingSound = { pause: pauseMock, play: vi.fn() };
-
     wrapper.unmount();
     expect(pauseMock).toHaveBeenCalled();
   });
 
-  it("clears all users on unmount when `isAdmin` is true", () => {
+  it("clears all users on unmount when isAdmin is true", () => {
     const wrapper = mountComponent();
+    const listUserStore = useListUserstore(pinia);
     wrapper.unmount();
     expect(listUserStore.removeAllUsers).toHaveBeenCalled();
   });
 
-  it("does not clear users on unmount when `isAdmin` is false", async () => {
+  it("does not clear users on unmount when isAdmin is false", async () => {
     const wrapper = mountComponent();
+    const listUserStore = useListUserstore(pinia);
     await wrapper.setProps({ isAdmin: false });
     wrapper.unmount();
     expect(listUserStore.removeAllUsers).not.toHaveBeenCalled();
   });
 
-  it("emits `terminateQuiz` on unmount when quiz is not started", () => {
+  it("emits terminateQuiz on unmount when quiz is not started", () => {
     const wrapper = mountComponent();
     wrapper.unmount();
     expect(wrapper.emitted().terminateQuiz).toBeTruthy();
   });
 
-  it("does not emit `terminateQuiz` on unmount if quiz is started", async () => {
+  it("does not emit terminateQuiz on unmount if quiz is started", () => {
     const wrapper = mountComponent();
     wrapper.vm.startQuiz = true;
     wrapper.unmount();

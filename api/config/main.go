@@ -19,6 +19,21 @@ type RedisClientConfig struct {
 	RedisDb   int    `envconfig:"REDIS_DATABASES"`
 }
 
+// ReportConfig holds configuration for the export and scheduled reporting subsystem.
+type ReportConfig struct {
+	StorageProvider          string `envconfig:"REPORT_STORAGE_PROVIDER"`           // local | s3
+	LocalStoragePath         string `envconfig:"REPORT_LOCAL_STORAGE_PATH"`
+	S3Bucket                 string `envconfig:"REPORT_S3_BUCKET"`
+	S3Region                 string `envconfig:"REPORT_S3_REGION"`
+	S3Endpoint               string `envconfig:"REPORT_S3_ENDPOINT"`                // MinIO-compatible
+	RetentionDays            int    `envconfig:"REPORT_RETENTION_DAYS"`             // default 30
+	MaxAttachmentBytes       int64  `envconfig:"REPORT_EMAIL_MAX_ATTACHMENT_BYTES"` // default 10485760
+	WorkerPoolSize           int    `envconfig:"REPORT_WORKER_POOL_SIZE"`           // default 3
+	SchedulerIntervalSeconds int    `envconfig:"REPORT_SCHEDULER_INTERVAL_SECONDS"` // default 60
+	ReclaimIntervalSeconds   int    `envconfig:"REPORT_RECLAIM_INTERVAL_SECONDS"`   // default 30
+	EmailRetryAttempts       int    `envconfig:"REPORT_EMAIL_RETRY_ATTEMPTS"`       // default 3
+}
+
 // AppConfig type AppConfig
 type AppConfig struct {
 	IsDevelopment bool   `envconfig:"IS_DEVELOPMENT"`
@@ -35,6 +50,7 @@ type AppConfig struct {
 	MQ            MQConfig
 	Quiz          QuizConfig
 	SMTP          SMTPConfig
+	Report        ReportConfig
 }
 
 // GetConfig Collects all configs

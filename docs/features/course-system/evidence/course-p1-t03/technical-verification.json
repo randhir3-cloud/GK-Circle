@@ -1,0 +1,80 @@
+{
+  "ledgerVersion": 1,
+  "schemaVersion": 1,
+  "taskId": "COURSE-P1-T03",
+  "date": "2026-07-25",
+  "branch": "chore/ci-verification",
+  "commit": "eeac599f05eaf936c7f61db4a3deeac3c9063f59",
+  "environments": {
+    "host": "Windows amd64; Go 1.26.5; Node 24.16.0; npm 11.13.0",
+    "canonicalBackend": "Local Docker Compose api-verify; Go 1.23.11 linux/amd64",
+    "database": "Temporary database course_p1_t03_verify_20260725 in local PostgreSQL Compose service"
+  },
+  "checks": [
+    {
+      "name": "focused-model-tests-final",
+      "command": "go test ./models -count=1",
+      "workingDirectory": "api",
+      "startedAt": "2026-07-25T09:11:41.1914066Z",
+      "durationMs": 3526,
+      "exitCode": 0,
+      "classification": "PASSED"
+    },
+    {
+      "name": "docker-vet",
+      "command": "docker compose --profile verify run --rm api-verify go vet ./...",
+      "workingDirectory": ".",
+      "startedAt": "2026-07-25T08:43:44.4577427Z",
+      "durationMs": 6530,
+      "exitCode": 0,
+      "classification": "PASSED"
+    },
+    {
+      "name": "docker-test",
+      "command": "docker compose --profile verify run --rm api-verify go test ./... -count=1",
+      "workingDirectory": ".",
+      "startedAt": "2026-07-25T09:04:19.8292214Z",
+      "durationMs": 9331,
+      "exitCode": 0,
+      "classification": "PASSED"
+    },
+    {
+      "name": "docker-race-final",
+      "command": "docker compose --profile verify run --rm api-verify go test -race ./... -count=1",
+      "workingDirectory": ".",
+      "startedAt": "2026-07-25T09:11:58.0547052Z",
+      "durationMs": 16507,
+      "exitCode": 0,
+      "classification": "PASSED"
+    },
+    {
+      "name": "docker-build",
+      "command": "docker compose --profile verify run --rm api-verify go build ./...",
+      "workingDirectory": ".",
+      "startedAt": "2026-07-25T09:09:50.9238609Z",
+      "durationMs": 14518,
+      "exitCode": 0,
+      "classification": "PASSED"
+    },
+    {
+      "name": "frontend",
+      "command": null,
+      "workingDirectory": null,
+      "startedAt": null,
+      "durationMs": null,
+      "exitCode": null,
+      "classification": "NOT_APPLICABLE",
+      "reason": "No frontend or HTTP API surface changed."
+    }
+  ],
+  "migration": {
+    "classification": "PASSED",
+    "applied": true,
+    "rolledBack": true,
+    "reapplied": true,
+    "productionRun": false
+  },
+  "productionTouched": false,
+  "nucTouched": false,
+  "breakingChanges": false
+}

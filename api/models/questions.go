@@ -43,6 +43,13 @@ type Question struct {
 	QuestionMedia     string            `json:"question_media" db:"question_media"`
 	OptionsMedia      string            `json:"options_media" db:"options_media"`
 	Resource          sql.NullString    `json:"resource" db:"resource"`
+	LineageID         uuid.UUID         `json:"lineage_id" db:"lineage_id"`
+	RevisionNumber    int               `json:"revision_number" db:"revision_number"`
+	OfficialAnswer    []int             `json:"official_answer"`
+	AuthoritativeAnswer []int           `json:"authoritative_answer"`
+	AnswerReviewStatus string           `json:"answer_review_status" db:"answer_review_status"`
+	AnswerRevisionReason string         `json:"answer_revision_reason" db:"answer_revision_reason"`
+	AnswerRevisionSource string         `json:"answer_revision_source" db:"answer_revision_source"`
 }
 
 type QuestionForUser struct {
@@ -60,13 +67,18 @@ type QuestionForUser struct {
 
 // QuizModel implements quiz related database operations
 type QuestionModel struct {
-	db     *goqu.Database
-	logger *zap.Logger
+	db            *goqu.Database
+	logger        *zap.Logger
+	revisionModel *QuestionRevisionModel
 }
 
 // InitQuizModel initializes the QuizModel
 func InitQuestionModel(goquDB *goqu.Database, logger *zap.Logger) *QuestionModel {
-	return &QuestionModel{db: goquDB, logger: logger}
+	return &QuestionModel{
+		db:            goquDB,
+		logger:        logger,
+		revisionModel: InitQuestionRevisionModel(goquDB, logger),
+	}
 }
 
 func (model *QuestionModel) RegisterQuizAndQuestions(userId string, title string, description string, questions []Question) (uuid.UUID, error) {
@@ -99,7 +111,7 @@ func (model *QuestionModel) RegisterQuizAndQuestions(userId string, title string
 		return quizId, err
 	}
 
-	ids, err := registerQuestions(transaction, questions)
+	ids, err := model.registerQuestions(transaction, questions)
 
 	if err != nil {
 		return quizId, err
@@ -120,7 +132,7 @@ func (model *QuestionModel) AppendQuestionsToQuiz(transaction *goqu.TxDatabase, 
 		return []uuid.UUID{}, nil
 	}
 
-	ids, err := registerQuestions(transaction, questions)
+	ids, err := model.registerQuestions(transaction, questions)
 	if err != nil {
 		return ids, err
 	}
@@ -184,9 +196,10 @@ func registerQuiz(transaction *goqu.TxDatabase, title, description, userId strin
 	return quizId, nil
 }
 
-func registerQuestions(transaction *goqu.TxDatabase, questions []Question) ([]uuid.UUID, error) {
+func (model *QuestionModel) registerQuestions(transaction *goqu.TxDatabase, questions []Question) ([]uuid.UUID, error) {
 	ids := []uuid.UUID{}
 	records := []goqu.Record{}
+	prepared := make([]Question, 0, len(questions))
 
 	if len(questions) == 0 {
 		return ids, nil
@@ -201,6 +214,37 @@ func registerQuestions(transaction *goqu.TxDatabase, questions []Question) ([]uu
 			question.ID = questionId
 		}
 
+		authority, operationalAnswers, err := ApplyAnswerAuthority(
+			question.Answers,
+			question.OfficialAnswer,
+			question.AuthoritativeAnswer,
+			question.AnswerReviewStatus,
+			question.AnswerRevisionReason,
+			question.AnswerRevisionSource,
+		)
+		if err != nil {
+			return ids, err
+		}
+
+		if question.LineageID == uuid.Nil {
+			authority.LineageID = question.ID
+		} else {
+			authority.LineageID = question.LineageID
+		}
+		if question.RevisionNumber <= 0 {
+			authority.RevisionNumber = 1
+		} else {
+			authority.RevisionNumber = question.RevisionNumber
+		}
+		question.Answers = operationalAnswers
+		question.LineageID = authority.LineageID
+		question.RevisionNumber = authority.RevisionNumber
+		question.OfficialAnswer = authority.OfficialAnswer
+		question.AuthoritativeAnswer = authority.AuthoritativeAnswer
+		question.AnswerReviewStatus = authority.AnswerReviewStatus
+		question.AnswerRevisionReason = authority.AnswerRevisionReason
+		question.AnswerRevisionSource = authority.AnswerRevisionSource
+
 		options, err := json.Marshal(question.Options)
 		if err != nil {
 			return ids, err
@@ -211,18 +255,36 @@ func registerQuestions(transaction *goqu.TxDatabase, questions []Question) ([]uu
 			return ids, err
 		}
 
+		officialAnswer, err := marshalAnswerKeys(question.OfficialAnswer)
+		if err != nil {
+			return ids, err
+		}
+
+		authoritativeAnswer, err := marshalAnswerKeys(question.AuthoritativeAnswer)
+		if err != nil {
+			return ids, err
+		}
+
 		records = append(records, goqu.Record{
-			"id":                  question.ID,
-			"question":            question.Question,
-			"type":                question.Type,
-			"options":             string(options),
-			"answers":             string(answers),
-			"points":              question.Points,
-			"duration_in_seconds": question.DurationInSeconds,
-			"question_media":      question.QuestionMedia,
-			"options_media":       question.OptionsMedia,
-			"resource":            question.Resource.String,
+			"id":                     question.ID,
+			"question":               question.Question,
+			"type":                   question.Type,
+			"options":                string(options),
+			"answers":                string(answers),
+			"points":                 question.Points,
+			"duration_in_seconds":    question.DurationInSeconds,
+			"question_media":         question.QuestionMedia,
+			"options_media":          question.OptionsMedia,
+			"resource":               question.Resource.String,
+			"lineage_id":             question.LineageID,
+			"revision_number":        question.RevisionNumber,
+			"official_answer":        officialAnswer,
+			"authoritative_answer":   authoritativeAnswer,
+			"answer_review_status":   question.AnswerReviewStatus,
+			"answer_revision_reason": question.AnswerRevisionReason,
+			"answer_revision_source": question.AnswerRevisionSource,
 		})
+		prepared = append(prepared, question)
 	}
 
 	err := transaction.Insert(QuestionTable).Rows(
@@ -233,7 +295,37 @@ func registerQuestions(transaction *goqu.TxDatabase, questions []Question) ([]uu
 		return ids, err
 	}
 
-	return ids, err
+	revisionModel := model.revisionModel
+	for i, question := range prepared {
+		question.ID = ids[i]
+		authority := AnswerAuthorityFields{
+			LineageID:            question.LineageID,
+			RevisionNumber:       question.RevisionNumber,
+			OfficialAnswer:       question.OfficialAnswer,
+			AuthoritativeAnswer:  question.AuthoritativeAnswer,
+			AnswerReviewStatus:   question.AnswerReviewStatus,
+			AnswerRevisionReason: question.AnswerRevisionReason,
+			AnswerRevisionSource: question.AnswerRevisionSource,
+		}
+		optionsJSON := records[i]["options"].(string)
+		answersJSON := records[i]["answers"].(string)
+		officialJSON := records[i]["official_answer"].(string)
+		authoritativeJSON := records[i]["authoritative_answer"].(string)
+		if err := revisionModel.RecordRevision(
+			transaction,
+			question,
+			authority,
+			optionsJSON,
+			answersJSON,
+			officialJSON,
+			authoritativeJSON,
+			"",
+		); err != nil {
+			return ids, err
+		}
+	}
+
+	return ids, nil
 }
 
 func registerQuestionToQuizzes(transaction *goqu.TxDatabase, quizId uuid.UUID, questionIds []uuid.UUID) error {
@@ -303,6 +395,13 @@ func (model *QuestionModel) GetQuestionById(QuestionId string) (structs.Question
 			"points",
 			"type",
 			"duration_in_seconds",
+			"lineage_id",
+			"revision_number",
+			"official_answer",
+			"authoritative_answer",
+			"answer_review_status",
+			"answer_revision_reason",
+			"answer_revision_source",
 		).
 		Where(goqu.Ex{
 			constants.QuestionsTable + ".id": QuestionId,
@@ -367,7 +466,14 @@ func (model *QuestionModel) ListQuestionsWithAnswerByQuizId(QuizId string, media
 			   q.resource,
 			   q.points,
 			   q.type,
-			   q.duration_in_seconds
+			   q.duration_in_seconds,
+			   q.lineage_id,
+			   q.revision_number,
+			   q.official_answer,
+			   q.authoritative_answer,
+			   q.answer_review_status,
+			   q.answer_revision_reason,
+			   q.answer_revision_source
 		FROM chain
 		JOIN questions q ON q.id = chain.question_id`
 
@@ -392,6 +498,56 @@ func (model *QuestionModel) ListQuestionsWithAnswerByQuizId(QuizId string, media
 	}
 
 	return questionAnalytics, quizPlayedCount, nil
+}
+
+type importFingerprintRow struct {
+	QuestionID string `db:"question_id"`
+	Question   string `db:"question"`
+	Type       int    `db:"type"`
+	Options    []byte `db:"options"`
+	Answers    []byte `db:"answers"`
+}
+
+// ListImportFingerprintIndexByQuizID returns deterministic fingerprints for questions already on a quiz.
+func (model *QuestionModel) ListImportFingerprintIndexByQuizID(quizID string) (ImportFingerprintIndex, error) {
+	index := ImportFingerprintIndex{}
+
+	rows := []importFingerprintRow{}
+	err := model.db.From(constants.QuizQuestionsTable).
+		Select(
+			goqu.I("questions.id").As("question_id"),
+			goqu.I("questions.question"),
+			goqu.I("questions.type"),
+			goqu.I("questions.options"),
+			goqu.I("questions.answers"),
+		).
+		InnerJoin(goqu.T(QuestionTable), goqu.On(goqu.I(constants.QuizQuestionsTable+".question_id").Eq(goqu.I(QuestionTable+".id")))).
+		Where(goqu.Ex{constants.QuizQuestionsTable + ".quiz_id": quizID}).
+		ScanStructs(&rows)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, row := range rows {
+		options := map[string]string{}
+		if len(row.Options) > 0 {
+			if err := json.Unmarshal(row.Options, &options); err != nil {
+				return nil, err
+			}
+		}
+
+		answers := []int{}
+		if len(row.Answers) > 0 {
+			if err := json.Unmarshal(row.Answers, &answers); err != nil {
+				return nil, err
+			}
+		}
+
+		fingerprint := buildImportQuestionFingerprint(row.Type, row.Question, options, answers)
+		index[fingerprint] = row.QuestionID
+	}
+
+	return index, nil
 }
 
 func (model *QuestionModel) GetAnswersPointsDurationType(QuestionID string) ([]int, int16, int, int, error) {
@@ -463,7 +619,37 @@ func (model *QuestionModel) GetTotalQuestionCount(activeQuizId string) (int64, e
 	}).Count()
 }
 
-func (model *QuestionModel) CreateQuestion(transaction *goqu.TxDatabase, question Question) (uuid.UUID, error) {
+func (model *QuestionModel) CreateQuestion(transaction *goqu.TxDatabase, question Question, createdBy string) (uuid.UUID, error) {
+	authority, operationalAnswers, err := ApplyAnswerAuthority(
+		question.Answers,
+		question.OfficialAnswer,
+		question.AuthoritativeAnswer,
+		question.AnswerReviewStatus,
+		question.AnswerRevisionReason,
+		question.AnswerRevisionSource,
+	)
+	if err != nil {
+		return uuid.UUID{}, err
+	}
+
+	if question.LineageID == uuid.Nil {
+		authority.LineageID = uuid.Nil
+	} else {
+		authority.LineageID = question.LineageID
+	}
+	if question.RevisionNumber <= 0 {
+		authority.RevisionNumber = 1
+	} else {
+		authority.RevisionNumber = question.RevisionNumber
+	}
+
+	question.Answers = operationalAnswers
+	question.OfficialAnswer = authority.OfficialAnswer
+	question.AuthoritativeAnswer = authority.AuthoritativeAnswer
+	question.AnswerReviewStatus = authority.AnswerReviewStatus
+	question.AnswerRevisionReason = authority.AnswerRevisionReason
+	question.AnswerRevisionSource = authority.AnswerRevisionSource
+
 	options, err := json.Marshal(question.Options)
 	if err != nil {
 		return uuid.UUID{}, err
@@ -474,32 +660,94 @@ func (model *QuestionModel) CreateQuestion(transaction *goqu.TxDatabase, questio
 		return uuid.UUID{}, err
 	}
 
+	officialAnswer, err := marshalAnswerKeys(question.OfficialAnswer)
+	if err != nil {
+		return uuid.UUID{}, err
+	}
+
+	authoritativeAnswer, err := marshalAnswerKeys(question.AuthoritativeAnswer)
+	if err != nil {
+		return uuid.UUID{}, err
+	}
+
 	questionId, err := uuid.NewUUID()
 	if err != nil {
 		return uuid.UUID{}, err
 	}
 
+	if authority.LineageID == uuid.Nil {
+		authority.LineageID = questionId
+	}
+	question.LineageID = authority.LineageID
+	question.RevisionNumber = authority.RevisionNumber
+	question.ID = questionId
+
 	_, err = transaction.Insert(QuestionTable).Rows(
 		goqu.Record{
-			"id":                  questionId,
-			"question":            question.Question,
-			"type":                question.Type,
-			"options":             string(options),
-			"answers":             string(answers),
-			"points":              question.Points,
-			"duration_in_seconds": question.DurationInSeconds,
-			"question_media":      question.QuestionMedia,
-			"options_media":       question.OptionsMedia,
-			"resource":            question.Resource.String,
-			"created_at":          goqu.L("now()"),
-			"updated_at":          goqu.L("now()"),
+			"id":                     questionId,
+			"question":               question.Question,
+			"type":                   question.Type,
+			"options":                string(options),
+			"answers":                string(answers),
+			"points":                 question.Points,
+			"duration_in_seconds":    question.DurationInSeconds,
+			"question_media":         question.QuestionMedia,
+			"options_media":          question.OptionsMedia,
+			"resource":               question.Resource.String,
+			"lineage_id":             question.LineageID,
+			"revision_number":        question.RevisionNumber,
+			"official_answer":        officialAnswer,
+			"authoritative_answer":   authoritativeAnswer,
+			"answer_review_status":   question.AnswerReviewStatus,
+			"answer_revision_reason": question.AnswerRevisionReason,
+			"answer_revision_source": question.AnswerRevisionSource,
+			"created_at":             goqu.L("now()"),
+			"updated_at":             goqu.L("now()"),
 		},
 	).Executor().Exec()
 	if err != nil {
 		return uuid.UUID{}, err
 	}
 
+	question.ID = questionId
+	err = model.revisionModel.RecordRevision(
+		transaction,
+		question,
+		authority,
+		string(options),
+		string(answers),
+		officialAnswer,
+		authoritativeAnswer,
+		createdBy,
+	)
+	if err != nil {
+		return uuid.UUID{}, err
+	}
+
 	return questionId, nil
+}
+
+func (model *QuestionModel) GetLineageMeta(questionID string) (QuestionLineageMeta, error) {
+	var meta QuestionLineageMeta
+	found, err := model.db.From(QuestionTable).
+		Select("lineage_id", "revision_number").
+		Where(goqu.Ex{"id": questionID}).
+		ScanStruct(&meta)
+	if err != nil {
+		return meta, err
+	}
+	if !found {
+		return meta, sql.ErrNoRows
+	}
+	return meta, nil
+}
+
+func (model *QuestionModel) ListRevisionsByQuestionId(questionID string) ([]QuestionRevision, error) {
+	meta, err := model.GetLineageMeta(questionID)
+	if err != nil {
+		return nil, err
+	}
+	return model.revisionModel.ListByLineageID(meta.LineageID.String())
 }
 
 func (model *QuestionModel) SyncQuizQuestionSettings(transaction *goqu.TxDatabase, quizId string, points int16, durationInSeconds int) error {

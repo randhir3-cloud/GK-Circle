@@ -1,0 +1,37 @@
+COURSE-P2-T26 sanitized command log
+Started: 2026-07-26T22:19:08+05:30
+Baseline commit: eeac599f05eaf936c7f61db4a3deeac3c9063f59
+
+[PASS] Source inspection: routes, controllers, DTOs, models, constants, JSend utility.
+[PASS] Verified evidence inspection: T06, T07, T08, T13, T22.
+[PASS] Focused controller tests:
+  go test ./controllers/api/v1/ -run 'AdminLearningItem|LearnerLearningItem' -count=1
+  Result: ok
+
+[PASS] Parsed 22 fenced JSON examples with ConvertFrom-Json.
+[PASS] T26 canonical/evidence camelCase-key search: no matches.
+[PASS] Broader naming/depth searches manually reviewed:
+  camelCase matches belong to pre-existing historical examples;
+  LearningItem/status matches explicitly preserve the status/publish_state distinction;
+  child_node_ids/MAX_DEPTH/course-wide matches are intentional prohibitions or ownership boundaries.
+[PASS] Supplementary local full suite:
+  cd api
+  go test ./...
+[PASS] Supplementary Docker checks:
+  docker compose --profile verify run --rm api-verify go vet ./...
+  docker compose --profile verify run --rm api-verify go test ./...
+[PASS] Production-change guard:
+  git status --short -- api app
+  Ending state matches the captured pre-T26 dirty baseline; T26-owned production changes: NONE.
+[PASS] JSON/documentation diff check:
+  git diff --check -- docs/api docs/development docs/features
+[PASS] Ledger synchronization:
+  First sync updated generated state for T26.
+  Second sync was a no-op.
+  Initial check identified stale manual percentages in MASTER_PLAN.md, then PROJECT_INDEX.md.
+  Numeric summaries were aligned without changing ownership or frozen acceptance wording.
+  Final sync 1: no-op.
+  Final sync 2: no-op.
+  Final read-only status check: PASS.
+
+Completed: 2026-07-26T22:27:54+05:30

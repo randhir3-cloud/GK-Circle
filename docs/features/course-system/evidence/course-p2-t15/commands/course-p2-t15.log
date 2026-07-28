@@ -1,0 +1,23 @@
+COURSE-P2-T15 sanitized command log
+Date: 2026-07-27
+Baseline commit: eeac599f05eaf936c7f61db4a3deeac3c9063f59
+
+PASS  go test ./controllers/api/v1 -run LearningItemBackendSuite -count=1
+PASS  go test ./models -run LearningItemBackendSuite -count=1
+PASS  go test ./... -run LearningItem -count=1
+PASS  go test ./controllers/api/v1 ./models -count=1
+PASS  go test ./... -count=1
+PASS  go vet ./...
+PASS  docker compose --profile verify run --rm api-verify go vet ./...
+PASS  docker compose --profile verify run --rm api-verify go test ./... -count=1
+PASS  npm run course-system:status:sync
+PASS  npm run course-system:status:sync (no changes required)
+PASS  npm run course-system:status:check
+PASS  git diff --check -- api docs/development docs/features
+PASS  gofmt verification for T15-owned Go test changes
+PASS  JSON parse checks for T15 verification and generated ledger files
+PASS  api/app production-state comparison (71 lines; baseline digest matched)
+
+BLOCKED  Enrollment regressions: blocker:COURSE-P2-T12
+
+No credentials, environment values, container IDs, or user data are recorded.

@@ -1,0 +1,12 @@
+{
+  "module": "course-system",
+  "version": "0.1.0",
+  "phase": 2,
+  "completion": 19.838709677419356,
+  "owner": "AI",
+  "status": "IN_PROGRESS",
+  "dependsOn": [],
+  "nextModule": "Learning Items",
+  "inProgressTaskId": null,
+  "nextTaskId": null
+}

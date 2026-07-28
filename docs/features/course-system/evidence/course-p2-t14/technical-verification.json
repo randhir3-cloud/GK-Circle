@@ -1,0 +1,45 @@
+{
+  "taskId": "COURSE-P2-T14",
+  "status": "VERIFIED",
+  "implementedOn": "2026-07-26",
+  "verifiedOn": "2026-07-27",
+  "startingCommit": "eeac599f05eaf936c7f61db4a3deeac3c9063f59",
+  "databaseMigration": "NONE",
+  "breakingChanges": false,
+  "checks": {
+    "focusedVitest": "PASSED: 4 files, 42 tests",
+    "fullVitest": "BASELINE: 35 failed and 96 passed; every T14 test passed",
+    "lint": "PASSED",
+    "nuxtBuild": "PASSED",
+    "goTests": "PASSED",
+    "composeConfig": "PASSED",
+    "composeWebBuild": "PASSED",
+    "localStackHealth": "PASSED",
+    "authenticatedLearnerSmoke": "PASSED",
+    "desktopMobileScreenshots": "PASSED",
+    "fixtureCleanup": "PASSED",
+    "browserConsole": "PASSED: no warnings or errors"
+  },
+  "runtime": {
+    "authentication": "normal Kratos login with approved local identity",
+    "enrollment": "required response followed by real UI enrollment and reload",
+    "courseNodeDepth": 4,
+    "ordering": "server-owned positions preserved",
+    "draftExclusion": "PASSED",
+    "visibilityProjection": "hidden block omitted by backend",
+    "navigation": "backend IDs only; null boundaries omitted",
+    "refreshPersistence": "PASSED",
+    "emptyState": "PASSED",
+    "signedOutDenial": "PASSED",
+    "fixtureCleanup": "retained item restored and temporary residue zero"
+  },
+  "composeServiceConstraint": {
+    "dedicatedFrontendVerificationService": false,
+    "actualService": "web",
+    "resolution": "docker compose build web",
+    "architectureChanged": false
+  },
+  "decision": "VERIFIED",
+  "productionChange": "responsive learner page-root sizing only",
+  "backendChanged": false
+}

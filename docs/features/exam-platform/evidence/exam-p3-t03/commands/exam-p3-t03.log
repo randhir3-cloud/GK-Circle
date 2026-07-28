@@ -1,0 +1,6 @@
+go test ./models/ -run "Import|Duplicate" -count=1
+go test ./controllers/api/v1/ -run "QuestionImportJob" -count=1
+go test ./... -count=1
+go build ./...
+cd ../app && npm test -- --run QuizImportWizard.test.js
+cd ../app && npx eslint components/quiz-manage/QuizImportWizard.vue test/components/quiz-manage/QuizImportWizard.test.js --max-warnings 0

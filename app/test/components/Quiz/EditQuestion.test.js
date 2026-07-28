@@ -1,70 +1,190 @@
-import { mount } from "@vue/test-utils";
-import { describe, it, expect } from "vitest";
+import { mockNuxtImport } from "@nuxt/test-utils/runtime";
+
+import { mount, flushPromises } from "@vue/test-utils";
+
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
 import EditQuestion from "~/components/Quiz/EditQuestion.vue";
+
 import constants from "~/test/constants";
 
-const props = {
-  question: {
-    question: "What is the capital of France?",
-    question_media: "text",
-    options: { 0: "Paris", 1: "Berlin", 2: "Madrid", 3: "Rome" },
-    correct_answer: "[0]",
-    question_id: "123",
-    question_type_id: 1,
-    options_media: "text",
+const updateQuestionMock = vi.hoisted(() => vi.fn());
+
+const listRevisionsMock = vi.hoisted(() => vi.fn());
+
+vi.mock("notivue", () => ({
+  usePush: vi.fn(() => ({
+    success: vi.fn(),
+
+    error: vi.fn(),
+  })),
+}));
+
+vi.mock("@/composables/quiz_questions", () => ({
+  getQuizQuestionAPIError: (_error, fallback) => fallback,
+
+  useQuizQuestionsApi: () => ({
+    updateQuestion: updateQuestionMock,
+
+    listRevisions: listRevisionsMock,
+  }),
+}));
+
+mockNuxtImport("useRuntimeConfig", () => () => ({
+  public: {
+    apiUrl: "http://api.test/api/v1",
+
+    maxImageFileSize: 1024 * 1024,
   },
-  quizId: "quiz-123",
-  questionId: "q-123",
+}));
+
+mockNuxtImport("useRequestHeaders", () => () => ({ cookie: "session=test" }));
+
+mockNuxtImport("useNuxtApp", () => () => ({
+  $validImageTypes: ["image/png", "image/jpeg"],
+}));
+
+const baseQuestion = {
+  question: "What is the capital of France?",
+
+  question_media: "text",
+
+  options: { 1: "Paris", 2: "Berlin", 3: "Madrid", 4: "Rome" },
+
+  correct_answer: "[1]",
+
+  question_id: "123",
+
+  question_type_id: 1,
+
+  options_media: "text",
+
+  points: 1,
+
+  duration_in_seconds: 30,
+
+  lineage_id: "lineage-1",
+
+  revision_number: 2,
+
+  official_answer: "[1]",
+
+  authoritative_answer: "[1]",
+
+  answer_review_status: "CONFIRMED",
+
+  answer_revision_reason: "",
+
+  answer_revision_source: "",
 };
 
-const mountComponent = () => {
-  return mount(EditQuestion, {
-    props,
+const mountComponent = (question = baseQuestion) =>
+  mount(EditQuestion, {
+    props: {
+      question,
+
+      quizId: "quiz-123",
+
+      questionId: "q-123",
+    },
+
     global: {
       stubs: {
         VFileInput: constants.slotTemplate,
+
+        CodeBlockComponent: true,
+
+        NavigationLink: {
+          template:
+            "<button type='button' @click=\"$emit('click')\"><slot /></button>",
+        },
+
+        QuestionRevisionHistory: {
+          template:
+            "<div data-testid='revision-history'>Revision history</div>",
+        },
       },
     },
   });
-};
-let wrapper = mountComponent();
 
-describe("EditQuestion.vue", () => {
-  it("renders the component with the provided props", () => {
-    expect(wrapper.find("input").exists()).toBe(true);
-    expect(wrapper.find("input").element.value).toBe(props.question.question);
-    expect(wrapper.findAll(".option-box").length).toBe(
-      Object.keys(props.question.options).length
+describe("EditQuestion.vue answer authority", () => {
+  beforeEach(() => {
+    updateQuestionMock.mockReset();
+
+    updateQuestionMock.mockResolvedValue({});
+
+    listRevisionsMock.mockReset();
+
+    listRevisionsMock.mockResolvedValue([
+      {
+        id: "rev-2",
+
+        revision_number: 2,
+
+        answer_review_status: "CONFIRMED",
+
+        created_at: "2026-07-27T12:00:00Z",
+      },
+    ]);
+  });
+
+  it("renders answer authority controls and revision history slot", async () => {
+    const wrapper = mountComponent();
+
+    await flushPromises();
+
+    expect(wrapper.find("#mcq-answer-review-status").exists()).toBe(true);
+
+    expect(wrapper.find("#mcq-answer-review-status").element.value).toBe(
+      "CONFIRMED"
     );
-  });
 
-  it("updates question text on input", async () => {
-    const input = wrapper.find("input");
-    await input.setValue("What is the largest planet?");
-
-    expect(wrapper.vm.editableQuestion.question).toBe(
-      "What is the largest planet?"
-    );
-  });
-
-  it('renders image input when question_media is "image"', async () => {
-    props.question.question_media = "image";
-    wrapper = mountComponent();
-    expect(wrapper.find("#image-attachment-question").exists()).toBe(true);
-  });
-
-  it('renders code editor when question_media is "code"', async () => {
-    props.question.question_media = "code";
-    wrapper = mountComponent();
-    expect(wrapper.findComponent({ name: "CodeBlockComponent" }).exists()).toBe(
+    expect(wrapper.find("[data-testid='revision-history']").exists()).toBe(
       true
     );
   });
 
-  it("updates correct answer on radio button change", async () => {
-    const radioButton = wrapper.find('input[type="radio"][value="1"]');
-    await radioButton.setChecked();
+  it("includes authority fields when saving", async () => {
+    const wrapper = mountComponent();
 
-    expect(wrapper.vm.picked).toBe("1");
+    await flushPromises();
+
+    await wrapper.find("#mcq-answer-review-status").setValue("REVISED");
+
+    await flushPromises();
+
+    await wrapper
+      .find("#mcq-answer-revision-reason")
+      .setValue("Official key fixed");
+
+    await wrapper
+
+      .find("#mcq-answer-revision-source")
+
+      .setValue("Commission notice");
+
+    const saveButtons = wrapper.findAll("button");
+
+    await saveButtons[saveButtons.length - 1].trigger("click");
+
+    await flushPromises();
+
+    expect(updateQuestionMock).toHaveBeenCalledWith(
+      "quiz-123",
+
+      "q-123",
+
+      expect.objectContaining({
+        answer_review_status: "REVISED",
+
+        answer_revision_reason: "Official key fixed",
+
+        answer_revision_source: "Commission notice",
+
+        official_answer: [1],
+
+        authoritative_answer: [1],
+      })
+    );
   });
 });

@@ -1,0 +1,5 @@
+go test ./security/ -run "Import" -count=1
+go test ./controllers/api/v1/ -run "ImportPipeline|QuestionImportJob" -count=1
+go test ./models/ -run "Import|Duplicate" -count=1
+go test ./... -count=1
+go build ./...

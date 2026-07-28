@@ -1,0 +1,47 @@
+---
+description: Project Completion Policy — resolve implementation blockers; record environmental blockers without inventing secrets
+alwaysApply: true
+---
+
+# Project Completion Policy
+
+Goal: Complete the project by resolving implementation-scope blockers instead of
+accumulating IN_PROGRESS tasks.
+
+## Rule
+
+1. Diagnose every blocker.
+2. Classify it.
+
+### A. Implementation blocker
+
+Examples: missing API/UI/component, incorrect permission or routing, missing
+migration, broken tests, failing build, accessibility/responsive gaps, stale
+request bugs.
+
+→ Implement the missing capability.
+→ Add or update tests.
+→ Verify.
+→ Resume the original task.
+→ Close the task if all acceptance criteria pass.
+
+### B. Environmental blocker
+
+Examples: no authorised test account/password available, missing Playwright
+storageState, intentionally unavailable CI secrets, unknown production
+credentials, unavailable third-party services.
+
+→ Do not invent credentials, secrets, or external resources.
+→ Do not weaken security to bypass the blocker.
+→ Record the exact blocker.
+→ Continue all remaining verifiable work.
+→ Leave the task in the appropriate state until the environment is available.
+
+## Notes
+
+- Closure/audit-only prompts may temporarily forbid implementation; honour
+  explicit user instructions over this policy when they conflict.
+- Do not violate frozen project requirements, ADRs, or migration freezes to
+  "complete" a task.
+- Prefer fixing root causes that unblock verification (e.g. documented local
+  seed accounts) when those are within accepted project scope.

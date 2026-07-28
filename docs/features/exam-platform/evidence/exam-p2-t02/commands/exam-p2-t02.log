@@ -1,0 +1,7 @@
+EXAM-P2-T02 verification log (2026-07-27)
+
+npm test -- --run question_authority quiz_questions McqQuestionEditor EditQuestion
+→ 4 files, 11 tests PASS
+
+npx eslint utils/question_authority.js composables/quiz_questions.js components/quiz-manage/McqQuestionEditor.vue components/quiz-manage/QuestionRevisionHistory.vue components/quiz-manage/QuestionFormCard.vue components/Quiz/EditQuestion.vue --fix
+→ PASS

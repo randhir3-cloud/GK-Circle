@@ -1,0 +1,28 @@
+{
+  "task_id": "COURSE-P2-T26",
+  "status": "VERIFIED",
+  "started_at": "2026-07-26T22:19:08+05:30",
+  "baseline_commit": "eeac599f05eaf936c7f61db4a3deeac3c9063f59",
+  "canonical_document": "docs/api/course-learning-items-v1.md",
+  "dependencies": {
+    "COURSE-P2-T06": "VERIFIED",
+    "COURSE-P2-T08": "VERIFIED"
+  },
+  "checks": {
+    "source_inspection": "PASSED",
+    "focused_controller_tests": "PASSED",
+    "json_examples": "PASSED",
+    "source_consistency": "PASSED",
+    "production_change_guard": "PASSED",
+    "full_go_suite": "PASSED",
+    "docker_api_vet": "PASSED",
+    "docker_api_tests": "PASSED",
+    "ledger_sync": "PASSED",
+    "ledger_check": "PASSED",
+    "scoped_diff_check": "PASSED"
+  },
+  "production_code_changes": "NONE",
+  "database_migration": "NONE",
+  "breaking_changes": "NO",
+  "deployment": "NONE"
+}

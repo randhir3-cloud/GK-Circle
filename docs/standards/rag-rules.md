@@ -1,6 +1,6 @@
 # GK Circle RAG Rules
 
-Version: 1.0
+Version: 1.1
 
 Status: Mandatory
 
@@ -119,6 +119,10 @@ Answer Generation
 Source Verification
 
 all work.
+
+Completion evidence must exercise actual indexed documents through ingestion, chunking, embedding, index storage, retrieval, reranking where configured, generation, provenance, and citation verification. A hardcoded context array, fabricated source, intercepted retriever response, or unpersisted vector fixture is not end-to-end RAG evidence.
+
+Mock retrievers and small synthetic corpora remain allowed in isolated unit tests. Development evaluation fixtures may be used for runtime verification only when they enter through the documented ingestion pipeline, are stored in the configured local index, contain no secrets or production personal data, and retain traceable source provenance.
 
 ---
 

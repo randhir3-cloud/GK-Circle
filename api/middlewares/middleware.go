@@ -8,23 +8,26 @@ import (
 )
 
 type Middleware struct {
-	Config             config.AppConfig
-	Logger             *zap.Logger
-	Db                 *goqu.Database
-	userModel          *models.UserModel
-	sharedQuizzesModel *models.SharedQuizzesModel
+	Config               config.AppConfig
+	Logger               *zap.Logger
+	Db                   *goqu.Database
+	userModel            *models.UserModel
+	sharedQuizzesModel   *models.SharedQuizzesModel
+	userPlayedQuizModel  *models.UserPlayedQuizModel
 }
 
 func NewMiddleware(cfg config.AppConfig, logger *zap.Logger, db *goqu.Database) Middleware {
 
 	userModel, _ := models.InitUserModel(db, logger)
 	sharedQuizzesModel := models.InitSharedQuizzesModel(db, logger)
+	userPlayedQuizModel := models.InitUserPlayedQuizModel(db)
 
 	return Middleware{
-		Config:             cfg,
-		Logger:             logger,
-		Db:                 db,
-		userModel:          &userModel,
-		sharedQuizzesModel: sharedQuizzesModel,
+		Config:              cfg,
+		Logger:              logger,
+		Db:                  db,
+		userModel:           &userModel,
+		sharedQuizzesModel:  sharedQuizzesModel,
+		userPlayedQuizModel: userPlayedQuizModel,
 	}
 }

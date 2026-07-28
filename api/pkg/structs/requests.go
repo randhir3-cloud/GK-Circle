@@ -32,15 +32,20 @@ type ReqAnswerSubmit struct {
 }
 
 type ReqUpdateQuestion struct {
-	Question          string            `json:"question" validate:"required"`
-	Type              int               `json:"type" validate:"required"`
-	Options           map[string]string `json:"options" validate:"required"`
-	Answers           []int             `json:"answers" validate:"required"`
-	Points            int16             `json:"points"`
-	DurationInSeconds int               `json:"duration_in_seconds" validate:"required"`
-	QuestionMedia     string            `json:"question_media" validate:"required"`
-	OptionsMedia      string            `json:"options_media" validate:"required"`
-	Resource          string            `json:"resource"`
+	Question              string            `json:"question" validate:"required"`
+	Type                  int               `json:"type" validate:"required"`
+	Options               map[string]string `json:"options" validate:"required"`
+	Answers               []int             `json:"answers" validate:"required"`
+	Points                int16             `json:"points"`
+	DurationInSeconds     int               `json:"duration_in_seconds" validate:"required"`
+	QuestionMedia         string            `json:"question_media" validate:"required"`
+	OptionsMedia          string            `json:"options_media" validate:"required"`
+	Resource              string            `json:"resource"`
+	OfficialAnswer        []int             `json:"official_answer"`
+	AuthoritativeAnswer   []int             `json:"authoritative_answer"`
+	AnswerReviewStatus    string            `json:"answer_review_status"`
+	AnswerRevisionReason  string            `json:"answer_revision_reason"`
+	AnswerRevisionSource  string            `json:"answer_revision_source"`
 }
 
 type ReqCreateQuiz struct {
@@ -66,15 +71,20 @@ type ReqUpdateQuizSettings struct {
 }
 
 type ReqCreateQuestion struct {
-	Question          string            `json:"question" validate:"required"`
-	Type              int               `json:"type" validate:"required"`
-	Options           map[string]string `json:"options" validate:"required"`
-	Answers           []int             `json:"answers" validate:"required"`
-	Points            int16             `json:"points" validate:"omitempty,min=0,max=20"`
-	DurationInSeconds int               `json:"duration_in_seconds" validate:"omitempty,min=1"`
-	QuestionMedia     string            `json:"question_media" validate:"required"`
-	OptionsMedia      string            `json:"options_media" validate:"required"`
-	Resource          string            `json:"resource"`
+	Question              string            `json:"question" validate:"required"`
+	Type                  int               `json:"type" validate:"required"`
+	Options               map[string]string `json:"options" validate:"required"`
+	Answers               []int             `json:"answers" validate:"required"`
+	Points                int16             `json:"points" validate:"omitempty,min=0,max=20"`
+	DurationInSeconds     int               `json:"duration_in_seconds" validate:"omitempty,min=1"`
+	QuestionMedia         string            `json:"question_media" validate:"required"`
+	OptionsMedia          string            `json:"options_media" validate:"required"`
+	Resource              string            `json:"resource"`
+	OfficialAnswer        []int             `json:"official_answer"`
+	AuthoritativeAnswer   []int             `json:"authoritative_answer"`
+	AnswerReviewStatus    string            `json:"answer_review_status"`
+	AnswerRevisionReason  string            `json:"answer_revision_reason"`
+	AnswerRevisionSource  string            `json:"answer_revision_source"`
 }
 
 type ReqShareQuiz struct {

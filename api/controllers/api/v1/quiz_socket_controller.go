@@ -1021,21 +1021,12 @@ func sendSingleQuestion(c *websocket.Conn, qc *quizSocketController, wg *sync.Wa
 
 	// question sent
 	response.Action = constants.ActionSendQuestion
-	responseData := map[string]any{
-		"id":             question.ID,
-		"quiz_id":        question.QuizId,
-		"no":             question.OrderNumber,
-		"duration":       question.DurationInSeconds,
-		"start_time":     questionStartTime.Format(time.RFC3339),
-		"server_time":    time.Now().UTC().Format(time.RFC3339Nano),
-		"question":       question.Question,
-		"options":        question.Options,
-		"question_media": question.QuestionMedia,
-		"options_media":  question.OptionsMedia,
-		"resource":       question.Resource.String,
-		"totalQuestions": totalQuestions,
-		"totalJoinUser":  totalUserJoin,
-	}
+	responseData := utils.BuildLiveQuestionDeliveryPayload(
+		question,
+		questionStartTime,
+		totalQuestions,
+		totalUserJoin,
+	)
 
 	response.Data = responseData
 	if !lastQuestionTimeStamp.Valid { // handling new question
@@ -1087,35 +1078,24 @@ func sendSingleQuestion(c *websocket.Conn, qc *quizSocketController, wg *sync.Wa
 		}
 	}
 
-	response.Data = map[string]any{
-		"question_no":    question.OrderNumber,
-		"quiz_id":        question.QuizId,
-		"rankList":       userRankBoard,
-		"question":       question.Question,
-		"answers":        question.Answers,
-		"options":        question.Options,
-		"question_media": question.QuestionMedia,
-		"options_media":  question.OptionsMedia,
-		"resource":       question.Resource.String,
-		"duration":       scoreboardMaxDuration,
-		"totalQuestions": totalQuestions,
-		"userResponses":  userResponses,
-	}
+	response.Data = utils.BuildLiveScoreboardPayload(
+		question,
+		userRankBoard,
+		userResponses,
+		totalQuestions,
+		scoreboardMaxDuration,
+		true,
+	)
 	shareEvenWithUser(c, qc, response, constants.EventShowScore, session.ID.String(), int(session.InvitationCode.Int32), constants.ToAdmin, arrangeMu)
 
-	response.Data = map[string]any{
-		"question_no":    question.OrderNumber,
-		"quiz_id":        question.QuizId,
-		"rankList":       userRankBoard,
-		"question":       question.Question,
-		"answers":        question.Answers,
-		"options":        question.Options,
-		"question_media": question.QuestionMedia,
-		"options_media":  question.OptionsMedia,
-		"resource":       question.Resource.String,
-		"duration":       scoreboardMaxDuration,
-		"totalQuestions": totalQuestions,
-	}
+	response.Data = utils.BuildLiveScoreboardPayload(
+		question,
+		userRankBoard,
+		nil,
+		totalQuestions,
+		scoreboardMaxDuration,
+		false,
+	)
 	shareEvenWithUser(c, qc, response, constants.EventShowScore, session.ID.String(), int(session.InvitationCode.Int32), constants.ToUser, arrangeMu)
 
 	wgForSkipTimer := &sync.WaitGroup{}

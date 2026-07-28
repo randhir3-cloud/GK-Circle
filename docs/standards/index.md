@@ -1,6 +1,6 @@
 # GK Circle Standards Index
 
-Version: 3.0
+Version: 3.2
 
 These standards govern the current Go/Fiber and Nuxt/Vue repository.
 
@@ -10,9 +10,33 @@ Read in this order:
 
 1. `AGENTS.md`
 2. `CLAUDE.MD`
-3. `docs/standards/architecture-rules.md`
-4. `docs/standards/security-rules.md`
-5. The task-specific standards below
+3. `docs/standards/index.md`
+4. `docs/standards/architecture-rules.md`
+5. `docs/standards/security-rules.md`
+6. `docs/standards/ai-rules.md`
+7. `docs/standards/testing-rules.md`
+8. The task-specific standards below
+
+Before changing or verifying the repository, report:
+
+- the mandatory standards loaded;
+- the standards specific to the task;
+- any conflict, ambiguity, or stop condition.
+
+No implementation, verification decision, blocker classification, or completion claim may occur before this declaration.
+
+## Authority order
+
+When instructions conflict, use this order:
+
+1. frozen acceptance criteria and approved ADRs;
+2. `AGENTS.md`;
+3. `CLAUDE.MD`;
+4. maintained standards;
+5. the current task prompt;
+6. future or legacy planning material.
+
+Do not rewrite frozen history to resolve a conflict. Stop when the higher authority does not provide enough direction.
 
 ## Maintained standards
 
@@ -42,3 +66,7 @@ Creator economy, RAG, mobile, and advanced admin documents describe possible fut
 7. Report breaking changes and migration status.
 
 Never claim success from code existence alone.
+
+## Verification ownership
+
+Authorized agents may perform task-level runtime verification, including browser automation, against the real local system. The manual-operator requirement in `module-certification-standard.md` remains mandatory only for formal module certification. Task-level automation does not itself grant formal module certification or replace any explicitly required human sign-off.

@@ -3,62 +3,57 @@ import { mount } from "@vue/test-utils";
 import ListJoinUser from "~/components/ListJoinUser.vue";
 import { createTestingPinia } from "@pinia/testing";
 import { useListUserstore } from "~/store/userlist";
-import constants from "~/test/constants";
+
+vi.mock("~~/composables/avatar", () => ({
+  getAvatarUrlByName: vi
+    .fn()
+    .mockImplementation(
+      (name) => `https://api.dicebear.com/9.x/bottts/svg?seed=${name || "Eden"}`
+    ),
+}));
 
 const mockListUsers = [
   { UserId: 1, UserName: "Alice", Avatar: "Alice" },
   { UserId: 2, UserName: "Bob", Avatar: "Bob" },
 ];
 
-const pinia = createTestingPinia({
-  createSpy: vi.fn,
-});
-
-const listUserStore = useListUserstore(pinia);
-listUserStore.listUsers = mockListUsers;
-
-const mountComponent = () =>
-  mount(ListJoinUser, {
-    global: {
-      plugins: [pinia],
-      stubs: {
-        FontAwesomeIcon: true,
-        VCard: constants.slotTemplate,
-      },
-    },
-  });
-
-const wrapper = mountComponent();
-
 describe("ListJoinUser test", () => {
+  let pinia;
+  let listUserStore;
+
   beforeEach(() => {
-    // Reset mocks
-    vi.clearAllMocks();
+    pinia = createTestingPinia({ createSpy: vi.fn });
+    listUserStore = useListUserstore(pinia);
+    listUserStore.listUsers = [...mockListUsers];
   });
+
+  const mountComponent = () =>
+    mount(ListJoinUser, {
+      global: {
+        plugins: [pinia],
+      },
+    });
 
   it("shows the participant count when listUsers is not empty", () => {
+    const wrapper = mountComponent();
     expect(wrapper.find("h5").text()).toBe("2 Participants");
   });
 
-  it("renders user chips with correct data", () => {
-    const chips = wrapper.findAll(".chip");
-    expect(chips.length).toBe(2);
-
-    expect(chips[0].text()).toContain("Alice");
-    expect(chips[0].find("img").attributes("src")).toBe(
-      "https://api.dicebear.com/9.x/bottts/svg?seed=Eden"
-    );
-
-    expect(chips[1].text()).toContain("Bob");
-    expect(chips[1].find("img").attributes("src")).toBe(
-      "https://api.dicebear.com/9.x/bottts/svg?seed=Eden"
-    );
+  it("renders user cards with correct data", () => {
+    const wrapper = mountComponent();
+    const cards = wrapper.findAll(".jv-card");
+    expect(cards.length).toBe(2);
+    expect(cards[0].text()).toContain("Alice");
+    expect(cards[0].find("img").attributes("src")).toContain("seed=Alice");
+    expect(cards[1].text()).toContain("Bob");
+    expect(cards[1].find("img").attributes("src")).toContain("seed=Bob");
   });
 
-  it("shows 'Waiting for Participants' when listUsers is empty", async () => {
+  it("shows waiting copy when listUsers is empty", async () => {
     listUserStore.listUsers = [];
+    const wrapper = mountComponent();
     await wrapper.vm.$nextTick();
-    expect(wrapper.find("h5").text()).toBe("Waiting for Participants..");
-    expect(wrapper.findAll(".chip").length).toBe(0);
+    expect(wrapper.find("h5").text()).toBe("Waiting for Participants...");
+    expect(wrapper.findAll(".jv-card").length).toBe(0);
   });
 });

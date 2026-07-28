@@ -3,6 +3,7 @@ vendor
 bin
 .run
 uploads
+.gotmp
 
 # Numerous always-ignore extensions
 *.diff

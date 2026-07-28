@@ -1,0 +1,24 @@
+# EXAM-P2-T01 command log
+
+Date: 2026-07-27
+
+```text
+cd api
+go test ./models/ -run "Question|Answer" -count=1
+# ok
+
+go test ./controllers/api/v1/ -run "ListQuestionRevisions" -count=1
+# ok
+
+go build ./...
+# ok
+
+cd ../app
+npm test -- --run EditQuestion
+# 2 passed
+
+npx eslint components/Quiz/EditQuestion.vue \
+  components/quiz-manage/QuestionFormCard.vue \
+  test/components/Quiz/EditQuestion.test.js --fix --max-warnings 0
+# exit 0
+```

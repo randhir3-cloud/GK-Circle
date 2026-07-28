@@ -1,0 +1,11 @@
+course=dc5ed495-8951-11f1-853f-fe53b8faebe9
+node=18e6b02f-8952-11f1-853f-fe53b8faebe9
+item=(none)
+login_status=200
+session_token_present=true
+whoami_status=200
+unenroll=401 {"status":"error","message":"error while fetching user from kratos","code":401}
+unenrolled_list=401 {"status":"error","message":"error while fetching user from kratos","code":401}
+enroll=401 {"status":"error","message":"error while fetching user from kratos","code":401}
+enrolled_list=401 {"status":"error","message":"error while fetching user from kratos","code":401}
+runtime_pass=false

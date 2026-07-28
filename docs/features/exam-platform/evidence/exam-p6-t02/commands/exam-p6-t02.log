@@ -1,0 +1,38 @@
+# EXAM-P6-T02 — Commands log (updated)
+
+## Original T02 implementation checks
+npm test -- --run (T02 unit suites) → PASS (18)
+eslint (T02 files) → PASS
+npm run build → PASS
+go test/build → omitted (no backend changes)
+
+## Verification addendum (2026-07-28)
+
+### Node / npm
+node -v → v24.16.0
+npm -v → 11.16.0
+
+### Failure classification / baseline
+npm test -- --run <17 failing files> WITH attempt surface
+  → Test Files 17 failed; Tests 34 failed | 18 passed
+
+Quarantine attempt surface (components/attempt, pages/attempt, attempt_* composables/utils/tests, assessment_attempts*)
+npm test -- --run <same 17 files> WITHOUT attempt surface
+  → Test Files 17 failed; Tests 34 failed | 18 passed (identical)
+Restore quarantine → OK
+
+### Lint hang diagnosis
+npm run lint (full `.`) historically hung 10+ min with no output
+npx eslint … playwright-report → HUNG >60s (terminated) — root cause
+npx eslint … components pages composables utils plugins store layouts lib config → ~7313ms complete
+npx eslint … (+ test tests) → ~7462ms; reports pre-existing prettier errors outside T02
+eslint T02 files including integration test → PASS
+
+### Integration + regression suites
+npm test -- --run
+  test/components/attempt/AttemptPlayer.integration.test.js
+  test/components/attempt/AttemptPlayerComponents.test.js
+  test/composables/attempt_player_state.test.js
+  test/composables/attempt_autosave.test.js
+  test/composables/assessment_attempts.test.js
+→ PASS (26 tests)

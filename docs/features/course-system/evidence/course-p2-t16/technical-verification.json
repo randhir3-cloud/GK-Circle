@@ -1,0 +1,38 @@
+{
+  "taskId": "COURSE-P2-T16",
+  "status": "VERIFIED",
+  "verifiedOn": "2026-07-27",
+  "startingCommit": "eeac599f05eaf936c7f61db4a3deeac3c9063f59",
+  "databaseMigration": "NONE",
+  "breakingChanges": false,
+  "productionSourceModified": false,
+  "frozenAcceptance": {
+    "lintAndVitestCompositionRendererCoverage": "PASSED",
+    "canonicalEvidenceBundle": "PASSED"
+  },
+  "checks": {
+    "focusedVitest": "PASSED: 9 files, 63 tests",
+    "fullVitest": "INHERITED_BASELINE: 35 failed, 105 passed; all T16 tests passed",
+    "lint": "PASSED",
+    "nuxtBuild": "PASSED",
+    "goTests": "PASSED",
+    "composeConfig": "PASSED",
+    "composeWebBuild": "PASSED",
+    "serviceHealth": "PASSED",
+    "authenticatedRuntime": "PASSED",
+    "persistenceAndCleanup": "PASSED",
+    "desktopMobileScreenshots": "PASSED",
+    "browserConsole": "PASSED: no warnings or errors",
+    "signedOutDenial": "PASSED"
+  },
+  "runtime": {
+    "courseNodeDepth": 4,
+    "adminCrud": "create, refresh, update, cancel delete, confirm delete",
+    "finalDatabaseRows": 2,
+    "temporaryRowsRemaining": 0,
+    "learnerPublishedVisible": 1,
+    "learnerDraftVisible": 0,
+    "rendererState": "No content available."
+  },
+  "decision": "VERIFIED"
+}

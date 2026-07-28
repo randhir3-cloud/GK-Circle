@@ -1,0 +1,35 @@
+# COURSE-P2-T24 command transcript
+# Date: 2026-07-26
+
+cd api
+go test ./models/ -run LearningItemDraftFiltering -count=1
+# exit 0
+
+go test ./controllers/api/v1/ -run "LearningItemDraftFiltering|LearningItem" -count=1
+# exit 0
+
+go test ./... -count=1
+# exit 0
+
+cd ..
+docker compose config --quiet
+# exit 0
+
+docker compose --profile verify run --rm api-verify go vet ./...
+# exit 0
+
+docker compose --profile verify run --rm api-verify go test ./...
+# exit 0
+
+git diff --check -- api docs/development docs/features
+# exit 0
+
+npm run course-system:status:sync
+# Sync successful: updated 3 generated file(s).
+
+npm run course-system:status:sync
+# Sync successful: no changes required. (second run no-op)
+
+npm run course-system:status:check
+# Check successful: Course System ledger is consistent and unchanged.
+# exit 0

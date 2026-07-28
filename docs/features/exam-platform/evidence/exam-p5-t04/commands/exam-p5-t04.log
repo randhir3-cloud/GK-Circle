@@ -1,0 +1,17 @@
+﻿?   	github.com/randhir3-cloud/GK-Circle-v2/api	[no test files]
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/cli	[no test files]
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/config	[no test files]
+?   	github.com/randhir3-cloud/GK-Circle-v2/api/constants	[no test files]
+ok  	github.com/randhir3-cloud/GK-Circle-v2/api/controllers/api/v1
+ok  	github.com/randhir3-cloud/GK-Circle-v2/api/helpers/utils
+ok  	github.com/randhir3-cloud/GK-Circle-v2/api/middlewares
+ok  	github.com/randhir3-cloud/GK-Circle-v2/api/models
+ok  	github.com/randhir3-cloud/GK-Circle-v2/api/pkg/jwt
+ok  	github.com/randhir3-cloud/GK-Circle-v2/api/pkg/structs
+ok  	github.com/randhir3-cloud/GK-Circle-v2/api/security
+ok  	github.com/randhir3-cloud/GK-Circle-v2/api/services
+ok  	github.com/randhir3-cloud/GK-Circle-v2/api/utils
+
+==== BUILD ====
+go test ./... -count=1 -> PASS
+go build ./... -> PASS

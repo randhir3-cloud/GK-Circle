@@ -1,0 +1,23 @@
+COURSE-P2-T01 sanitized command record
+Generated: 2026-07-26T09:15:00+05:30
+
+PASS  isolated temp DB create (course_p2_t01_verify_20260726)
+PASS  apply courses + course_nodes precondition schema
+PASS  learning_items up migration
+PASS  schema inspection (columns, FK, unique position, checks, index)
+PASS  constraint proofs (duplicate position, blank title, invalid type, negative position, cross-course FK)
+PASS  learning_items down migration only
+PASS  learning_items reapply
+PASS  Course checksum unchanged across cycle
+PASS  CourseNode count unchanged across cycle
+PASS  drop temporary database
+PASS  docker compose config --quiet
+PASS  docker api-verify: go vet ./...
+PASS  docker api-verify: go test ./... -count=1
+PASS  docker api-verify: go test -race ./models ./controllers/api/v1 ./pkg/structs -count=1
+PASS  docker api-verify: go build ./...
+PASS  npm run course-system:status:sync
+PASS  npm run course-system:status:check (read-only)
+
+Database credentials and unrelated working-tree paths are intentionally omitted.
+Production and NUC were not touched.

@@ -1,0 +1,25 @@
+COURSE-P1-T07 SANITIZED COMMAND RECORD
+Date: 2026-07-26
+
+PASSED | gofmt -w models/course_node.go models/course_node_delete_test.go
+PASSED | go test ./models -count=1
+PASSED | git diff --check -- api/models/course_node.go api/models/course_node_delete_test.go
+PASSED | docker compose --profile verify run --rm api-verify go vet ./...
+PASSED | docker compose --profile verify run --rm api-verify go test ./... -count=1
+PASSED | docker compose --profile verify run --rm api-verify go test -race ./models -count=1
+PASSED | docker compose --profile verify run --rm api-verify go build ./...
+PASSED | docker compose config --quiet
+PASSED | temporary PostgreSQL subtree delete, concurrent move/reorder, rollback
+PASSED | npm run course-system:status:sync
+PASSED | npm run course-system:status:check
+
+NOT_APPLICABLE | frontend lint/unit/build/Playwright
+Reason: T07 changes no frontend or HTTP API surface.
+
+Subtree deletion implemented: Yes
+Archive implemented: No
+Restore implemented: No
+Database Migration: NONE
+Production touched: No
+NUC touched: No
+Breaking Changes: NO

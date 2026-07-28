@@ -1,0 +1,41 @@
+{
+  "ledgerVersion": 1,
+  "schemaVersion": 1,
+  "runId": "2026-07-25_course-p1-t01a-isolated-clean-copy",
+  "source": {
+    "method": "git archive export",
+    "revision": "HEAD",
+    "commit": "eeac599f05eaf936c7f61db4a3deeac3c9063f59"
+  },
+  "overlay": [
+    "package.json",
+    "scripts/course-system-status.js",
+    "docs/development/**",
+    "docs/features/course-system/evidence/ledger-initialization/**"
+  ],
+  "dependencyInstall": {
+    "status": "NOT_AVAILABLE",
+    "notes": "The root ledger package declares no dependencies; the checker uses Node built-ins only."
+  },
+  "syncIdempotency": {
+    "fileCount": 33,
+    "firstDigest": "2af046a647934151d6c2be70760e4775a7dd93355ac05125e9801b5d5c89f9fe",
+    "secondDigest": "2af046a647934151d6c2be70760e4775a7dd93355ac05125e9801b5d5c89f9fe",
+    "byteIdentical": true,
+    "exitCode": 0,
+    "durationMs": 959
+  },
+  "readOnlyCheck": {
+    "beforeDigest": "2af046a647934151d6c2be70760e4775a7dd93355ac05125e9801b5d5c89f9fe",
+    "afterDigest": "2af046a647934151d6c2be70760e4775a7dd93355ac05125e9801b5d5c89f9fe",
+    "byteIdentical": true,
+    "exitCode": 0,
+    "durationMs": 1112
+  },
+  "humanTextPreservation": {
+    "beforeDigest": "b8eda1bfe8d5cd28ed761e9faa5dad0051770aea0af9c476d909dd737bfa46bc",
+    "afterDigest": "b8eda1bfe8d5cd28ed761e9faa5dad0051770aea0af9c476d909dd737bfa46bc",
+    "preserved": true
+  },
+  "productionOrNuc": false
+}
