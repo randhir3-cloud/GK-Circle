@@ -45,16 +45,14 @@ beforeEach(() => {
 });
 
 describe("learner authentication states", () => {
-  it("shows a sign-in state on Courses without exposing or calling the API", async () => {
+  it("allows unauthenticated learners to browse published courses catalog", async () => {
     const wrapper = await mountSuspended(CoursesPage);
     await flushPromises();
 
-    expect(wrapper.text()).toContain(
-      "Please sign in to access your learning dashboard."
-    );
+    expect(wrapper.text()).toContain("Courses");
     expect(wrapper.text()).not.toContain("session_id");
     expect(wrapper.text()).not.toContain("kratos");
-    expect(testState.coursesApi.listPublishedCourses).not.toHaveBeenCalled();
+    expect(testState.coursesApi.listPublishedCourses).toHaveBeenCalled();
   });
 
   it("shows a sign-in state on Analytics without exposing or calling the API", async () => {

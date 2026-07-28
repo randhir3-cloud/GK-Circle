@@ -242,7 +242,9 @@ onMounted(async () => {
 <template>
   <div class="min-h-screen bg-jv-cream px-4 py-6 text-jv-ink sm:px-6">
     <header class="mx-auto max-w-5xl">
-      <p class="text-xs font-black uppercase tracking-wide text-jv-muted">
+      <p
+        class="inline-flex rounded-full border-[2px] border-jv-ink bg-jv-yellow-soft px-3 py-1 text-xs font-black uppercase tracking-widest text-jv-ink"
+      >
         Exam Platform · P1
       </p>
       <h1 class="font-headings text-3xl sm:text-4xl">Course Builder</h1>

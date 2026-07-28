@@ -115,7 +115,7 @@ const sections = [
           aria-hidden="true"
         ></span>
         <div
-          class="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-jv-coral"
+          class="inline-flex items-center gap-2 rounded-full border-[2px] border-jv-ink bg-jv-yellow-soft px-3 py-1 text-xs font-black uppercase tracking-widest text-jv-ink"
         >
           <Sparkles class="size-4" aria-hidden="true" />
           Documentation & Help

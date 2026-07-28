@@ -43,13 +43,19 @@ const flatten = (roots) => {
 
 const nodes = computed(() => flatten(outline.value?.roots || []));
 
+const router = useRouter();
+
 const load = async () => {
   loading.value = true;
   error.value = "";
   try {
     course.value = await api.getPublishedCourse(courseId.value);
     outline.value = await api.getPublishedOutline(courseId.value);
-    enrollment.value = await api.getEnrollment(courseId.value);
+    try {
+      enrollment.value = await api.getEnrollment(courseId.value);
+    } catch {
+      enrollment.value = { enrolled: false };
+    }
   } catch (err) {
     error.value = getLearnerLearningItemAPIError(
       err,
@@ -61,6 +67,12 @@ const load = async () => {
 };
 
 const enroll = async () => {
+  if (!usersStore.getUserData()) {
+    router.push(
+      `/account/login?redirect=/courses/${encodeURIComponent(courseId.value)}`
+    );
+    return;
+  }
   enrolling.value = true;
   error.value = "";
   try {

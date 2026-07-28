@@ -132,7 +132,9 @@ onMounted(async () => {
       class="mx-auto flex max-w-6xl flex-wrap items-end justify-between gap-4"
     >
       <div>
-        <p class="text-xs font-black uppercase tracking-wide text-jv-muted">
+        <p
+          class="inline-flex rounded-full border-[2px] border-jv-ink bg-jv-yellow-soft px-3 py-1 text-xs font-black uppercase tracking-widest text-jv-ink"
+        >
           Exam Platform · Course administration
         </p>
         <h1 class="font-headings text-3xl sm:text-4xl">Courses</h1>

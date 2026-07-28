@@ -2,10 +2,7 @@
 import { onMounted, ref } from "vue";
 import { useLearnerLearningItemsApi } from "@/composables/learner_learning_items";
 import { setUserDataStore } from "@/composables/auth";
-import {
-  getSafeAPIErrorMessage,
-  isAuthenticationError,
-} from "@/utils/api_error";
+import { getSafeAPIErrorMessage } from "@/utils/api_error";
 import { useUsersStore } from "~~/store/users";
 import PageStateCard from "@/components/common/PageStateCard.vue";
 
@@ -24,24 +21,20 @@ const error = ref("");
 const authenticated = ref(false);
 
 onMounted(async () => {
-  const user = await setUserDataStore(usersStore);
-  if (!user) {
-    loading.value = false;
-    return;
+  try {
+    const user = await setUserDataStore(usersStore);
+    if (user) authenticated.value = true;
+  } catch {
+    authenticated.value = false;
   }
-  authenticated.value = true;
 
   try {
     courses.value = (await api.listPublishedCourses()) || [];
   } catch (requestError) {
-    if (isAuthenticationError(requestError)) {
-      authenticated.value = false;
-    } else {
-      error.value = getSafeAPIErrorMessage(
-        requestError,
-        "Courses could not be loaded. Please try again."
-      );
-    }
+    error.value = getSafeAPIErrorMessage(
+      requestError,
+      "Courses could not be loaded. Please try again."
+    );
   } finally {
     loading.value = false;
   }
@@ -73,16 +66,6 @@ onMounted(async () => {
         :key="index"
         class="h-44 animate-pulse rounded-[12px] border-[2px] border-jv-ink/15 bg-jv-white"
       ></div>
-    </div>
-
-    <div v-else-if="!authenticated" class="mx-auto mt-6 w-full max-w-7xl">
-      <PageStateCard
-        eyebrow="Your learning dashboard"
-        title="Please sign in to access your learning dashboard."
-        description="Sign in to explore published Courses, enrol in learning paths, and continue from where you left off."
-        action-label="Sign in"
-        action-to="/account/login"
-      />
     </div>
 
     <div v-else-if="error" class="mx-auto mt-6 w-full max-w-7xl" role="alert">

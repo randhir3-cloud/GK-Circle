@@ -399,21 +399,23 @@ func setupCourseController(v1 fiber.Router, db *goqu.Database, logger *zap.Logge
 	courses.Get(fmt.Sprintf("/:%s", constants.CourseId), courseController.GetCourse)
 	courses.Patch(fmt.Sprintf("/:%s", constants.CourseId), courseController.UpdateCourse)
 
-	// Learner Course APIs: Kratos identity + Course enrollment for LearningItem delivery.
-	// Publish_state filtering remains repository-owned.
+	// Learner Course APIs: Public catalog & outlines + Authenticated enrollment & LearningItem delivery.
 	learner := v1.Group("/learner")
-	learner.Use(middleware.KratosAuthenticated)
 	learnerCourses := learner.Group("/courses")
 	learnerCourses.Get("/", learnerCourseController.ListPublishedCourses)
-	learnerCourses.Get(fmt.Sprintf("/:%s/enrollment", constants.CourseId), learnerCourseEnrollmentController.GetEnrollment)
-	learnerCourses.Post(fmt.Sprintf("/:%s/enrollment", constants.CourseId), learnerCourseEnrollmentController.Enroll)
-	learnerCourses.Delete(fmt.Sprintf("/:%s/enrollment", constants.CourseId), learnerCourseEnrollmentController.Unenroll)
+	learnerCourses.Get(fmt.Sprintf("/:%s", constants.CourseId), learnerCourseController.GetPublishedCourse)
 	learnerCourses.Get(fmt.Sprintf("/:%s/nodes/tree", constants.CourseId), learnerCourseController.GetPublishedOutline)
-	learnerNodes := learnerCourses.Group(fmt.Sprintf("/:%s/nodes", constants.CourseId))
+
+	learnerAuth := learner.Group("")
+	learnerAuth.Use(middleware.KratosAuthenticated)
+	learnerAuthCourses := learnerAuth.Group("/courses")
+	learnerAuthCourses.Get(fmt.Sprintf("/:%s/enrollment", constants.CourseId), learnerCourseEnrollmentController.GetEnrollment)
+	learnerAuthCourses.Post(fmt.Sprintf("/:%s/enrollment", constants.CourseId), learnerCourseEnrollmentController.Enroll)
+	learnerAuthCourses.Delete(fmt.Sprintf("/:%s/enrollment", constants.CourseId), learnerCourseEnrollmentController.Unenroll)
+	learnerNodes := learnerAuthCourses.Group(fmt.Sprintf("/:%s/nodes", constants.CourseId))
 	learnerItems := learnerNodes.Group(fmt.Sprintf("/:%s/learning-items", constants.NodeId))
 	learnerItems.Get("/", learnerLearningItemController.List)
 	learnerItems.Get(fmt.Sprintf("/:%s", constants.ItemId), learnerLearningItemController.GetByID)
-	learnerCourses.Get(fmt.Sprintf("/:%s", constants.CourseId), learnerCourseController.GetPublishedCourse)
 
 	return nil
 }

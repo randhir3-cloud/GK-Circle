@@ -31,10 +31,6 @@ func InitLearnerCourseController(db *goqu.Database, logger *zap.Logger, _ *confi
 }
 
 func (ctrl *LearnerCourseController) ListPublishedCourses(c *fiber.Ctx) error {
-	if _, err := requireAuthenticatedLearner(c); err != nil {
-		return mapLearnerAuthError(c, ctrl.logger, err)
-	}
-
 	courses, err := ctrl.courseModel.ListPublishedCourses()
 	if err != nil {
 		ctrl.logger.Error("list published courses failed", zap.Error(err))
@@ -49,10 +45,6 @@ func (ctrl *LearnerCourseController) ListPublishedCourses(c *fiber.Ctx) error {
 }
 
 func (ctrl *LearnerCourseController) GetPublishedCourse(c *fiber.Ctx) error {
-	if _, err := requireAuthenticatedLearner(c); err != nil {
-		return mapLearnerAuthError(c, ctrl.logger, err)
-	}
-
 	courseID, err := parseCourseIDParam(c)
 	if err != nil {
 		return utils.JSONFail(c, http.StatusBadRequest, constants.ErrCourseInvalidID)
@@ -74,10 +66,6 @@ func (ctrl *LearnerCourseController) GetPublishedCourse(c *fiber.Ctx) error {
 }
 
 func (ctrl *LearnerCourseController) GetPublishedOutline(c *fiber.Ctx) error {
-	if _, err := requireAuthenticatedLearner(c); err != nil {
-		return mapLearnerAuthError(c, ctrl.logger, err)
-	}
-
 	courseID, err := parseCourseIDParam(c)
 	if err != nil {
 		return utils.JSONFail(c, http.StatusBadRequest, constants.ErrCourseInvalidID)
