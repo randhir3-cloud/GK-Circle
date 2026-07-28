@@ -228,7 +228,19 @@
 }
 
 .Notivue__notification {
-  @apply font-headings;
+  font-family: var(--font-body) !important;
+  font-weight: 800 !important;
+  color: var(--jv-ink) !important;
+  background-color: var(--jv-yellow-soft) !important;
+  border: 2px solid var(--jv-ink) !important;
+  border-radius: 8px 5px 10px 6px !important;
+  box-shadow: 4px 4px 0 0 var(--jv-ink) !important;
+}
+
+.Notivue__notification *,
+.Notivue__notification svg,
+.Notivue__notification button {
+  color: var(--jv-ink) !important;
 }
 
 .jv-carousel-nav:hover {

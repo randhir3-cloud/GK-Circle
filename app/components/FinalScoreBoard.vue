@@ -126,6 +126,11 @@ const getAnalysisDetails = async () => {
 const loadData = () => {
   if (props.isAdmin) {
     activeQuizId.value = route.query.aqi || "";
+    if (!activeQuizId.value) {
+      scoreboardData.value = [];
+      requestPending.value = false;
+      return;
+    }
     getFinalScoreboardDetails(
       `${props.userURL}?active_quiz_id=${activeQuizId.value}`
     );

@@ -180,7 +180,9 @@ onMounted(async () => {
     class="min-h-screen overflow-x-hidden bg-jv-cream px-4 py-6 text-jv-ink sm:px-6 lg:px-8"
   >
     <header class="mx-auto w-full max-w-7xl">
-      <p class="text-xs font-black uppercase tracking-wide text-jv-coral">
+      <p
+        class="inline-flex rounded-full border border-jv-ink bg-jv-yellow-soft px-2.5 py-1 text-xs font-black uppercase tracking-wide text-jv-ink"
+      >
         Learning intelligence
       </p>
       <h1 class="mt-1 font-headings text-3xl sm:text-5xl">Your analytics</h1>

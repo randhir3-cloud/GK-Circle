@@ -6,7 +6,6 @@ const userPlayedQuiz = computed(() => route.query.user_played_quiz);
 
 definePageMeta({
   layout: "empty",
-  hideSidebar: true,
 });
 
 useSeoMeta({

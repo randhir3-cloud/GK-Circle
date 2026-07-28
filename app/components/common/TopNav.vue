@@ -39,15 +39,7 @@
 <script setup>
 import NavigationLink from "@/components/common/NavigationLink.vue";
 const navLinks = [
-  { href: "https://gkcircle.com/", label: "Home" },
-  { href: "https://gkcircle.com/docs/user-guide", label: "User Guide" },
-  {
-    href: "https://gkcircle.com/docs/developer-guide",
-    label: "Developer Guide",
-  },
-  {
-    href: "https://gkcircle.com/docs/deployment-guide",
-    label: "Deployment Guide",
-  },
+  { href: "/", label: "Home" },
+  { href: "/docs/user-guide", label: "User Guide" },
 ];
 </script>

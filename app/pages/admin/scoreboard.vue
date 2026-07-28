@@ -3,7 +3,6 @@ const url = "/final_score/admin";
 
 definePageMeta({
   layout: "empty",
-  hideSidebar: true,
 });
 
 useSeoMeta({

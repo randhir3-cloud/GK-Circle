@@ -4,6 +4,11 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import FinalScoreBoard from "~/components/FinalScoreBoard.vue";
 import ScoreBoardTable from "~/components/ScoreBoardTable.vue";
 
+const routeQuery = {
+  aqi: "quiz123",
+  winner_ui: "true",
+};
+
 vi.mock("notivue", () => ({
   usePush: vi.fn(() => ({
     error: vi.fn(),
@@ -20,10 +25,7 @@ vi.mock("~~/composables/avatar", () => ({
 }));
 
 mockNuxtImport("useRoute", () => () => ({
-  query: {
-    aqi: "quiz123",
-    winner_ui: "true",
-  },
+  query: routeQuery,
 }));
 
 mockNuxtImport("useRuntimeConfig", () => () => ({
@@ -34,6 +36,8 @@ mockNuxtImport("useRuntimeConfig", () => () => ({
 
 describe("FinalScoreBoard Test", () => {
   beforeEach(() => {
+    routeQuery.aqi = "quiz123";
+    routeQuery.winner_ui = "true";
     vi.stubGlobal(
       "$fetch",
       vi.fn().mockResolvedValue({
@@ -87,6 +91,14 @@ describe("FinalScoreBoard Test", () => {
     ];
     await flushPromises();
     expect(wrapper.vm.scoreboardData).toHaveLength(2);
+  });
+
+  it("does not request a scoreboard when no active quiz is selected", async () => {
+    routeQuery.aqi = "";
+    mountComponent();
+    await flushPromises();
+
+    expect($fetch).not.toHaveBeenCalled();
   });
 
   it("stores analysis data for users", async () => {
