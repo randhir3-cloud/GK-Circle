@@ -3,17 +3,15 @@ package middlewares
 import (
 	"database/sql"
 	"errors"
-	"fmt"
 	"net/http"
 	"time"
 
-	"github.com/randhir3-cloud/GK-Circle-v2/api/config"
-	"github.com/randhir3-cloud/GK-Circle-v2/api/constants"
-	"github.com/randhir3-cloud/GK-Circle-v2/api/pkg/jwt"
-	"github.com/randhir3-cloud/GK-Circle-v2/api/utils"
-	resty "github.com/go-resty/resty/v2"
 	fiber "github.com/gofiber/fiber/v2"
 	j "github.com/lestrrat-go/jwx/v2/jwt"
+	"github.com/randhir3-cloud/GK-Circle-v2/api/constants"
+	"github.com/randhir3-cloud/GK-Circle-v2/api/pkg/jwt"
+	kratosClient "github.com/randhir3-cloud/GK-Circle-v2/api/pkg/kratos"
+	"github.com/randhir3-cloud/GK-Circle-v2/api/utils"
 	"go.uber.org/zap"
 )
 
@@ -70,18 +68,18 @@ func (m *Middleware) Authenticated(c *fiber.Ctx) error {
 }
 
 func (m *Middleware) KratosAuthenticated(c *fiber.Ctx) error {
-	kratosId := c.Cookies("ory_kratos_session")
-	if kratosId == "" {
-		return utils.JSONError(c, http.StatusUnauthorized, constants.ErrKratosIDEmpty)
-	}
-
-	kratosUser := config.KratosUserDetails{}
-	kratosClient := resty.New().SetBaseURL(m.Config.Kratos.BaseUrl+"/sessions").SetHeader("Cookie", fmt.Sprintf("%v=%v", constants.KratosCookie, kratosId)).SetHeader("accept", "application/json").SetHeader("withCredentials", "true").SetHeader("credentials", "include")
-
-	res, err := kratosClient.R().SetResult(&kratosUser).Get("/whoami")
-	if err != nil || res.StatusCode() != http.StatusOK {
-		m.Logger.Debug("unauthenticated registration", zap.Any("response from kratos", res.RawResponse))
-		return utils.JSONError(c, res.StatusCode(), constants.ErrKratosAuth)
+	kratosUser, status, err := kratosClient.GetAuthenticatedUser(
+		m.Config.Kratos.BaseUrl,
+		c.Get("Cookie"),
+	)
+	if err != nil {
+		if m.Logger != nil {
+			m.Logger.Debug("kratos session validation failed", zap.Error(err))
+		}
+		if status == http.StatusUnauthorized || status == http.StatusForbidden {
+			return utils.JSONError(c, http.StatusUnauthorized, constants.ErrKratosIDEmpty)
+		}
+		return utils.JSONError(c, http.StatusBadGateway, constants.ErrKratosAuth)
 	}
 
 	m.Logger.Debug("userModel.GetUserByKratosID called", zap.Any("kratosID", kratosUser.Identity.ID))

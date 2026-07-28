@@ -6,17 +6,17 @@ import (
 	"fmt"
 	"net/http"
 
+	goqu "github.com/doug-martin/goqu/v9"
+	fiber "github.com/gofiber/fiber/v2"
+	"github.com/lib/pq"
 	"github.com/randhir3-cloud/GK-Circle-v2/api/config"
 	"github.com/randhir3-cloud/GK-Circle-v2/api/constants"
 	quizUtilsHelper "github.com/randhir3-cloud/GK-Circle-v2/api/helpers/utils"
 	"github.com/randhir3-cloud/GK-Circle-v2/api/models"
+	kratosClient "github.com/randhir3-cloud/GK-Circle-v2/api/pkg/kratos"
 	"github.com/randhir3-cloud/GK-Circle-v2/api/pkg/structs"
 	"github.com/randhir3-cloud/GK-Circle-v2/api/services"
 	"github.com/randhir3-cloud/GK-Circle-v2/api/utils"
-	goqu "github.com/doug-martin/goqu/v9"
-	resty "github.com/go-resty/resty/v2"
-	fiber "github.com/gofiber/fiber/v2"
-	"github.com/lib/pq"
 	"go.uber.org/zap"
 	validator "gopkg.in/go-playground/validator.v9"
 )
@@ -60,17 +60,15 @@ func NewAuthController(goqu *goqu.Database, logger *zap.Logger, config config.Ap
 //	      400: GenericResFailBadRequest
 //		  500: GenericResError
 func (ctrl *AuthController) DoKratosAuth(c *fiber.Ctx) error {
-	kratosId := c.Cookies("ory_kratos_session")
-	if kratosId == "" {
-		return utils.JSONError(c, http.StatusBadRequest, constants.ErrKratosIDEmpty)
-	}
-
-	kratosClient := resty.New().SetBaseURL(ctrl.config.Kratos.BaseUrl+"/sessions").SetHeader("Cookie", fmt.Sprintf("%v=%v", constants.KratosCookie, kratosId)).SetHeader("accept", "application/json").SetHeader("withCredentials", "true").SetHeader("credentials", "include")
-
-	kratosUser := config.KratosUserDetails{}
-	res, err := kratosClient.R().SetResult(&kratosUser).Get("/whoami")
-	if err != nil || res.StatusCode() != http.StatusOK {
-		return utils.JSONError(c, http.StatusInternalServerError, constants.ErrKratosAuth)
+	kratosUser, status, err := kratosClient.GetAuthenticatedUser(
+		ctrl.config.Kratos.BaseUrl,
+		c.Get("Cookie"),
+	)
+	if err != nil {
+		if status == http.StatusUnauthorized || status == http.StatusForbidden {
+			return utils.JSONError(c, http.StatusUnauthorized, constants.ErrKratosIDEmpty)
+		}
+		return utils.JSONError(c, http.StatusBadGateway, constants.ErrKratosAuth)
 	}
 
 	userStruct := models.User{}
@@ -138,19 +136,16 @@ func (ctrl *AuthController) DoKratosAuth(c *fiber.Ctx) error {
 //		  200: ResponseGetRegisteredUser
 //	     401: GenericResFailConflict
 func (ctrl *AuthController) GetRegisteredUser(c *fiber.Ctx) error {
-	kratosId := c.Cookies("ory_kratos_session")
-	ctrl.logger.Debug("AuthController.GetRegisteredUser called", zap.Any("ory_kratos_session", kratosId))
-	if kratosId == "" {
-		return utils.JSONError(c, http.StatusUnauthorized, constants.ErrKratosIDEmpty)
-	}
-
-	kratosUser := config.KratosUserDetails{}
-	kratosClient := resty.New().SetBaseURL(ctrl.config.Kratos.BaseUrl+"/sessions").SetHeader("Cookie", fmt.Sprintf("%v=%v", constants.KratosCookie, kratosId)).SetHeader("accept", "application/json").SetHeader("withCredentials", "true").SetHeader("credentials", "include")
-
-	res, err := kratosClient.R().SetResult(&kratosUser).Get("/whoami")
-	if err != nil || res.StatusCode() != http.StatusOK {
-		ctrl.logger.Debug("unauthenticated registration", zap.Any("response from kratos", res.RawResponse), zap.Error(err), zap.Any("kratos response", res))
-		return utils.JSONError(c, res.StatusCode(), constants.ErrKratosAuth)
+	kratosUser, status, err := kratosClient.GetAuthenticatedUser(
+		ctrl.config.Kratos.BaseUrl,
+		c.Get("Cookie"),
+	)
+	if err != nil {
+		ctrl.logger.Debug("kratos session validation failed", zap.Error(err))
+		if status == http.StatusUnauthorized || status == http.StatusForbidden {
+			return utils.JSONError(c, http.StatusUnauthorized, constants.ErrKratosIDEmpty)
+		}
+		return utils.JSONError(c, http.StatusBadGateway, constants.ErrKratosAuth)
 	}
 
 	ctrl.logger.Debug("AuthController.GetRegisteredUser success", zap.Any("kratosUser", kratosUser))

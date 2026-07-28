@@ -447,7 +447,7 @@ work:
 ```json
 {
   "status": "error",
-  "message": "error no session_id found in kratos cookie",
+  "message": "authentication required",
   "code": 401
 }
 ```

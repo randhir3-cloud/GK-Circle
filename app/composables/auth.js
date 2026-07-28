@@ -59,18 +59,35 @@ export const handleLogout = async () => {
   }
 };
 
-export const setUserDataStore = async () => {
-  const { setUserData } = useUsersStore();
+const normalizeAuthenticatedUser = (data) => ({
+  role: data?.role,
+  avatar: data?.avatar,
+  firstname: data?.firstname,
+  username: data?.username,
+  email: data?.email,
+  canCreatePublicQuiz: !!data?.can_create_public_quiz,
+});
+
+export const getAuthenticatedUser = async () => {
   const { apiUrl } = useRuntimeConfig().public;
   const headers = useRequestHeaders(["cookie"]);
-  const fetchWho = () =>
-    fetch(apiUrl + "/user/who", {
-      method: "GET",
-      credentials: "include",
-      headers: headers,
-      mode: "cors",
-    });
+  const requestOptions = {
+    method: "GET",
+    credentials: "include",
+    headers,
+    mode: "cors",
+  };
+  const fetchWho = () => fetch(apiUrl + "/user/who", requestOptions);
+
   try {
+    const sessionResponse = await fetch(
+      apiUrl + "/kratos/whoami",
+      requestOptions
+    );
+    if (!sessionResponse.ok) {
+      return null;
+    }
+
     let response = await fetchWho();
 
     if (response.status == 404) {
@@ -86,21 +103,21 @@ export const setUserDataStore = async () => {
       response = await fetchWho();
     }
 
-    if (response.status != 200) {
-      throw new Error(response.status);
-    }
+    if (!response.ok) return null;
 
     const data = await response.json();
-    setUserData({
-      role: data?.data?.role,
-      avatar: data?.data?.avatar,
-      firstname: data?.data?.firstname,
-      username: data?.data?.username,
-      email: data?.data?.email,
-      canCreatePublicQuiz: !!data?.data?.can_create_public_quiz,
-    });
+    return data?.data ? normalizeAuthenticatedUser(data.data) : null;
   } catch (error) {
-    console.log(error.message);
-    setUserData(null);
+    console.warn("Authentication status could not be verified.", {
+      cause: error?.name || "request_failed",
+    });
+    return null;
   }
+};
+
+export const setUserDataStore = async () => {
+  const { setUserData } = useUsersStore();
+  const user = await getAuthenticatedUser();
+  setUserData(user);
+  return user;
 };

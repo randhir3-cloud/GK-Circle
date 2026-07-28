@@ -1,16 +1,19 @@
 <script setup>
 import { onMounted, ref } from "vue";
-import {
-  getLearnerLearningItemAPIError,
-  useLearnerLearningItemsApi,
-} from "@/composables/learner_learning_items";
+import { useLearnerLearningItemsApi } from "@/composables/learner_learning_items";
 import { setUserDataStore } from "@/composables/auth";
+import {
+  getSafeAPIErrorMessage,
+  isAuthenticationError,
+} from "@/utils/api_error";
 import { useUsersStore } from "~~/store/users";
+import PageStateCard from "@/components/common/PageStateCard.vue";
 
 definePageMeta({ layout: "empty" });
 useSeoMeta({
   title: "Courses - GK Circle",
-  description: "Browse published PCS courses.",
+  description:
+    "Discover structured courses created by educators and the GK Circle community.",
 });
 
 const api = useLearnerLearningItemsApi();
@@ -18,20 +21,27 @@ const usersStore = useUsersStore();
 const courses = ref([]);
 const loading = ref(true);
 const error = ref("");
+const authenticated = ref(false);
 
 onMounted(async () => {
-  try {
-    await setUserDataStore(usersStore);
-  } catch {
-    /* ignore */
+  const user = await setUserDataStore(usersStore);
+  if (!user) {
+    loading.value = false;
+    return;
   }
+  authenticated.value = true;
+
   try {
     courses.value = (await api.listPublishedCourses()) || [];
-  } catch (err) {
-    error.value = getLearnerLearningItemAPIError(
-      err,
-      "Unable to load published courses."
-    );
+  } catch (requestError) {
+    if (isAuthenticationError(requestError)) {
+      authenticated.value = false;
+    } else {
+      error.value = getSafeAPIErrorMessage(
+        requestError,
+        "Courses could not be loaded. Please try again."
+      );
+    }
   } finally {
     loading.value = false;
   }
@@ -39,48 +49,85 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-jv-cream px-4 py-6 text-jv-ink sm:px-6">
-    <header class="mx-auto max-w-3xl">
-      <h1 class="font-headings text-3xl sm:text-4xl">Published courses</h1>
-      <p class="mt-2 text-sm font-bold text-jv-muted">
-        Open a course outline to enrol and study.
+  <div class="min-h-screen bg-jv-cream px-4 py-6 text-jv-ink sm:px-6 lg:px-8">
+    <header class="mx-auto w-full max-w-7xl">
+      <p class="text-xs font-black uppercase tracking-wide text-jv-coral">
+        Structured learning
+      </p>
+      <h1 class="mt-1 font-headings text-3xl sm:text-5xl">Courses</h1>
+      <p class="mt-2 max-w-3xl text-sm font-bold text-jv-muted sm:text-base">
+        Discover structured courses created by educators and the GK Circle
+        community.
       </p>
     </header>
 
-    <p v-if="loading" class="mx-auto mt-6 max-w-3xl font-bold">Loading…</p>
-    <p
-      v-else-if="error"
-      class="mx-auto mt-6 max-w-3xl font-bold text-red-700"
-      role="alert"
+    <div
+      v-if="loading"
+      class="mx-auto mt-6 grid w-full max-w-7xl gap-4 md:grid-cols-2 xl:grid-cols-3"
+      aria-label="Loading Courses"
     >
-      {{ error }}
-    </p>
+      <div
+        v-for="index in 6"
+        :key="index"
+        class="h-44 animate-pulse rounded-[12px] border-[2px] border-jv-ink/15 bg-jv-white"
+      ></div>
+    </div>
+
+    <div v-else-if="!authenticated" class="mx-auto mt-6 w-full max-w-7xl">
+      <PageStateCard
+        eyebrow="Your learning dashboard"
+        title="Please sign in to access your learning dashboard."
+        description="Sign in to explore published Courses, enrol in learning paths, and continue from where you left off."
+        action-label="Sign in"
+        action-to="/account/login"
+      />
+    </div>
+
+    <div v-else-if="error" class="mx-auto mt-6 w-full max-w-7xl" role="alert">
+      <PageStateCard
+        eyebrow="Courses unavailable"
+        title="We could not load Courses right now."
+        :description="error"
+      />
+    </div>
+
+    <div
+      v-else-if="!courses.length"
+      class="mx-auto mt-6 w-full max-w-7xl"
+      data-testid="published-course-empty"
+    >
+      <PageStateCard
+        eyebrow="Course catalogue"
+        title="No published Courses yet."
+        description="Educators are preparing structured learning paths. Please check back soon."
+      />
+    </div>
+
     <ul
       v-else
       data-testid="published-course-list"
-      class="mx-auto mt-6 max-w-3xl space-y-3"
+      class="mx-auto mt-6 grid w-full max-w-7xl gap-4 md:grid-cols-2 xl:grid-cols-3"
     >
       <li
         v-for="course in courses"
         :key="course.id"
-        class="jv-border-uneven bg-jv-white p-4 shadow-brutal-sm"
+        class="jv-border-uneven group min-h-44 bg-jv-white p-5 shadow-brutal-sm transition-transform hover:-translate-y-1"
       >
+        <p class="text-xs font-black uppercase tracking-wide text-jv-coral">
+          Structured Course
+        </p>
         <NuxtLink
           :to="`/courses/${encodeURIComponent(course.id)}`"
-          class="font-headings text-xl underline"
+          class="mt-3 block font-headings text-xl text-jv-ink underline decoration-jv-yellow decoration-4 underline-offset-4"
         >
           {{ course.title }}
         </NuxtLink>
-        <p v-if="course.short_description" class="mt-1 text-sm font-bold">
+        <p
+          v-if="course.short_description"
+          class="mt-3 text-sm font-bold leading-relaxed text-jv-muted"
+        >
           {{ course.short_description }}
         </p>
-      </li>
-      <li
-        v-if="!courses.length"
-        class="font-bold text-jv-muted"
-        data-testid="published-course-empty"
-      >
-        No published courses yet.
       </li>
     </ul>
   </div>

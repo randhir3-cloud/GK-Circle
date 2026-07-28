@@ -1,10 +1,11 @@
 <script setup>
 import { computed, onMounted, ref, watch } from "vue";
-import {
-  getLearnerAnalyticsAPIError,
-  useLearnerAnalyticsApi,
-} from "@/composables/learner_analytics";
+import { useLearnerAnalyticsApi } from "@/composables/learner_analytics";
 import { setUserDataStore } from "@/composables/auth";
+import {
+  getSafeAPIErrorMessage,
+  isAuthenticationError,
+} from "@/utils/api_error";
 import { useUsersStore } from "~~/store/users";
 import AnalyticsSummaryCard from "@/components/analytics/AnalyticsSummaryCard.vue";
 import StudyTimeCard from "@/components/analytics/StudyTimeCard.vue";
@@ -12,6 +13,7 @@ import PerformanceTrendChart from "@/components/analytics/PerformanceTrendChart.
 import SubjectPerformanceTable from "@/components/analytics/SubjectPerformanceTable.vue";
 import RecentActivityTable from "@/components/analytics/RecentActivityTable.vue";
 import AttemptTimeline from "@/components/analytics/AttemptTimeline.vue";
+import PageStateCard from "@/components/common/PageStateCard.vue";
 
 definePageMeta({ layout: "empty" });
 useSeoMeta({
@@ -23,6 +25,7 @@ const api = useLearnerAnalyticsApi();
 const usersStore = useUsersStore();
 
 const loading = ref(true);
+const authenticated = ref(false);
 const error = ref("");
 const summary = ref(null);
 const subjects = ref([]);
@@ -36,6 +39,8 @@ const timeline = ref(null);
 
 const formatPct = (value) =>
   value == null || Number.isNaN(Number(value)) ? "—" : `${value}%`;
+
+const hasAttempts = computed(() => (summary.value?.total_attempts || 0) > 0);
 
 const summaryCards = computed(() => [
   {
@@ -59,6 +64,24 @@ const summaryCards = computed(() => [
     hint: `Best ${summary.value?.best_streak_days || 0} days`,
   },
 ]);
+
+const emptyAnalyticsCards = [
+  { label: "Accuracy", value: "—", hint: "Complete an assessment" },
+  { label: "Questions Attempted", value: "0", hint: "No answers recorded" },
+  { label: "Time Spent", value: "0 min", hint: "Practice time" },
+  { label: "Weekly Progress", value: "—", hint: "No weekly activity" },
+  { label: "Streak", value: "0 days", hint: "Start practising today" },
+  { label: "Weak Subjects", value: "—", hint: "More attempts required" },
+];
+
+const setSafeRequestError = (requestError, fallback) => {
+  if (isAuthenticationError(requestError)) {
+    authenticated.value = false;
+    error.value = "";
+    return;
+  }
+  error.value = getSafeAPIErrorMessage(requestError, fallback);
+};
 
 const loadTrends = async () => {
   const to = new Date();
@@ -90,10 +113,10 @@ const loadDashboard = async () => {
     activityItems.value = activity?.items || [];
     activityCursor.value = activity?.next_cursor || "";
     activityHasMore.value = Boolean(activity?.has_more);
-  } catch (err) {
-    error.value = getLearnerAnalyticsAPIError(
-      err,
-      "Unable to load learner analytics."
+  } catch (requestError) {
+    setSafeRequestError(
+      requestError,
+      "Analytics could not be loaded. Please try again."
     );
   } finally {
     loading.value = false;
@@ -111,10 +134,10 @@ const loadMoreActivity = async () => {
     activityItems.value = [...activityItems.value, ...(activity?.items || [])];
     activityCursor.value = activity?.next_cursor || "";
     activityHasMore.value = Boolean(activity?.has_more);
-  } catch (err) {
-    error.value = getLearnerAnalyticsAPIError(
-      err,
-      "Unable to load more activity."
+  } catch (requestError) {
+    setSafeRequestError(
+      requestError,
+      "More activity could not be loaded. Please try again."
     );
   } finally {
     loadingMore.value = false;
@@ -124,59 +147,113 @@ const loadMoreActivity = async () => {
 const selectAttempt = async (attemptId) => {
   try {
     timeline.value = await api.getAttemptTimeline(attemptId);
-  } catch (err) {
-    error.value = getLearnerAnalyticsAPIError(
-      err,
-      "Unable to load attempt timeline."
+  } catch (requestError) {
+    setSafeRequestError(
+      requestError,
+      "The attempt timeline could not be loaded."
     );
   }
 };
 
 watch(granularity, async () => {
+  if (!authenticated.value) return;
   try {
     await loadTrends();
-  } catch (err) {
-    error.value = getLearnerAnalyticsAPIError(err, "Unable to load trends.");
+  } catch (requestError) {
+    setSafeRequestError(requestError, "Trends could not be loaded.");
   }
 });
 
 onMounted(async () => {
-  try {
-    await setUserDataStore(usersStore);
-  } catch {
-    /* ignore */
+  const user = await setUserDataStore(usersStore);
+  if (!user) {
+    loading.value = false;
+    return;
   }
+  authenticated.value = true;
   await loadDashboard();
 });
 </script>
 
 <template>
   <div
-    class="min-h-screen overflow-x-hidden bg-jv-cream px-4 py-6 text-jv-ink sm:px-6"
+    class="min-h-screen overflow-x-hidden bg-jv-cream px-4 py-6 text-jv-ink sm:px-6 lg:px-8"
   >
-    <header class="mx-auto w-full max-w-6xl">
-      <h1 class="font-headings text-3xl sm:text-4xl">Your analytics</h1>
-      <p class="mt-2 text-sm font-bold text-jv-muted">
-        Read-only insights from your assessment attempts.
+    <header class="mx-auto w-full max-w-7xl">
+      <p class="text-xs font-black uppercase tracking-wide text-jv-coral">
+        Learning intelligence
+      </p>
+      <h1 class="mt-1 font-headings text-3xl sm:text-5xl">Your analytics</h1>
+      <p class="mt-2 max-w-3xl text-sm font-bold text-jv-muted sm:text-base">
+        Understand your accuracy, speed, consistency, and subject-level
+        progress.
         <span v-if="summary?.resolved_timezone">
           Timezone: {{ summary.resolved_timezone }}
         </span>
       </p>
     </header>
 
-    <p v-if="loading" class="mx-auto mt-6 max-w-6xl font-bold">Loading…</p>
-    <p
+    <div
+      v-if="loading"
+      class="mx-auto mt-6 grid w-full max-w-7xl gap-4 sm:grid-cols-2 xl:grid-cols-3"
+      aria-label="Loading analytics"
+    >
+      <div
+        v-for="index in 6"
+        :key="index"
+        class="h-36 animate-pulse rounded-[12px] border-[2px] border-jv-ink/15 bg-jv-white"
+      ></div>
+    </div>
+
+    <div v-else-if="!authenticated" class="mx-auto mt-6 w-full max-w-7xl">
+      <PageStateCard
+        eyebrow="Private learning insights"
+        title="Sign in to view your learning analytics."
+        description="Your accuracy, speed, progress, streaks, and weak subjects are available after you sign in."
+        action-label="Sign in"
+        action-to="/account/login"
+      />
+    </div>
+
+    <div
       v-else-if="error"
-      class="mx-auto mt-6 max-w-6xl font-bold text-red-700"
+      class="mx-auto mt-6 w-full max-w-7xl"
       role="alert"
       data-testid="analytics-error"
     >
-      {{ error }}
-    </p>
+      <PageStateCard
+        eyebrow="Analytics unavailable"
+        title="We could not load your analytics right now."
+        :description="error"
+      />
+    </div>
+
+    <div
+      v-else-if="!hasAttempts"
+      class="mx-auto mt-6 grid w-full max-w-7xl gap-4"
+      data-testid="analytics-empty"
+    >
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <AnalyticsSummaryCard
+          v-for="card in emptyAnalyticsCards"
+          :key="card.label"
+          :label="card.label"
+          :value="card.value"
+          :hint="card.hint"
+        />
+      </div>
+      <PageStateCard
+        eyebrow="Build your first insight"
+        title="No assessments completed yet."
+        description="Start practising to unlock insights."
+        action-label="Start practising"
+        action-to="/#practice"
+      />
+    </div>
 
     <div
       v-else
-      class="mx-auto mt-6 grid grid-cols-1 w-full min-w-0 max-w-6xl gap-4 [&>*]:min-w-0"
+      class="mx-auto mt-6 grid w-full min-w-0 max-w-7xl grid-cols-1 gap-4 [&>*]:min-w-0"
     >
       <div class="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-3 [&>*]:min-w-0">
         <AnalyticsSummaryCard
@@ -196,7 +273,6 @@ onMounted(async () => {
       />
 
       <PerformanceTrendChart v-model="granularity" :buckets="trendBuckets" />
-
       <SubjectPerformanceTable :subjects="subjects" />
 
       <div class="grid min-w-0 grid-cols-1 gap-4 lg:grid-cols-2 [&>*]:min-w-0">

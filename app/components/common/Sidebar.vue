@@ -1,7 +1,7 @@
 <template>
   <!-- Desktop sidebar (lg and up) -->
   <aside
-    class="hidden lg:flex bg-jv-ivory min-w-56 h-screen flex-col justify-between border-r-[4px] border-jv-ink px-8 py-5 overflow-y-hidden"
+    class="hidden lg:flex bg-jv-ivory min-w-56 h-screen flex-col justify-between border-r-[4px] border-jv-ink px-8 py-5 overflow-y-auto"
   >
     <div class="flex flex-col gap-4">
       <NuxtLink
@@ -224,7 +224,9 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import {
+  Activity,
   BarChart3,
+  Bot,
   BookOpenText,
   HelpCircle,
   Home,
@@ -233,8 +235,12 @@ import {
   Menu,
   MoreVertical,
   Plus,
+  Radio,
+  Settings,
   Tag,
+  Trophy,
   UserRound,
+  Users,
   X,
 } from "lucide-vue-next";
 import NavigationLink from "@/components/common/NavigationLink.vue";
@@ -367,10 +373,52 @@ const navItems = computed(() => {
       active: isActiveRoute("/courses"),
     },
     {
+      label: "Practice",
+      url: "/#practice",
+      icon: Activity,
+      active: false,
+    },
+    {
+      label: "Live Quiz",
+      url: "/join",
+      icon: Radio,
+      active: isActiveRoute("/join"),
+    },
+    {
+      label: "Community",
+      url: "/#community",
+      icon: Users,
+      active: false,
+    },
+    {
       label: "Analytics",
       url: "/analytics",
       icon: BarChart3,
       active: isActiveRoute("/analytics"),
+    },
+    {
+      label: "AI Assistant",
+      url: "/#ai-assistant",
+      icon: Bot,
+      active: false,
+    },
+    {
+      label: "Leaderboard",
+      url: "/admin/scoreboard",
+      icon: Trophy,
+      active: isActiveRoute("/admin/scoreboard"),
+    },
+    {
+      label: "Profile",
+      url: "/admin",
+      icon: UserRound,
+      active: isActiveRoute("/admin"),
+    },
+    {
+      label: "Settings",
+      url: "/account/change-password",
+      icon: Settings,
+      active: isActiveRoute("/account/change-password"),
     },
   ];
 });
@@ -434,11 +482,36 @@ const mobileNavItems = computed(() => {
   }
 
   return [
-    { label: "Home", url: "/", icon: Home, active: true },
-    { label: "Enter Code", url: "/join" },
-    { label: "Create Quiz", url: "/admin/quiz/list-quiz?create=1", icon: Plus },
+    { label: "Home", url: "/", icon: Home, active: isActiveRoute("/") },
+    {
+      label: "Courses",
+      url: "/courses",
+      icon: BookOpenText,
+      active: isActiveRoute("/courses"),
+    },
+    { label: "Practice", url: "/#practice", icon: Activity },
+    {
+      label: "Live Quiz",
+      url: "/join",
+      icon: Radio,
+      active: isActiveRoute("/join"),
+    },
+    { label: "Community", url: "/#community", icon: Users },
+    {
+      label: "Analytics",
+      url: "/analytics",
+      icon: BarChart3,
+      active: isActiveRoute("/analytics"),
+    },
+    { label: "AI Assistant", url: "/#ai-assistant", icon: Bot },
+    { label: "Leaderboard", url: "/admin/scoreboard", icon: Trophy },
+    { label: "Profile", url: "/admin", icon: UserRound },
+    {
+      label: "Settings",
+      url: "/account/change-password",
+      icon: Settings,
+    },
     { label: "Sign In", url: "/account/login" },
-    { label: "Sign Up", url: "/account/register" },
   ];
 });
 

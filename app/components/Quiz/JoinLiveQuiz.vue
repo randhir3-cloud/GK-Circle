@@ -22,7 +22,7 @@
     </p>
 
     <form
-      action="https://gkcircle.com/join"
+      action="/join"
       method="get"
       class="mt-4 sm:mt-5 flex flex-col sm:flex-row items-stretch gap-3 sm:gap-0 bg-white jv-border-rough shadow-brutal p-2 max-w-lg mx-auto"
     >

@@ -1,7 +1,9 @@
 <template>
-  <main class="flex flex-col gap-6 sm:gap-8 px-4 sm:px-6 md:px-8 py-4 md:py-5">
-    <LandingTopActions />
+  <main
+    class="mx-auto flex w-full max-w-7xl flex-col gap-10 px-4 py-5 sm:gap-14 sm:px-6 md:px-8 md:py-8"
+  >
     <HeroSection />
+    <EducationalPlatformFeatures />
     <JoinLiveQuiz />
     <PublicQuizSection />
   </main>
@@ -9,8 +11,8 @@
 
 <script setup>
 import HeroSection from "@/components/landing/HeroSection.vue";
+import EducationalPlatformFeatures from "@/components/landing/EducationalPlatformFeatures.vue";
 import JoinLiveQuiz from "@/components/Quiz/JoinLiveQuiz.vue";
-import LandingTopActions from "@/components/landing/LandingTopActions.vue";
 import PublicQuizSection from "@/components/landing/PublicQuizSection.vue";
 
 definePageMeta({
@@ -27,12 +29,12 @@ useHead({
 });
 
 useSeoMeta({
-  title: "GK Circle - Real-time Quiz Platform",
+  title: "GK Circle - Educational Operating System",
   description:
-    "Create and host real-time interactive quizzes with GK Circle. Engage your audience with live multiplayer games, instant scoring, and shareable results.",
-  ogTitle: "GK Circle - Real-time Quiz Platform",
+    "Learn, practise, compete and grow with structured Courses, smart MCQs, live tests, analytics, AI assistance and community learning.",
+  ogTitle: "GK Circle - Educational Operating System",
   ogDescription:
-    "Create and host real-time interactive quizzes with GK Circle. Engage your audience with live multiplayer games, instant scoring, and shareable results.",
+    "Structured learning, smart practice, live competition, analytics, AI assistance and community in one platform.",
   ogType: "website",
   ogUrl: canonicalUrl,
   ogImage: shareImageUrl,

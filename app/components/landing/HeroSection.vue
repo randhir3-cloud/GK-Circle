@@ -1,114 +1,118 @@
+<script setup>
+import {
+  ArrowRight,
+  Bot,
+  BookOpenText,
+  BrainCircuit,
+  ChartNoAxesCombined,
+  Gamepad2,
+  Sparkles,
+  Trophy,
+  Users,
+} from "lucide-vue-next";
+
+const primaryActions = [
+  { label: "Explore Courses", to: "/courses", icon: BookOpenText },
+  { label: "Start Practice", to: "/#practice", icon: BrainCircuit },
+  { label: "Join Live Quiz", to: "/join", icon: Gamepad2 },
+  {
+    label: "Create Test",
+    to: "/admin/quiz/list-quiz?create=1",
+    icon: Trophy,
+  },
+];
+
+const secondaryActions = [
+  { label: "Community", to: "/#community", icon: Users },
+  { label: "AI Assistant", to: "/#ai-assistant", icon: Bot },
+];
+
+const platformSignals = [
+  { label: "Structured learning", icon: BookOpenText },
+  { label: "Smart practice", icon: BrainCircuit },
+  { label: "Live competition", icon: Trophy },
+  { label: "Actionable analytics", icon: ChartNoAxesCombined },
+];
+</script>
+
 <template>
   <section
-    class="grid items-start gap-6 sm:gap-10 lg:gap-12 xl:gap-20 lg:grid-cols-[minmax(0,1fr)_300px] xl:grid-cols-[minmax(0,1fr)_400px]"
+    class="grid items-center gap-8 overflow-hidden rounded-[20px] border-[3px] border-jv-ink bg-jv-white p-5 shadow-brutal-lg sm:p-8 lg:grid-cols-[minmax(0,1.25fr)_minmax(320px,0.75fr)] lg:p-10"
   >
-    <div
-      class="flex flex-col gap-3 items-start order-2 lg:order-1 w-full min-w-0"
-    >
-      <div
-        class="rounded-[8px] border-[3px] border-jv-ink bg-jv-yellow/30 px-2.5 py-1 sm:px-3 sm:py-1.5 text-[12px] sm:text-[14px] md:small-text font-semibold uppercase shadow-brutal-sm"
+    <div>
+      <p
+        class="inline-flex items-center gap-2 rounded-full border-[2px] border-jv-ink bg-jv-yellow/45 px-3 py-1.5 text-xs font-black uppercase tracking-wide"
       >
-        EXPLORE, LEARN, QUIZ!
-      </div>
+        <Sparkles class="size-4 text-jv-coral" aria-hidden="true" />
+        GK Circle Educational Operating System
+      </p>
 
-      <h1 class="main-heading text-jv-ink">
-        <span class="block">Open-Source Quizzing</span>
-        <span class="block"
-          >Built for
-          <span
-            class="inline-block jv-highlight mt-2 sm:mt-3 px-3 sm:px-5 md:px-6 py-1 sm:py-2 rounded-[4px]"
-            >Live Quiz Experiences</span
-          >
-        </span>
+      <h1
+        class="mt-5 font-headings text-[42px] leading-[0.98] tracking-tight text-jv-ink sm:text-[64px] lg:text-[76px]"
+      >
+        Learn.<br />
+        Practice.<br />
+        Compete.
+        <span class="text-jv-coral">Grow.</span>
       </h1>
 
-      <!-- Mobile/sm carousel (under md) -->
-      <Carousel
-        :opts="{ align: 'start', loop: false }"
-        class="group mt-4 sm:mt-6 w-full md:hidden"
+      <p
+        class="mt-6 max-w-3xl text-base font-bold leading-relaxed text-jv-muted sm:text-lg"
       >
-        <CarouselContent class="-ml-4 py-2">
-          <CarouselItem
-            v-for="card in actionCards"
-            :key="card.title"
-            class="pl-4 basis-[80%] min-[420px]:basis-1/2 sm:basis-1/3"
-          >
-            <HeroActionCard
-              :title="card.title"
-              :description="card.description"
-              :tilt-class="card.tiltClass"
-            />
-          </CarouselItem>
-        </CarouselContent>
-        <CarouselPrevious class="jv-carousel-nav !left-2" />
-        <CarouselNext class="jv-carousel-nav !right-2" />
-      </Carousel>
+        GK Circle is an Educational Operating System that combines structured
+        learning, AI assistance, MCQ practice, live tests, analytics and
+        collaborative learning into one intelligent platform.
+      </p>
 
-      <!-- md+ static grid -->
-      <div
-        class="hidden md:grid mt-4 sm:mt-6 gap-5 sm:gap-6 md:gap-8 lg:gap-10 grid-cols-3 w-full"
-      >
-        <HeroActionCard
-          v-for="card in actionCards"
-          :key="card.title"
-          :title="card.title"
-          :description="card.description"
-          :tilt-class="card.tiltClass"
-        />
+      <div class="mt-7 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <NuxtLink
+          v-for="action in primaryActions"
+          :key="action.label"
+          :to="action.to"
+          class="inline-flex min-h-12 items-center justify-center gap-2 rounded-[10px] border-[2px] border-jv-ink bg-jv-yellow px-4 py-2 text-center text-sm font-black text-jv-ink no-underline shadow-brutal-sm transition-transform hover:-translate-y-1"
+        >
+          <component :is="action.icon" class="size-4" aria-hidden="true" />
+          {{ action.label }}
+        </NuxtLink>
+      </div>
+
+      <div class="mt-3 flex flex-wrap gap-3">
+        <NuxtLink
+          v-for="action in secondaryActions"
+          :key="action.label"
+          :to="action.to"
+          class="inline-flex min-h-11 items-center gap-2 rounded-[10px] border-[2px] border-jv-ink bg-white px-4 py-2 text-sm font-black text-jv-ink no-underline transition-colors hover:bg-jv-coral hover:text-white"
+        >
+          <component :is="action.icon" class="size-4" aria-hidden="true" />
+          {{ action.label }}
+          <ArrowRight class="size-4" aria-hidden="true" />
+        </NuxtLink>
       </div>
     </div>
 
-    <div class="mx-auto max-w-[500px] pt-1 lg:pt-4 order-1 lg:order-2">
-      <div class="relative rotate-[3deg]">
-        <span
-          class="absolute left-1/2 top-[-10px] z-20 h-5 w-14 -translate-x-1/2 rounded-[7px] border-[2px] border-jv-ink bg-jv-slate shadow-brutal-sm"
-          aria-hidden="true"
-        ></span>
-        <div
-          class="relative overflow-hidden bg-jv-white p-2 sm:p-3 shadow-brutal-lg jv-border-rough"
-        >
-          <img
-            src="/images/landing/homepage-hero-section.png"
-            alt="Live quiz preview"
-            class="w-full h-auto"
-          />
-        </div>
-        <div
-          class="absolute bottom-[-15px] left-[-14px] grid size-10 sm:size-12 rotate-[-10deg] place-items-center rounded-[8px] border-[3px] border-jv-ink bg-white text-jv-coral shadow-brutal-sm"
-        >
-          <Users class="size-5 sm:size-6" :stroke-width="2.5" />
-        </div>
+    <div
+      class="relative mx-auto grid w-full max-w-lg gap-3 rounded-[18px] border-[3px] border-jv-ink bg-jv-cream p-4 shadow-brutal sm:p-5"
+      aria-label="GK Circle platform capabilities"
+    >
+      <div
+        class="absolute -right-4 -top-4 grid size-14 rotate-6 place-items-center rounded-[12px] border-[3px] border-jv-ink bg-jv-coral text-white shadow-brutal-sm"
+        aria-hidden="true"
+      >
+        <BrainCircuit class="size-7" />
       </div>
+      <article
+        v-for="(signal, index) in platformSignals"
+        :key="signal.label"
+        class="flex items-center gap-4 rounded-[12px] border-[2px] border-jv-ink bg-white p-4 transition-transform hover:translate-x-1"
+        :class="index % 2 ? 'rotate-[0.6deg]' : 'rotate-[-0.6deg]'"
+      >
+        <span
+          class="grid size-11 shrink-0 place-items-center rounded-[10px] border-[2px] border-jv-ink bg-jv-yellow/60"
+        >
+          <component :is="signal.icon" class="size-5" aria-hidden="true" />
+        </span>
+        <span class="font-headings text-lg">{{ signal.label }}</span>
+      </article>
     </div>
   </section>
 </template>
-
-<script setup>
-import HeroActionCard from "@/components/landing/HeroActionCard.vue";
-import { Users } from "lucide-vue-next";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel";
-
-const actionCards = [
-  {
-    title: "Demo Instance",
-    description: "Up to 100 concurrent users",
-    tiltClass: "rotate-[-0.7deg]",
-  },
-  {
-    title: "Deploy Your Own",
-    description: "Unlimited users & control.",
-    tiltClass: "rotate-[0.6deg]",
-  },
-  {
-    title: "Get in touch",
-    description: "contact@gkcircle.com",
-    tiltClass: "rotate-[-0.4deg]",
-  },
-];
-</script>
