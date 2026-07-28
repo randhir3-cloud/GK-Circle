@@ -261,21 +261,18 @@ const mobileMenuOpen = ref(false);
 const mounted = ref(false);
 const userDataStore = useUsersStore();
 
-const isQuizListPage = computed(() =>
-  route.path.startsWith("/admin/quiz/list-quiz")
-);
-
-const isAdminPage = computed(() => route.path.startsWith("/admin"));
-
 const isLoggedInAdmin = computed(
   () => userDataStore.getUserData()?.role === "admin-user"
 );
 
-const showAdminNav = computed(
-  () => isLoggedInAdmin.value || isQuizListPage.value || isAdminPage.value
-);
+// Show admin nav ONLY when the user is actually an authenticated admin.
+// Visiting an /admin/* route as a guest must not flip the sidebar.
+const showAdminNav = computed(() => isLoggedInAdmin.value);
 
 const currentUser = computed(() => userDataStore.getUserData());
+
+// True whenever any authenticated session exists (admin or learner).
+const isLoggedIn = computed(() => !!currentUser.value?.role);
 
 // Categories manage public-catalog grouping, so the nav item only shows for
 // the configured public-quiz admins (same gate as the API enforces).
@@ -286,8 +283,6 @@ const canManageCategories = computed(
 const userName = computed(
   () => currentUser.value?.firstname || currentUser.value?.username || "Profile"
 );
-
-console.log("user");
 
 const userAvatar = computed(() =>
   getAvatarUrlByName(currentUser.value?.avatar)
@@ -382,6 +377,7 @@ const navItems = computed(() => {
   }
 
   return [
+    // Public items — always visible
     { label: "Home", url: "/", icon: Home, active: isActiveRoute("/") },
     {
       label: "Courses",
@@ -407,36 +403,41 @@ const navItems = computed(() => {
       icon: Users,
       active: isActiveRoute("/#community"),
     },
-    {
-      label: "Analytics",
-      url: "/analytics",
-      icon: BarChart3,
-      active: isActiveRoute("/analytics"),
-    },
-    {
-      label: "AI Assistant",
-      url: "/#ai-assistant",
-      icon: Bot,
-      active: isActiveRoute("/#ai-assistant"),
-    },
-    {
-      label: "Leaderboard",
-      url: "/admin/scoreboard",
-      icon: Trophy,
-      active: isActiveRoute("/admin/scoreboard"),
-    },
-    {
-      label: "Profile",
-      url: "/admin",
-      icon: UserRound,
-      active: isActiveRoute("/admin"),
-    },
-    {
-      label: "Settings",
-      url: "/account/change-password",
-      icon: Settings,
-      active: isActiveRoute("/account/change-password"),
-    },
+    // Login-gated items — only shown to authenticated users
+    ...(isLoggedIn.value
+      ? [
+          {
+            label: "Analytics",
+            url: "/analytics",
+            icon: BarChart3,
+            active: isActiveRoute("/analytics"),
+          },
+          {
+            label: "AI Assistant",
+            url: "/#ai-assistant",
+            icon: Bot,
+            active: isActiveRoute("/#ai-assistant"),
+          },
+          {
+            label: "Leaderboard",
+            url: "/admin/scoreboard",
+            icon: Trophy,
+            active: isActiveRoute("/admin/scoreboard"),
+          },
+          {
+            label: "Profile",
+            url: "/admin",
+            icon: UserRound,
+            active: isActiveRoute("/admin"),
+          },
+          {
+            label: "Settings",
+            url: "/account/change-password",
+            icon: Settings,
+            active: isActiveRoute("/account/change-password"),
+          },
+        ]
+      : []),
   ];
 });
 

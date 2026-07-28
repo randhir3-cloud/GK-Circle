@@ -1,9 +1,7 @@
 <script setup>
 const url = "/final_score/admin";
 
-definePageMeta({
-  layout: "empty",
-});
+definePageMeta({});
 
 useSeoMeta({
   title: "Quiz Scoreboard - GK Circle",
