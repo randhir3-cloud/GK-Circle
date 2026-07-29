@@ -1,0 +1,80 @@
+<!-- GK Circle Email Template: recovery_code v1 -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>Recover access to your GK Circle account</title>
+</head>
+<body style="margin:0;padding:0;background-color:#fdfbf7;font-family:Arial,Helvetica,sans-serif;font-size:16px;color:#2d2d2d;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+    <tr>
+      <td align="center" style="padding:40px 16px;">
+        <table role="presentation" width="100%" style="max-width:560px;" cellspacing="0" cellpadding="0" border="0">
+
+          <!-- Logo -->
+          <tr>
+            <td align="center" style="padding-bottom:32px;">
+              <img
+                src="https://gkcircle.com/brand/gk-circle-wordmark.png"
+                width="180"
+                height="48"
+                alt="GK Circle"
+                style="display:block;border:0;max-width:100%;height:auto;"
+              >
+            </td>
+          </tr>
+
+          <!-- Card -->
+          <tr>
+            <td style="background-color:#ffffff;border:2px solid #2d2d2d;padding:40px 36px;">
+
+              <h1 style="margin:0 0 16px 0;font-family:Arial,Helvetica,sans-serif;font-size:22px;font-weight:700;color:#2d2d2d;line-height:1.3;">
+                Recover access to your account
+              </h1>
+
+              <p style="margin:0 0 24px 0;line-height:1.6;color:#2d2d2d;">
+                We received a request to recover access to your GK Circle account. Enter the code below on the recovery page.
+              </p>
+
+              <!-- OTP Code block -->
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                <tr>
+                  <td align="center" style="padding:24px 0;">
+                    <div style="display:inline-block;background-color:#fde047;border:2px solid #2d2d2d;padding:16px 32px;">
+                      <span style="font-family:Arial,Helvetica,sans-serif;font-size:32px;font-weight:700;letter-spacing:8px;color:#2d2d2d;">{{ .RecoveryCode }}</span>
+                    </div>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Expiry notice -->
+              <p style="margin:0 0 24px 0;font-size:14px;line-height:1.6;color:#2d2d2d;border-top:1px solid #e5e5e5;padding-top:20px;">
+                For your security, this code is valid for a limited time. If it has expired, return to GK Circle and request a new one.
+              </p>
+
+              <!-- Security notice -->
+              <p style="margin:0 0 0 0;font-size:14px;line-height:1.6;color:#d9534f;font-weight:700;">
+                Security notice
+              </p>
+              <p style="margin:8px 0 0 0;font-size:14px;line-height:1.6;color:#2d2d2d;">
+                If you did not request account recovery, ignore this email. Your account remains secure and no changes will be made.
+              </p>
+
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="padding:28px 0 0 0;text-align:center;font-size:13px;color:#2d2d2d;line-height:1.8;">
+              GK Circle &middot; <a href="https://gkcircle.com" style="color:#2d2d2d;">gkcircle.com</a> &middot; <a href="mailto:support@gkcircle.com" style="color:#2d2d2d;">support@gkcircle.com</a>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

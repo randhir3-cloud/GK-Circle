@@ -132,8 +132,11 @@ identity:
 
 courier:
   smtp:
-    # connection_uri: smtp://<your_ip_address:mailpitport>?skip_ssl_verify=true&disable_starttls=true
-    connection_uri: smtps://test:test@mailslurper:1025/?skip_ssl_verify=true&disable_starttls=true
+    connection_uri: ${COURIER_SMTP_CONNECTION_URI}
+    from_name: GK Circle
+    from_address: ${COURIER_SMTP_FROM_ADDRESS}
+
+  template_override_path: /etc/config/kratos/email-templates
 
 cookies:
   domain: localhost

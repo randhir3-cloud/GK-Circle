@@ -89,14 +89,17 @@ services:
       COOKIES_DOMAIN: gkcircle.com
       COOKIES_SAME_SITE: Lax
       COOKIES_SECURE: "true"
-      COURIER_SMTP_CONNECTION_URI: smtp://mailpit:1025/?disable_starttls=true
+      COURIER_SMTP_CONNECTION_URI: ${COURIER_SMTP_CONNECTION_URI}
+      COURIER_SMTP_FROM_ADDRESS: ${COURIER_SMTP_FROM_ADDRESS}
       LOG_LEAK_SENSITIVE_VALUES: "false"
     command: serve -c /etc/config/kratos/kratos.yml --watch-courier
     depends_on:
       kratos-migrate:
         condition: service_completed_successfully
     volumes:
-      - ./api/pkg/kratos:/etc/config/kratos:ro
+      - ./api/pkg/kratos/kratos.yml:/etc/config/kratos/kratos.yml:ro
+      - ./api/pkg/kratos/identity.schema.json:/etc/config/kratos/identity.schema.json:ro
+      - ./api/pkg/kratos/email-templates:/etc/config/kratos/email-templates:ro
     networks: [gk-circle-v2-network]
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:4434/health/ready >/dev/null || exit 1"]
