@@ -10,8 +10,8 @@ type KratosConfig struct {
 }
 
 type KratosUserDetails struct {
-	AuthenticatedAt string `json:"authenticated_at"`	
-	Identity struct {
+	AuthenticatedAt string `json:"authenticated_at"`
+	Identity        struct {
 		ID     string `json:"id"`
 		Traits struct {
 			Name struct {
