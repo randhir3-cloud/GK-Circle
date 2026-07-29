@@ -21,7 +21,7 @@ type RedisClientConfig struct {
 
 // ReportConfig holds configuration for the export and scheduled reporting subsystem.
 type ReportConfig struct {
-	StorageProvider          string `envconfig:"REPORT_STORAGE_PROVIDER"`           // local | s3
+	StorageProvider          string `envconfig:"REPORT_STORAGE_PROVIDER"` // local | s3
 	LocalStoragePath         string `envconfig:"REPORT_LOCAL_STORAGE_PATH"`
 	S3Bucket                 string `envconfig:"REPORT_S3_BUCKET"`
 	S3Region                 string `envconfig:"REPORT_S3_REGION"`
@@ -51,6 +51,7 @@ type AppConfig struct {
 	Quiz          QuizConfig
 	SMTP          SMTPConfig
 	Report        ReportConfig
+	Email         EmailConfig
 }
 
 // GetConfig Collects all configs

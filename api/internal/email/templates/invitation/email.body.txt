@@ -1,0 +1,11 @@
+Hello {{.RecipientName}},
+
+You have been invited by {{.InviterName}} to participate in the quiz: {{.QuizTitle}}.
+
+To accept this invitation and take the quiz, please open the following link in your browser:
+{{.InvitationURL}}
+
+This invitation will expire on {{.ExpiresAt}}.
+
+---
+This invitation was sent to you via GK Circle. If you did not expect this, you can safely ignore this email.

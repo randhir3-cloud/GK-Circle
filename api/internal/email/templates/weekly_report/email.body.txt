@@ -1,0 +1,13 @@
+Hello {{.RecipientName}},
+
+Here is your weekly progress report and dashboard digest on GK Circle:
+
+- Completed Quizzes: {{.CompletedCount}}
+- Average Score: {{.AverageScore}}%
+- Rank Progress: {{.RankProgress}}
+
+To view your complete analysis and study insights, please open the following link in your browser:
+{{.ReportURL}}
+
+---
+You received this progress report because you are enrolled in GK Circle weekly updates. You can unsubscribe in your account settings.

@@ -1,0 +1,15 @@
+CRITICAL SECURITY ALERT
+
+Hello {{.RecipientName}},
+
+We detected security activity related to your GK Circle account:
+
+Activity: {{.AlertDetails}}
+Action Taken: {{.ActionTaken}}
+Timestamp: {{.Timestamp}}
+
+If this was not you, please immediately update your security settings and change your password by opening the following link in your browser:
+{{.SettingsURL}}
+
+---
+This is a mandatory security alert for your GK Circle account. You cannot opt out of these security updates.

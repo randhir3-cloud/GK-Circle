@@ -16,11 +16,13 @@ import (
 	"github.com/randhir3-cloud/GK-Circle-v2/api/config"
 	"github.com/randhir3-cloud/GK-Circle-v2/api/constants"
 	controller "github.com/randhir3-cloud/GK-Circle-v2/api/controllers/api/v1"
+	"github.com/randhir3-cloud/GK-Circle-v2/api/internal/email"
 	"github.com/randhir3-cloud/GK-Circle-v2/api/middlewares"
-	pMetrics 	"github.com/randhir3-cloud/GK-Circle-v2/api/pkg/prometheus"
+	pMetrics "github.com/randhir3-cloud/GK-Circle-v2/api/pkg/prometheus"
 	"github.com/randhir3-cloud/GK-Circle-v2/api/pkg/redis"
 	"github.com/randhir3-cloud/GK-Circle-v2/api/services"
 	goredis "github.com/redis/go-redis/v9"
+	"net/http"
 )
 
 var mu sync.Mutex
@@ -618,7 +620,41 @@ func setupUserPlayedQuizeController(v1 fiber.Router, goqu *goqu.Database, logger
 }
 
 func setupSharedQuizzesController(v1 fiber.Router, goqu *goqu.Database, logger *zap.Logger, middlewares middlewares.Middleware, config config.AppConfig) error {
-	sharedQuizzesController, err := controller.NewSharedQuizzesController(goqu, logger, &config)
+	// Initialize Phase 2 transactional email service
+	if err := config.Email.Validate(config.Env); err != nil {
+		logger.Fatal("Failed to validate transactional email config", zap.Error(err))
+	}
+
+	renderer, err := email.NewTemplateRenderer()
+	if err != nil {
+		logger.Fatal("Failed to initialize template renderer", zap.Error(err))
+	}
+
+	urlBuilder, err := email.NewAppURLBuilder(config.WebUrl, config.Env)
+	if err != nil {
+		logger.Fatal("Failed to initialize app URL builder", zap.Error(err))
+	}
+
+	client := &http.Client{
+		Timeout: config.Email.HTTPTimeout,
+	}
+
+	provider, err := email.NewProvider(config.Email, logger, client, email.SystemClock{}, email.ContextSleeper{})
+	if err != nil {
+		logger.Fatal("Failed to initialize email provider", zap.Error(err))
+	}
+
+	txEmailService := email.NewTransactionalEmailService(
+		config.Email,
+		provider,
+		renderer,
+		urlBuilder,
+		logger,
+		email.SystemClock{},
+		email.NopMetricsHook{},
+	)
+
+	sharedQuizzesController, err := controller.NewSharedQuizzesController(goqu, logger, &config, txEmailService)
 	if err != nil {
 		return err
 	}
@@ -752,4 +788,3 @@ func setupInstructorExportController(v1 fiber.Router, db *goqu.Database, logger 
 
 	return nil
 }
-

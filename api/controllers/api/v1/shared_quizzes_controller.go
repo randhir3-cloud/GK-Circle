@@ -1,20 +1,24 @@
 package v1
 
 import (
+	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
+	"strings"
+	"time"
 
+	goqu "github.com/doug-martin/goqu/v9"
+	fiber "github.com/gofiber/fiber/v2"
 	"github.com/randhir3-cloud/GK-Circle-v2/api/config"
 	"github.com/randhir3-cloud/GK-Circle-v2/api/constants"
 	quizUtilsHelper "github.com/randhir3-cloud/GK-Circle-v2/api/helpers/utils"
+	"github.com/randhir3-cloud/GK-Circle-v2/api/internal/email"
 	"github.com/randhir3-cloud/GK-Circle-v2/api/models"
 	"github.com/randhir3-cloud/GK-Circle-v2/api/pkg/structs"
-	"github.com/randhir3-cloud/GK-Circle-v2/api/pkg/templates"
 	"github.com/randhir3-cloud/GK-Circle-v2/api/services"
 	"github.com/randhir3-cloud/GK-Circle-v2/api/utils"
-	goqu "github.com/doug-martin/goqu/v9"
-	fiber "github.com/gofiber/fiber/v2"
 	"go.uber.org/zap"
 	validator "gopkg.in/go-playground/validator.v9"
 )
@@ -23,11 +27,12 @@ type SharedQuizzes struct {
 	sharedQuizzesModel *models.SharedQuizzesModel
 	userModel          *models.UserModel
 	emailService       *services.EmailService
+	txEmailService     *email.TransactionalEmailService
 	logger             *zap.Logger
 	config             *config.AppConfig
 }
 
-func NewSharedQuizzesController(goqu *goqu.Database, logger *zap.Logger, config *config.AppConfig) (*SharedQuizzes, error) {
+func NewSharedQuizzesController(goqu *goqu.Database, logger *zap.Logger, config *config.AppConfig, txEmailService *email.TransactionalEmailService) (*SharedQuizzes, error) {
 
 	sharedQuizzesModel := models.InitSharedQuizzesModel(goqu, logger)
 	userModel, err := models.InitUserModel(goqu, logger)
@@ -41,6 +46,7 @@ func NewSharedQuizzesController(goqu *goqu.Database, logger *zap.Logger, config 
 		sharedQuizzesModel: sharedQuizzesModel,
 		userModel:          &userModel,
 		emailService:       emailService,
+		txEmailService:     txEmailService,
 		logger:             logger,
 		config:             config,
 	}, nil
@@ -99,16 +105,42 @@ func (sqctrl *SharedQuizzes) ShareQuiz(c *fiber.Ctx) error {
 		return utils.JSONError(c, http.StatusInternalServerError, constants.ErrShareQuiz)
 	}
 
-	// Send Email to user to notify
-	quizLink := fmt.Sprintf("%s/admin/quiz/list-quiz/%s", sqctrl.config.WebUrl, quizId)
-	emailBody := templates.GenerateQuizShareEmail(quizLink, user.Email, shareQuizReq.Permission)
-
-	err = sqctrl.emailService.SendEmail(shareQuizReq.Email, constants.QuizEmailSubject, emailBody)
-	if err != nil {
-		sqctrl.logger.Error("Failed to send email", zap.Error(err))
+	// Send Email to user to notify using Phase 2 TransactionalEmailService
+	recipientName := "Candidate"
+	emailParts := strings.Split(shareQuizReq.Email, "@")
+	if len(emailParts) > 0 && emailParts[0] != "" {
+		recipientName = emailParts[0]
 	}
-	sqctrl.logger.Debug("SharedQuizzes.ShareQuiz success", zap.Any("quizId", quizId), zap.Any("userId", user.ID))
 
+	inviterName := strings.TrimSpace(user.FirstName + " " + user.LastName)
+	if inviterName == "" {
+		inviterName = user.Email
+	}
+
+	_, sendErr := sqctrl.txEmailService.SendQuizInvitation(
+		c.UserContext(),
+		email.QuizInvitationInput{
+			InvitationID: fmt.Sprintf("%v", id),
+			Recipient: email.EmailRecipient{
+				Name:    recipientName,
+				Address: shareQuizReq.Email,
+			},
+			InviterName: inviterName,
+			QuizTitle:   "GK Circle Quiz",
+			QuizID:      quizId,
+			ExpiresAt:   time.Now().Add(7 * 24 * time.Hour), // 7 days expiration
+		},
+	)
+
+	if sendErr != nil {
+		sqctrl.logger.Error("Failed to send quiz invitation email", zap.Error(sendErr))
+		if errors.Is(sendErr, context.Canceled) || errors.Is(sendErr, context.DeadlineExceeded) {
+			return utils.JSONError(c, http.StatusRequestTimeout, "Request timeout while sending invitation")
+		}
+		return utils.JSONError(c, http.StatusServiceUnavailable, "Unable to send the invitation email")
+	}
+
+	sqctrl.logger.Debug("SharedQuizzes.ShareQuiz success", zap.Any("quizId", quizId), zap.Any("userId", user.ID))
 	return utils.JSONSuccess(c, http.StatusOK, id)
 }
 

@@ -1,0 +1,11 @@
+NEW ACHIEVEMENT UNLOCKED!
+
+Congratulations {{.RecipientName}},
+
+You have earned the badge: {{.AchievementTitle}} on GK Circle!
+
+Description: {{.Description}}
+Earned at: {{.EarnedAt}}
+
+---
+You received this notification because you unlocked a milestone on GK Circle.

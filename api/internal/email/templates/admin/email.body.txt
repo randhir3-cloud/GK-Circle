@@ -1,0 +1,15 @@
+Hello {{.RecipientName}},
+
+We have an important announcement from the GK Circle administration team:
+
+{{.Title}}
+
+{{.ContentBody}}
+
+{{if .ActionURL}}
+To learn more, please open the following link in your browser:
+{{.ActionURL}}
+{{end}}
+
+---
+You received this administrative announcement as an active member of GK Circle.

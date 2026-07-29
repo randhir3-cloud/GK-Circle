@@ -1,0 +1,11 @@
+Hello {{.RecipientName}},
+
+You have successfully completed {{.CourseTitle}} and earned your official certificate!
+
+Issued at: {{.IssuedAt}}
+
+To view or download your certificate, please open the following link in your browser:
+{{.CertificateURL}}
+
+---
+You received this notification because you completed an exam or course milestones on GK Circle.

@@ -1,0 +1,13 @@
+Hello {{.RecipientName}},
+
+There is a new update in your GK Circle community:
+
+{{.NotificationTitle}}
+
+{{.ContentBody}}
+
+To view the update, please open the following link in your browser:
+{{.ActionURL}}
+
+---
+You received this notification from the GK Circle community. You can change your notification preferences in account settings.
