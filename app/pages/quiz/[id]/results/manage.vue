@@ -69,6 +69,10 @@ import InstructorResultSettings from "~/components/instructor/InstructorResultSe
 import ResultPreviewPanel from "~/components/instructor/ResultPreviewPanel.vue";
 import ReleaseResultsDialog from "~/components/instructor/ReleaseResultsDialog.vue";
 
+definePageMeta({
+  requiresVerifiedEmail: true,
+});
+
 const route = useRoute();
 const quizId = computed(() => route.params.id);
 
