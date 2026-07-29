@@ -226,8 +226,8 @@ func setupAuthController(v1 fiber.Router, goqu *goqu.Database, logger *zap.Logge
 		kratos := v1.Group("/kratos")
 		kratos.Get("/auth", authController.DoKratosAuth)
 		kratos.Get("/whoami", authController.GetRegisteredUser)
-		kratos.Put("/user", middlewares.KratosAuthenticated, authController.UpadateRegisteredUser)
-		kratos.Delete("/user", middlewares.KratosAuthenticated, authController.DeleteRegisteredUser)
+		kratos.Put("/user", middlewares.KratosAuthenticated, middlewares.VerificationRequired, authController.UpadateRegisteredUser)
+		kratos.Delete("/user", middlewares.KratosAuthenticated, middlewares.VerificationRequired, authController.DeleteRegisteredUser)
 	}
 	return nil
 }
@@ -293,6 +293,7 @@ func setupQuizController(v1 fiber.Router, db *goqu.Database, logger *zap.Logger,
 
 	admin := v1.Group("/admin")
 	admin.Use(middleware.KratosAuthenticated)
+	admin.Use(middleware.VerificationRequired)
 
 	// Public quizzes listing — must be registered BEFORE the auth-guarded /quizzes group
 	// so it is not protected by KratosAuthenticated.
@@ -305,6 +306,7 @@ func setupQuizController(v1 fiber.Router, db *goqu.Database, logger *zap.Logger,
 
 	quizzes := v1.Group("/quizzes")
 	quizzes.Use(middleware.KratosAuthenticated)
+	quizzes.Use(middleware.VerificationRequired)
 
 	quizzes.Post(fmt.Sprintf("/:%s/demo_session", constants.QuizId), quizController.GenerateDemoSession)
 	quizzes.Post(fmt.Sprintf("/:%s/upload", constants.QuizTitle), middleware.ValidateCsv, middleware.KratosAuthenticated, quizController.CreateQuizByCsv)
@@ -333,6 +335,7 @@ func setupQuizCategoryController(v1 fiber.Router, db *goqu.Database, logger *zap
 	// enforces the public-quiz admin email allowlist (same gate as publishing).
 	categories := v1.Group("/categories")
 	categories.Use(middleware.KratosAuthenticated)
+	categories.Use(middleware.VerificationRequired)
 
 	categories.Post("/", quizCategoryController.CreateCategory)
 	categories.Put(fmt.Sprintf("/:%s", constants.CategoryId), quizCategoryController.UpdateCategory)
@@ -371,6 +374,7 @@ func setupCourseController(v1 fiber.Router, db *goqu.Database, logger *zap.Logge
 	// administrative allowlist inside the controller for Course authorisation.
 	admin := v1.Group("/admin")
 	admin.Use(middleware.KratosAuthenticated)
+	admin.Use(middleware.VerificationRequired)
 
 	courses := admin.Group("/courses")
 	courses.Post("/", courseController.CreateCourse)

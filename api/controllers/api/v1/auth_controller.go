@@ -119,6 +119,10 @@ func (ctrl *AuthController) DoKratosAuth(c *fiber.Ctx) error {
 		}
 	}
 
+	if !kratosClient.IsEmailVerified(kratosUser) {
+		return c.Redirect(ctrl.config.WebUrl + "/verification")
+	}
+
 	return c.Redirect(ctrl.config.WebUrl)
 }
 
@@ -149,7 +153,12 @@ func (ctrl *AuthController) GetRegisteredUser(c *fiber.Ctx) error {
 	}
 
 	ctrl.logger.Debug("AuthController.GetRegisteredUser success", zap.Any("kratosUser", kratosUser))
-	return utils.JSONSuccess(c, http.StatusOK, kratosUser)
+	return utils.JSONSuccess(c, http.StatusOK, fiber.Map{
+		"email":            kratosUser.Identity.Traits.Email,
+		"email_verified":   kratosClient.IsEmailVerified(kratosUser),
+		"kratos_id":        kratosUser.Identity.ID,
+		"authenticated_at": kratosUser.AuthenticatedAt,
+	})
 }
 
 // Update user Details

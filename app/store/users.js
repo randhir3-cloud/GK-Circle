@@ -12,7 +12,12 @@ export const useUsersStore = defineStore(
       return userData.value;
     };
 
-    return { userData, setUserData, getUserData };
+    const fetchAuthenticatedUser = async () => {
+      const { setUserDataStore } = await import("@/composables/auth");
+      return await setUserDataStore();
+    };
+
+    return { userData, setUserData, getUserData, fetchAuthenticatedUser };
   },
   {
     persist: true,

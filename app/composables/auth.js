@@ -66,6 +66,7 @@ const normalizeAuthenticatedUser = (data) => ({
   username: data?.username,
   email: data?.email,
   canCreatePublicQuiz: !!data?.can_create_public_quiz,
+  emailVerified: data?.email_verified === true,
 });
 
 export const getAuthenticatedUser = async () => {

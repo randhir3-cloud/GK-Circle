@@ -97,6 +97,7 @@ func (m *Middleware) KratosAuthenticated(c *fiber.Ctx) error {
 	c.Locals(constants.ContextUser, user)
 	c.Locals(constants.ContextUid, user.ID)
 	c.Locals(constants.KratosID, kratosUser.Identity.ID)
+	c.Locals(constants.KratosUserDetails, kratosUser)
 	return c.Next()
 
 }

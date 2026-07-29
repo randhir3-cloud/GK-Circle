@@ -11,6 +11,7 @@ import (
 	quizUtilsHelper "github.com/randhir3-cloud/GK-Circle-v2/api/helpers/utils"
 	"github.com/randhir3-cloud/GK-Circle-v2/api/models"
 	"github.com/randhir3-cloud/GK-Circle-v2/api/pkg/jwt"
+	kratosClient "github.com/randhir3-cloud/GK-Circle-v2/api/pkg/kratos"
 	"github.com/randhir3-cloud/GK-Circle-v2/api/utils"
 	goqu "github.com/doug-martin/goqu/v9"
 	fiber "github.com/gofiber/fiber/v2"
@@ -70,6 +71,11 @@ func (ctrl *UserController) GetUserMeta(c *fiber.Ctx) error {
 			return utils.JSONFail(c, http.StatusInternalServerError, constants.ErrGetUser)
 		}
 
+		emailVerified := false
+		if kratosUser, ok := c.Locals(constants.KratosUserDetails).(config.KratosUserDetails); ok {
+			emailVerified = kratosClient.IsEmailVerified(kratosUser)
+		}
+
 		ctrl.logger.Debug("UserController.GetUserMeta success", zap.Any("user", user))
 		return utils.JSONSuccess(c, http.StatusOK, map[string]any{
 			"username":               user.Username,
@@ -78,6 +84,7 @@ func (ctrl *UserController) GetUserMeta(c *fiber.Ctx) error {
 			"role":                   "admin-user",
 			"avatar":                 user.ImageKey,
 			"can_create_public_quiz": ctrl.config.Quiz.IsPublicQuizAdmin(user.Email),
+			"email_verified":         emailVerified,
 		})
 	}
 
