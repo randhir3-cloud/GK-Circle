@@ -1,3 +1,5 @@
+import { useUsersStore } from "~~/store/users";
+
 export default defineNuxtRouteMiddleware(async (to) => {
   const isProtected =
     to.meta.requiresVerifiedEmail === true ||
