@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Run ON the NUC once (interactive): bash scripts/setup-nuc-github-deploy-key.sh
-# Creates a passphrase-free deploy key for git@github.com:randhir3-cloud/GK-Circle-v2.git
+# Creates a passphrase-free deploy key for git@github.com:randhir3-cloud/GK-Circle.git
 
 set -euo pipefail
 
@@ -50,7 +50,7 @@ fi
 
 echo ""
 echo "=== Add this deploy key to GitHub ==="
-echo "Repo: randhir3-cloud/GK-Circle-v2 -> Settings -> Deploy keys -> Add deploy key"
+echo "Repo: randhir3-cloud/GK-Circle -> Settings -> Deploy keys -> Add deploy key"
 echo "Title: nuc-gkcircle-deploy"
 echo "Allow write access: OFF (read-only is enough for git pull)"
 echo ""
@@ -58,6 +58,6 @@ cat "${KEY}.pub"
 echo ""
 echo "Then on the NUC:"
 echo "  cd ~/apps/gkcircle"
-echo "  git remote set-url origin git@github.com:randhir3-cloud/GK-Circle-v2.git"
+echo "  git remote set-url origin git@github.com:randhir3-cloud/GK-Circle.git"
 echo "  ssh -T git@github.com"
 echo "  git pull"

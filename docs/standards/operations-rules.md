@@ -2,7 +2,7 @@
 
 - NUC application path: `/home/randhir/apps/gk-circle-v2`.
 - Production uses `docker-compose.nuc.yml` and a server-local `.env`.
-- Deploy only committed code from `randhir3-cloud/GK-Circle-v2`.
+- Deploy only committed code from `randhir3-cloud/GK-Circle`.
 - Pull with fast-forward only.
 - Back up PostgreSQL before migrations once production data exists.
 - Run Go SQL migrations before serving new code.

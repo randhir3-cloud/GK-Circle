@@ -9,7 +9,7 @@ $ErrorActionPreference = "Stop"
 $root = Split-Path -Parent $PSScriptRoot
 Set-Location $root
 
-$expectedOrigin = "https://github.com/randhir3-cloud/GK-Circle-v2.git"
+$expectedOrigin = "https://github.com/randhir3-cloud/GK-Circle.git"
 $origin = (git remote get-url origin).Trim()
 if ($origin -ne $expectedOrigin) {
     throw "Unexpected origin '$origin'. Expected '$expectedOrigin'."
@@ -29,7 +29,7 @@ $remote = @'
 set -eu
 project="__PROJECT__"
 branch="__BRANCH__"
-repo="https://github.com/randhir3-cloud/GK-Circle-v2.git"
+repo="https://github.com/randhir3-cloud/GK-Circle.git"
 
 if [ ! -d "$project/.git" ]; then
   mkdir -p "$(dirname "$project")"

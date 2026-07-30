@@ -51,7 +51,7 @@ NestJS, Next.js, and Prisma are not part of this repository.
 
 - Product name: GK Circle
 - Public URL: `https://gkcircle.com`
-- Repository: `https://github.com/randhir3-cloud/GK-Circle-v2`
+- Repository: `https://github.com/randhir3-cloud/GK-Circle`
 - Upstream: `https://github.com/Improwised/jovVix`
 - Licence: GNU AGPL-3.0; preserve upstream attribution.
 

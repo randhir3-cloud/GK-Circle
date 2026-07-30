@@ -62,7 +62,7 @@ The initial platform is State-PCS capable rather than hardcoded to one commissio
 ## Naming
 
 - Product: `GK Circle`
-- Repository: `randhir3-cloud/GK-Circle-v2`
+- Repository: `randhir3-cloud/GK-Circle`
 - Go module: `github.com/randhir3-cloud/GK-Circle-v2/api`
 - Binary: `gk-circle`
 - Docker resources: `gk-circle-*`

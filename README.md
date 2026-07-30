@@ -52,8 +52,8 @@ Requirements:
 - Git
 
 ```powershell
-git clone https://github.com/randhir3-cloud/GK-Circle-v2.git
-cd GK-Circle-v2
+git clone https://github.com/randhir3-cloud/GK-Circle.git
+cd GK-Circle
 Copy-Item .env.example .env
 ```
 
