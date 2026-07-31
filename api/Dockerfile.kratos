@@ -1,0 +1,9 @@
+FROM oryd/kratos:v1.0.0
+
+COPY pkg/kratos/kratos.yml /etc/config/kratos/kratos.yml
+COPY pkg/kratos/identity.schema.json /etc/config/kratos/identity.schema.json
+COPY pkg/kratos/email-templates /etc/config/kratos/email-templates
+
+EXPOSE 4433 4434
+
+CMD ["serve", "-c", "/etc/config/kratos/kratos.yml", "--watch-courier"]
