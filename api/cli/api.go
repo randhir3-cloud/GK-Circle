@@ -29,6 +29,7 @@ func GetAPICommandDef(cfg config.AppConfig, logger *zap.Logger) cobra.Command {
 			if err := config.ValidateAPIConfig(cfg); err != nil {
 				return err
 			}
+			logger.Info("CLI command selected", zap.String("command", cmd.CommandPath()))
 
 			// Create fiber app
 			app := fiber.New(fiber.Config{
@@ -80,19 +81,23 @@ func GetAPICommandDef(cfg config.AppConfig, logger *zap.Logger) cobra.Command {
 
 			interrupt := make(chan os.Signal, 1)
 			signal.Notify(interrupt, syscall.SIGINT, syscall.SIGTERM)
+			
+			logger.Info("HTTP listen start", zap.String("port", cfg.Port))
 			go func() {
 				if err := app.Listen(cfg.Port); err != nil {
-					logger.Panic(err.Error())
+					logger.Error("HTTP server stopped with error", zap.Error(err))
+					// Trigger clean shutdown loop
+					interrupt <- syscall.SIGTERM
 				}
 			}()
 
 			<-interrupt
 			logger.Info("gracefully shutting down...")
 			if err := app.Shutdown(); err != nil {
-				logger.Panic("error while shutdown server", zap.Error(err))
+				logger.Error("error while shutdown server", zap.Error(err))
 			}
 
-			logger.Info("server stopped to receive new requests or connection.")
+			logger.Info("HTTP server stopped")
 			return nil
 		},
 	}

@@ -17,6 +17,7 @@ package main
 import (
 	"log"
 	"os"
+	"runtime/debug"
 	"time"
 
 	"github.com/randhir3-cloud/GK-Circle-v2/api/cli"
@@ -27,38 +28,75 @@ import (
 	"go.uber.org/zap"
 )
 
-func main() {
+func run() (exitCode int) {
+	exitCode = 1
 
-	// Collecting config from env or file or flag
+	defer func() {
+		if recovered := recover(); recovered != nil {
+			log.Printf("application panic: %v\n%s", recovered, debug.Stack())
+
+			// Check if global logger is set and use it if possible
+			rootLog := zap.L()
+			if rootLog != nil {
+				rootLog.Error(
+					"application panicked",
+					zap.Any("panic", recovered),
+					zap.ByteString("stack", debug.Stack()),
+				)
+				_ = rootLog.Sync()
+			}
+
+			sentry.CurrentHub().Recover(recovered)
+			sentry.Flush(2 * time.Second)
+
+			exitCode = 1
+		}
+	}()
+
+	// 1. Load config
 	cfg, err := config.LoadConfig()
 	if err != nil {
-		log.Printf("Configuration error: %v", err)
-		os.Exit(1)
+		log.Printf("configuration error: %v", err)
+		return 1
 	}
+	log.Printf("configuration loaded successfully")
 
-	logger, err := logger.NewRootLogger(cfg.Debug, cfg.IsDevelopment)
+	// 2. Init root logger
+	rootLogger, err := logger.NewRootLogger(cfg.Debug, cfg.IsDevelopment)
 	if err != nil {
-		panic(err)
+		log.Printf("logger initialization failed: %v", err)
+		return 1
 	}
-	zap.ReplaceGlobals(logger)
 
-	// this function will logged error log in sentry
+	zap.ReplaceGlobals(rootLogger)
+	defer func() {
+		_ = rootLogger.Sync()
+	}()
+	rootLogger.Info("logger initialized successfully")
+
+	// 3. Setup Sentry and Panic/Routinewrapper
 	sentryLoggedFunc := func() {
-		err := recover()
-
-		if err != nil {
-			sentry.CurrentHub().Recover(err)
-			sentry.Flush(time.Second * 2)
+		recovered := recover()
+		if recovered != nil {
+			rootLogger.Error("worker routine panicked", zap.Any("panic", recovered), zap.ByteString("stack", debug.Stack()))
+			sentry.CurrentHub().Recover(recovered)
+			sentry.Flush(2 * time.Second)
 		}
 	}
-
-	// routine wrapper will handle go routine error also an log into sentry
 	routinewrapper.Init(sentryLoggedFunc)
-	defer sentryLoggedFunc()
 
-	err = cli.Init(cfg, logger)
-	if err != nil {
-		panic(err)
+	// 4. Run CLI
+	if err := cli.Init(cfg, rootLogger); err != nil {
+		rootLogger.Error("application startup failed", zap.Error(err))
+		sentry.CaptureException(err)
+		sentry.Flush(2 * time.Second)
+		return 1
 	}
 
+	exitCode = 0
+	return
+}
+
+func main() {
+	os.Exit(run())
 }

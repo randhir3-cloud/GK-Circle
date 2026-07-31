@@ -2,6 +2,7 @@ package redis
 
 import (
 	"context"
+	"time"
 
 	redis "github.com/redis/go-redis/v9"
 )
@@ -18,16 +19,18 @@ func InitPubSubModel(addr, password string, db int) (*PubSubModel, error) {
 		DB:               db,
 		DisableIndentity: true,
 	})
-	ctx := context.Background()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 
 	_, err := client.Ping(ctx).Result()
-
 	if err != nil {
+		_ = client.Close()
 		return nil, err
 	}
 
 	return &PubSubModel{
-		Ctx:    ctx,
+		Ctx:    context.Background(),
 		Client: *client,
 	}, nil
 }

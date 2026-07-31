@@ -1,8 +1,10 @@
 package database
 
 import (
+	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"os"
 	"strconv"
 	"time"
@@ -13,6 +15,7 @@ import (
 	_ "github.com/doug-martin/goqu/v9/dialect/postgres"
 	_ "github.com/doug-martin/goqu/v9/dialect/sqlite3"
 	_ "github.com/mattn/go-sqlite3"
+	"go.uber.org/zap"
 )
 
 var db *sql.DB
@@ -27,16 +30,76 @@ const (
 
 // Connect with database
 func Connect(cfg config.DBConfig) (*goqu.Database, error) {
+	start := time.Now()
+	zap.L().Info("database connect start",
+		zap.String("dialect", cfg.Dialect),
+		zap.String("host", cfg.Host),
+		zap.Int("port", cfg.Port),
+		zap.String("database", cfg.Db),
+	)
+
+	var goquDB *goqu.Database
+	var err error
 	switch cfg.Dialect {
 	case POSTGRES:
-		return postgresDBConnection(cfg)
+		goquDB, err = postgresDBConnection(cfg)
 	case MYSQL:
-		return mysqlDBConnection(cfg)
+		goquDB, err = mysqlDBConnection(cfg)
 	case SQLITE3:
-		return sqlite3DBConnection(cfg)
+		goquDB, err = sqlite3DBConnection(cfg)
 	default:
-		return nil, errors.New("no suitable dialect found")
+		err = errors.New("no suitable dialect found")
 	}
+
+	elapsed := time.Since(start)
+
+	if err != nil {
+		zap.L().Error("database connect failure",
+			zap.String("dialect", cfg.Dialect),
+			zap.String("host", cfg.Host),
+			zap.Int("port", cfg.Port),
+			zap.String("database", cfg.Db),
+			zap.Duration("elapsed", elapsed),
+			zap.Error(err),
+		)
+		return nil, err
+	}
+
+	// Bounded startup check
+	var rawDB *sql.DB
+	if goquDB != nil {
+		if underlyingDB, ok := goquDB.Db.(*sql.DB); ok {
+			rawDB = underlyingDB
+		}
+	}
+
+	if rawDB != nil {
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+
+		if pingErr := rawDB.PingContext(ctx); pingErr != nil {
+			_ = rawDB.Close()
+			zap.L().Error("database ping failure",
+				zap.String("dialect", cfg.Dialect),
+				zap.String("host", cfg.Host),
+				zap.Int("port", cfg.Port),
+				zap.String("database", cfg.Db),
+				zap.Duration("elapsed", time.Since(start)),
+				zap.Error(pingErr),
+			)
+			return nil, fmt.Errorf("database startup check failed: %w", pingErr)
+		}
+	}
+
+	zap.L().Info("database connect success",
+		zap.String("dialect", cfg.Dialect),
+		zap.String("host", cfg.Host),
+		zap.Int("port", cfg.Port),
+		zap.String("database", cfg.Db),
+		zap.Duration("elapsed", time.Since(start)),
+	)
+
+	return goquDB, nil
 }
 
 func sqlite3DBConnection(cfg config.DBConfig) (*goqu.Database, error) {

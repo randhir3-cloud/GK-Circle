@@ -754,6 +754,7 @@ func setupInstructorExportController(v1 fiber.Router, db *goqu.Database, logger 
 		reclaimInterval = 30
 	}
 	bgCtx := context.Background()
+	logger.Info("workers initialized", zap.Int("pool_size", workerPoolSize), zap.Int("reclaim_interval_seconds", reclaimInterval))
 	worker, jobQueue := services.NewReportWorker(db, exportSvc, reportEmailSvc, workerPoolSize, reclaimInterval, logger)
 	worker.Start(bgCtx)
 

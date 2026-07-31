@@ -11,6 +11,7 @@ import (
 	_ "github.com/lib/pq"              // for postgres dialect
 	migrate "github.com/rubenv/sql-migrate"
 	"github.com/spf13/cobra"
+	"go.uber.org/zap"
 )
 
 // GetMigrationCommandDef initialize migration command
@@ -32,6 +33,7 @@ func GetMigrationCommandDef(cfg config.AppConfig) cobra.Command {
 			if err := config.ValidateMigrationConfig(cfg); err != nil {
 				return err
 			}
+			zap.L().Info("CLI command selected", zap.String("command", cmd.CommandPath()))
 
 			// Run test db migration
 
@@ -60,6 +62,7 @@ func GetMigrationCommandDef(cfg config.AppConfig) cobra.Command {
 			if err := config.ValidateMigrationConfig(cfg); err != nil {
 				return err
 			}
+			zap.L().Info("CLI command selected", zap.String("command", cmd.CommandPath()))
 
 			// Run test db migration
 			if cfg.Env == "testing" && cfg.DB.Dialect == "sqlite3" {

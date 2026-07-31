@@ -1,6 +1,8 @@
 package cli
 
 import (
+	"fmt"
+
 	"github.com/randhir3-cloud/GK-Circle-v2/api/config"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
@@ -12,7 +14,15 @@ func Init(cfg config.AppConfig, logger *zap.Logger) error {
 	apiCmd := GetAPICommandDef(cfg, logger)
 	deleteOrphanedKratosUserCmd := GetDeleteOrphanedCommand(cfg)
 
-	rootCmd := &cobra.Command{Use: "gk-circle"}
+	rootCmd := &cobra.Command{
+		Use:           "gk-circle",
+		SilenceUsage:  true,
+		SilenceErrors: true,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return fmt.Errorf("no command specified: expected one of api, migrate, or another supported command")
+		},
+	}
+
 	rootCmd.AddCommand(&migrationCmd, &apiCmd, &deleteOrphanedKratosUserCmd)
 	return rootCmd.Execute()
 }

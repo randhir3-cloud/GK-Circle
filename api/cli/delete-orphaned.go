@@ -9,6 +9,7 @@ import (
 
 	"github.com/randhir3-cloud/GK-Circle-v2/api/config"
 	"github.com/spf13/cobra"
+	"go.uber.org/zap"
 )
 
 // Identity represents a Kratos identity.
@@ -25,6 +26,8 @@ func GetDeleteOrphanedCommand(cfg config.AppConfig) cobra.Command {
 		Short: "To delete the orphan users from kratos.",
 		Long:  `To delete the orphan users from kratos, which are already deleted from backend.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
+			zap.L().Info("CLI command selected", zap.String("command", cmd.CommandPath()))
+
 			if len(args) == 0 {
 				return fmt.Errorf("please provide at least one email to delete")
 			}
