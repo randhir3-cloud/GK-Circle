@@ -1,8 +1,15 @@
 FROM oryd/kratos:v1.0.0
 
+USER root
+RUN mv /usr/bin/kratos /usr/bin/kratos-bin
+COPY kratos-entrypoint.sh /usr/bin/kratos
+RUN chmod 0755 /usr/bin/kratos
+
 COPY pkg/kratos/kratos.yml /etc/config/kratos/kratos.yml
 COPY pkg/kratos/identity.schema.json /etc/config/kratos/identity.schema.json
 COPY pkg/kratos/email-templates /etc/config/kratos/email-templates
+
+USER 10000
 
 EXPOSE 4433 4434
 
