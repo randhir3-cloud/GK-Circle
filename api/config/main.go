@@ -30,6 +30,7 @@ type ReportConfig struct {
 	MaxAttachmentBytes       int64  `envconfig:"REPORT_EMAIL_MAX_ATTACHMENT_BYTES"` // default 10485760
 	WorkerPoolSize           int    `envconfig:"REPORT_WORKER_POOL_SIZE"`           // default 3
 	SchedulerIntervalSeconds int    `envconfig:"REPORT_SCHEDULER_INTERVAL_SECONDS"` // default 60
+	SchedulerTimeoutSeconds  int    `envconfig:"REPORT_SCHEDULER_TIMEOUT_SECONDS"`  // default 10
 	ReclaimIntervalSeconds   int    `envconfig:"REPORT_RECLAIM_INTERVAL_SECONDS"`   // default 30
 	EmailRetryAttempts       int    `envconfig:"REPORT_EMAIL_RETRY_ATTEMPTS"`       // default 3
 }

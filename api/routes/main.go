@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strconv"
 	"sync"
 
 	"go.uber.org/zap"
@@ -760,7 +761,27 @@ func setupInstructorExportController(v1 fiber.Router, db *goqu.Database, logger 
 	if schedulerInterval == 0 {
 		schedulerInterval = 60
 	}
-	scheduler := services.NewReportScheduler(db, jobQueue, schedulerInterval, logger)
+
+	// Validate scheduler timeout
+	if val, present := os.LookupEnv("REPORT_SCHEDULER_TIMEOUT_SECONDS"); present {
+		if val == "0" {
+			return fmt.Errorf("invalid REPORT_SCHEDULER_TIMEOUT_SECONDS: zero duration is rejected")
+		}
+		if timeoutVal, err := strconv.Atoi(val); err != nil {
+			return fmt.Errorf("invalid REPORT_SCHEDULER_TIMEOUT_SECONDS: malformed integer %q: %w", val, err)
+		} else if timeoutVal < 0 {
+			return fmt.Errorf("invalid REPORT_SCHEDULER_TIMEOUT_SECONDS: negative duration %d is rejected", timeoutVal)
+		} else if timeoutVal > 300 {
+			return fmt.Errorf("invalid REPORT_SCHEDULER_TIMEOUT_SECONDS: exceeds reasonable maximum of 300s (got %d)", timeoutVal)
+		}
+	}
+
+	schedulerTimeout := cfg.Report.SchedulerTimeoutSeconds
+	if schedulerTimeout == 0 {
+		schedulerTimeout = 10 // safe default
+	}
+
+	scheduler := services.NewReportScheduler(db, jobQueue, schedulerInterval, schedulerTimeout, logger)
 	scheduler.Start(bgCtx)
 
 	retentionSvc := services.NewReportRetentionService(db, storage, logger)

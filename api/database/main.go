@@ -5,6 +5,7 @@ import (
 	"errors"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/randhir3-cloud/GK-Circle-v2/api/config"
 	goqu "github.com/doug-martin/goqu/v9"
@@ -76,6 +77,36 @@ func postgresDBConnection(cfg config.DBConfig) (*goqu.Database, error) {
 		if err != nil {
 			return nil, err
 		}
+		
+		// Configure pool limits
+		maxOpen := cfg.MaxOpenConns
+		if maxOpen <= 0 {
+			maxOpen = 20 // default open
+		}
+		db.SetMaxOpenConns(maxOpen)
+
+		maxIdle := cfg.MaxIdleConns
+		if maxIdle <= 0 {
+			maxIdle = 10 // default idle
+		}
+		db.SetMaxIdleConns(maxIdle)
+
+		if cfg.ConnMaxLifetime != "" {
+			if d, err := time.ParseDuration(cfg.ConnMaxLifetime); err == nil {
+				db.SetConnMaxLifetime(d)
+			}
+		} else {
+			db.SetConnMaxLifetime(30 * time.Minute)
+		}
+
+		if cfg.ConnMaxIdleTime != "" {
+			if d, err := time.ParseDuration(cfg.ConnMaxIdleTime); err == nil {
+				db.SetConnMaxIdleTime(d)
+			}
+		} else {
+			db.SetConnMaxIdleTime(15 * time.Minute)
+		}
+
 		return goqu.New(POSTGRES, db), err
 	}
 	return goqu.New(POSTGRES, db), err

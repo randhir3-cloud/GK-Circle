@@ -11,4 +11,8 @@ type DBConfig struct {
 	MigrationDir   string `required:"true" envconfig:"MIGRATION_DIR" validate:"required"`
 	Dialect        string `required:"true" envconfig:"DB_DIALECT" validate:"required"`
 	SQLiteFilePath string `envconfig:"SQLITE_FILEPATH"`
+	MaxOpenConns   int    `envconfig:"DB_MAX_OPEN_CONNS"`
+	MaxIdleConns   int    `envconfig:"DB_MAX_IDLE_CONNS"`
+	ConnMaxLifetime string `envconfig:"DB_CONN_MAX_LIFETIME"`
+	ConnMaxIdleTime string `envconfig:"DB_CONN_MAX_IDLE_TIME"`
 }

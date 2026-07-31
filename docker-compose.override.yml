@@ -137,6 +137,10 @@ services:
     depends_on:
       - db
 
+  api-verify:
+    networks:
+      - gk-circle-network
+
 # ── Extend volumes with named definitions ─────────────────
 volumes:
   pgdata:
