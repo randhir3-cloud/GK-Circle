@@ -102,11 +102,11 @@ selfservice:
         password:
           hooks:
             - hook: session
-            - hook: verification
+            - hook: show_verification_ui
         oidc:
           hooks:
             - hook: session
-            - hook: verification
+            - hook: show_verification_ui
 log:
   level: debug
   format: text
