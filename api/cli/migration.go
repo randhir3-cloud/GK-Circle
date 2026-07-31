@@ -29,6 +29,10 @@ func GetMigrationCommandDef(cfg config.AppConfig) cobra.Command {
 		Long:  `It will run all remaining migration(s)`,
 		Args:  cobra.MinimumNArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if err := config.ValidateMigrationConfig(cfg); err != nil {
+				return err
+			}
+
 			// Run test db migration
 
 			if cfg.Env == "testing" && cfg.DB.Dialect == "sqlite3" {
@@ -53,6 +57,10 @@ func GetMigrationCommandDef(cfg config.AppConfig) cobra.Command {
 		Long:  `It will run all remaining migration(s)`,
 		Args:  cobra.MinimumNArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if err := config.ValidateMigrationConfig(cfg); err != nil {
+				return err
+			}
+
 			// Run test db migration
 			if cfg.Env == "testing" && cfg.DB.Dialect == "sqlite3" {
 				createTestingDBMigration(cfg, "DOWN")

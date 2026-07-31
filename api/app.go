@@ -15,6 +15,8 @@
 package main
 
 import (
+	"log"
+	"os"
 	"time"
 
 	"github.com/randhir3-cloud/GK-Circle-v2/api/cli"
@@ -28,7 +30,11 @@ import (
 func main() {
 
 	// Collecting config from env or file or flag
-	cfg := config.GetConfig()
+	cfg, err := config.LoadConfig()
+	if err != nil {
+		log.Printf("Configuration error: %v", err)
+		os.Exit(1)
+	}
 
 	logger, err := logger.NewRootLogger(cfg.Debug, cfg.IsDevelopment)
 	if err != nil {

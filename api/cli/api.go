@@ -26,6 +26,9 @@ func GetAPICommandDef(cfg config.AppConfig, logger *zap.Logger) cobra.Command {
 		Short: "To start api",
 		Long:  `To start api`,
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if err := config.ValidateAPIConfig(cfg); err != nil {
+				return err
+			}
 
 			// Create fiber app
 			app := fiber.New(fiber.Config{
