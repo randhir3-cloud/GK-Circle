@@ -60,7 +60,7 @@ try {
 
   // 3. API health
   console.log("Checking API health...");
-  const apiHealth = await page.request.get(`${base}/api/v1/healthz`);
+  const apiHealth = await page.request.get(`${base}/api/healthz`);
   assertCondition("API health status 200", apiHealth.status() === 200, `got status ${apiHealth.status()}`);
 
   // 4. Public quizzes
