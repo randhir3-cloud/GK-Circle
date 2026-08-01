@@ -5,8 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 
 	goqu "github.com/doug-martin/goqu/v9"
+	"github.com/go-resty/resty/v2"
 	fiber "github.com/gofiber/fiber/v2"
 	"github.com/lib/pq"
 	"github.com/randhir3-cloud/GK-Circle-v2/api/config"
@@ -253,4 +255,49 @@ func (ctrl *AuthController) DeleteRegisteredUser(c *fiber.Ctx) error {
 	ctrl.logger.Debug("AuthController.DeleteRegisteredUser success", zap.Any("userID", userId), zap.Any("kratosID", kratosId))
 
 	return utils.JSONSuccess(c, http.StatusOK, "user deleted succesfully!")
+}
+
+func (ctrl *AuthController) E2ECleanup(c *fiber.Ctx) error {
+	secret := c.Get("X-E2E-Secret")
+	if secret == "" || secret != ctrl.config.Secret {
+		return c.Status(http.StatusForbidden).JSON(fiber.Map{"error": "Forbidden"})
+	}
+
+	kratosId := c.Query("kratos_id")
+	email := c.Query("email")
+	runId := c.Query("run_id")
+
+	if kratosId == "" || email == "" || runId == "" {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "Missing parameters"})
+	}
+
+	if !strings.Contains(email, runId) {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "Safety check failed: email does not contain run ID"})
+	}
+
+	kratosClient := resty.New().SetBaseURL(ctrl.config.Kratos.AdminUrl+"/identities").SetHeader("accept", "application/json")
+	res, err := kratosClient.R().SetResult(&config.KratosUserDetails{}).Get(fmt.Sprintf("/%s", kratosId))
+	if err != nil || res.StatusCode() != http.StatusOK {
+		return c.Status(http.StatusNotFound).JSON(fiber.Map{"error": "Identity not found in Kratos"})
+	}
+
+	details := res.Result().(*config.KratosUserDetails)
+	if details.Identity.Traits.Email != email {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "Safety check failed: Kratos identity email mismatch"})
+	}
+
+	user, err := ctrl.userModel.GetUserByKratosID(kratosId)
+	if err == nil && user.ID != "" {
+		err = ctrl.userSvc.DeleteUserDataById(user.ID, kratosId)
+		if err != nil {
+			return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": fmt.Sprintf("Failed to delete user data: %v", err)})
+		}
+	} else {
+		delRes, err := kratosClient.R().Delete(fmt.Sprintf("/%s", kratosId))
+		if err != nil || delRes.StatusCode() != http.StatusNoContent {
+			return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to delete Kratos identity directly"})
+		}
+	}
+
+	return c.Status(http.StatusOK).JSON(fiber.Map{"status": "success", "message": "Test account cleaned up successfully"})
 }
