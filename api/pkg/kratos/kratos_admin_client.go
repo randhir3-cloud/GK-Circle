@@ -109,54 +109,58 @@ func (c *kratosAdminClient) VerifyEmailAddress(ctx context.Context, identityID s
 
 	normalizedEmail := strings.ToLower(strings.TrimSpace(email))
 
-	type updatePayload struct {
-		SchemaID            string                   `json:"schema_id"`
-		State               string                   `json:"state"`
-		Traits              KratosTraits             `json:"traits"`
-		VerifiableAddresses []KratosVerifiableAddress `json:"verifiable_addresses,omitempty"`
+	type patchOp struct {
+		Op    string      `json:"op"`
+		Path  string      `json:"path"`
+		Value interface{} `json:"value"`
 	}
 
-	payload := updatePayload{
-		SchemaID: identity.SchemaID,
-		State:    identity.State,
-		Traits:   identity.Traits,
-	}
-
+	var patchPayload []patchOp
 	found := false
-	for _, addr := range identity.VerifiableAddresses {
+	for idx, addr := range identity.VerifiableAddresses {
 		if strings.EqualFold(strings.TrimSpace(addr.Value), normalizedEmail) {
-			addr.Verified = true
-			addr.Status = "completed"
-			payload.VerifiableAddresses = append(payload.VerifiableAddresses, addr)
+			patchPayload = append(patchPayload, patchOp{
+				Op:    "replace",
+				Path:  fmt.Sprintf("/verifiable_addresses/%d/verified", idx),
+				Value: true,
+			}, patchOp{
+				Op:    "replace",
+				Path:  fmt.Sprintf("/verifiable_addresses/%d/status", idx),
+				Value: "completed",
+			})
 			found = true
-		} else {
-			payload.VerifiableAddresses = append(payload.VerifiableAddresses, addr)
 		}
 	}
 
 	if !found {
-		if strings.EqualFold(strings.TrimSpace(identity.Traits.Email), normalizedEmail) {
-			payload.VerifiableAddresses = append(payload.VerifiableAddresses, KratosVerifiableAddress{
-				Value:    normalizedEmail,
-				Verified: true,
-				Via:      "email",
-				Status:   "completed",
-			})
-		}
+		// If the address was not found in verifiable_addresses list, add it
+		patchPayload = append(patchPayload, patchOp{
+			Op:   "add",
+			Path: "/verifiable_addresses",
+			Value: []interface{}{
+				map[string]interface{}{
+					"value":    normalizedEmail,
+					"verified": true,
+					"via":      "email",
+					"status":   "completed",
+				},
+			},
+		})
 	}
 
 	var updatedIdentity KratosIdentity
 	resp, err := c.client.R().
 		SetContext(ctx).
-		SetBody(payload).
+		SetHeader("Content-Type", "application/json-patch+json").
+		SetBody(patchPayload).
 		SetResult(&updatedIdentity).
-		Put(c.adminURL + "/admin/identities/" + identityID)
+		Patch(c.adminURL + "/admin/identities/" + identityID)
 	if err != nil {
-		return nil, fmt.Errorf("Kratos PUT API request failed: %w", err)
+		return nil, fmt.Errorf("Kratos PATCH API request failed: %w", err)
 	}
 
 	if resp.StatusCode() != http.StatusOK {
-		return nil, fmt.Errorf("Kratos PUT API returned HTTP %d: %s", resp.StatusCode(), resp.String())
+		return nil, fmt.Errorf("Kratos PATCH API returned HTTP %d: %s", resp.StatusCode(), resp.String())
 	}
 
 	return &updatedIdentity, nil

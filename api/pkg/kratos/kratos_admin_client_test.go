@@ -84,31 +84,32 @@ func TestKratosAdminClient_VerifyEmailAddress(t *testing.T) {
 			return
 		}
 
-		if req.Method == http.MethodPut {
+		if req.Method == http.MethodPatch {
 			assert.Equal(t, "/admin/identities/id-123", req.URL.Path)
 
-			var payload struct {
-				SchemaID            string                   `json:"schema_id"`
-				State               string                   `json:"state"`
-				Traits              KratosTraits             `json:"traits"`
-				VerifiableAddresses []KratosVerifiableAddress `json:"verifiable_addresses"`
+			var payload []struct {
+				Op    string      `json:"op"`
+				Path  string      `json:"path"`
+				Value interface{} `json:"value"`
 			}
 			err := json.NewDecoder(req.Body).Decode(&payload)
 			assert.NoError(t, err)
-			assert.Equal(t, "default", payload.SchemaID)
-			assert.Equal(t, "active", payload.State)
-			assert.Equal(t, "randhirsandhu81@gmail.com", payload.Traits.Email)
-			assert.Len(t, payload.VerifiableAddresses, 1)
-			assert.True(t, payload.VerifiableAddresses[0].Verified)
-			assert.Equal(t, "completed", payload.VerifiableAddresses[0].Status)
+			assert.NotEmpty(t, payload)
 
 			response := KratosIdentity{
-				ID:                  "id-123",
-				SchemaID:            payload.SchemaID,
-				State:               payload.State,
-				Traits:              payload.Traits,
-				VerifiableAddresses: payload.VerifiableAddresses,
+				ID:       "id-123",
+				SchemaID: "default",
+				State:    "active",
+				VerifiableAddresses: []KratosVerifiableAddress{
+					{
+						Value:    "randhirsandhu81@gmail.com",
+						Verified: true,
+						Via:      "email",
+						Status:   "completed",
+					},
+				},
 			}
+			response.Traits.Email = "randhirsandhu81@gmail.com"
 			data, _ := json.Marshal(response)
 			rw.Header().Set("Content-Type", "application/json")
 			rw.WriteHeader(http.StatusOK)

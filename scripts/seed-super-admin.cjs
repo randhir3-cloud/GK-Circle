@@ -44,7 +44,7 @@ if (isDocker) {
   args = ["seed-admin", "--email", email];
 } else {
   command = "go";
-  args = ["run", "cli/main.go", "seed-admin", "--email", email];
+  args = ["run", "app.go", "seed-admin", "--email", email];
 }
 
 console.log(`Bootstrap wrapper invoking: ${command} ${args.join(" ")}`);
