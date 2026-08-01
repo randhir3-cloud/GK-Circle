@@ -88,16 +88,22 @@ function attachDiagnostics(page: Page, diagnostics: Diagnostics): void {
   });
 
   page.on("requestfailed", (req: Request) => {
+    const sanitizedUrl = req
+      .url()
+      .replace(/(token|password|code|verification)=[^&]+/gi, "$1=[REDACTED]");
     diagnostics.failedRequests.push({
-      url: req.url(),
+      url: sanitizedUrl,
       failureText: req.failure()?.errorText || "Unknown error",
     });
   });
 
   page.on("response", (res: Response) => {
     if (res.status() >= 400) {
+      const sanitizedUrl = res
+        .url()
+        .replace(/(token|password|code|verification)=[^&]+/gi, "$1=[REDACTED]");
       diagnostics.badResponses.push({
-        url: res.url(),
+        url: sanitizedUrl,
         status: res.status(),
         statusText: res.statusText(),
       });
@@ -300,11 +306,27 @@ test.describe("Authenticated end-to-end flow", () => {
   test.describe.configure({ mode: "serial" });
 
   const diagnostics = createDiagnostics();
-  const timestamp = Date.now();
-  const email = `gkcircle.e2e.${timestamp}@example.test`;
-  const password =
-    process.env.PLAYWRIGHT_TEST_PASSWORD || `Secure!Pass${timestamp}Aa1`;
-  const quizTitle = `E2E Runtime Quiz ${timestamp}`;
+  const testStartTime = Date.now();
+
+  const baseURL = process.env.PLAYWRIGHT_BASE_URL;
+  const mailpitURL = process.env.MAILPIT_API_URL;
+  const password = process.env.PLAYWRIGHT_TEST_PASSWORD;
+  const runID = process.env.E2E_RUN_ID;
+
+  if (!baseURL || !mailpitURL || !password || !runID) {
+    throw new Error(
+      "Sanitized configuration error: missing required E2E variables (PLAYWRIGHT_BASE_URL, MAILPIT_API_URL, PLAYWRIGHT_TEST_PASSWORD, E2E_RUN_ID)"
+    );
+  }
+
+  if (!/^[a-zA-Z0-9_-]+$/.test(runID)) {
+    throw new Error(
+      "Sanitized configuration error: invalid E2E_RUN_ID format."
+    );
+  }
+
+  const email = `gkcircle.e2e.${runID}@example.test`;
+  const quizTitle = `E2E Quiz ${runID}`;
 
   let browserRef: Browser;
   let context: BrowserContext;
@@ -314,7 +336,7 @@ test.describe("Authenticated end-to-end flow", () => {
   test.beforeAll(async ({ browser }) => {
     browserRef = browser;
     context = await browserRef.newContext({
-      baseURL: process.env.PLAYWRIGHT_BASE_URL || "http://localhost:3000",
+      baseURL: baseURL,
     });
     page = await context.newPage();
     attachDiagnostics(page, diagnostics);
@@ -361,29 +383,34 @@ test.describe("Authenticated end-to-end flow", () => {
     // Poll Mailpit until the verification email arrives or timeout is reached
     let verificationMail;
     for (let attempt = 0; attempt < 10; attempt++) {
-      const mailpitRes = await fetch(
-        "http://localhost:8025/api/v1/messages"
-      ).catch(() => null);
+      const mailpitRes = await fetch(`${mailpitURL}/api/v1/messages`).catch(
+        () => null
+      );
       if (mailpitRes && mailpitRes.ok) {
         const mailData = (await mailpitRes.json()) as {
           messages: Array<{
             ID: string;
             Subject: string;
             To: Array<{ Address: string }>;
+            Created: string;
           }>;
         };
-        verificationMail = mailData.messages.find((m) =>
-          m.To?.some((to) => to.Address === email)
-        );
+        verificationMail = mailData.messages.find((m) => {
+          const createdTime = Date.parse(m.Created);
+          return (
+            m.To?.some((to) => to.Address === email) &&
+            createdTime >= testStartTime
+          );
+        });
         if (verificationMail) break;
       }
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(1000);
     }
 
     if (verificationMail) {
       emailVerificationRequired = true;
       const detailRes = await fetch(
-        `http://localhost:8025/api/v1/message/${verificationMail.ID}`
+        `${mailpitURL}/api/v1/message/${verificationMail.ID}`
       );
       if (detailRes.ok) {
         const detailData = (await detailRes.json()) as {
