@@ -1,6 +1,12 @@
 export default defineNuxtPlugin(() => {
   const config = useRuntimeConfig();
 
+  // On the server side (SSR), route API and Kratos requests via internal private domains
+  if (import.meta.server) {
+    config.public.apiUrl = "http://api.railway.internal:3000/api/v1";
+    config.public.kratosUrl = "http://kratos.railway.internal:4433";
+  }
+
   // Sanitize baseUrl
   const base = config.public.baseUrl;
   if (base && !base.startsWith("http://") && !base.startsWith("https://")) {
