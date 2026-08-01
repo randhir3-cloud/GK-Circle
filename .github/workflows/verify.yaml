@@ -181,6 +181,22 @@ jobs:
           SERVE_ADMIN_PORT=${{ env.SERVE_ADMIN_PORT }}
           EOF
 
+      - name: Prepare Playwright runtime inputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          test_password="Gkc!$(openssl rand -hex 18)Aa9"
+          echo "::add-mask::$test_password"
+          {
+            echo "PLAYWRIGHT_BASE_URL=http://localhost:3000"
+            echo "PLAYWRIGHT_API_BASE_URL=http://localhost:3010"
+            echo "MAILPIT_API_URL=http://localhost:8025"
+            echo "E2E_MAILPIT_URL=http://localhost:8025"
+            echo "E2E_KRATOS_PUBLIC_URL=http://localhost:4433"
+            echo "E2E_RUN_ID=ci-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+            echo "PLAYWRIGHT_TEST_PASSWORD=$test_password"
+          } >> "$GITHUB_ENV"
+
       - name: Start Docker Compose services
         run: |
           cp api/.env.kratos.example api/.env.kratos
