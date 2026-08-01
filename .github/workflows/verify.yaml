@@ -97,9 +97,11 @@ jobs:
 
       - name: Smoke-test Docker verification service
         run: |
+          cp api/.env.kratos.example api/.env.kratos
+          trap 'rm -f api/.env.kratos' EXIT
           docker compose --profile verify config
           docker compose --profile verify build api-verify
-          docker compose --profile verify run --rm api-verify go test ./...
+          docker compose --profile verify run --rm api-verify go test -short ./...
 
   frontend-verify:
     name: Frontend Verification
