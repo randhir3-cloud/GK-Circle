@@ -149,7 +149,7 @@
 
 <script setup>
 import { usePush } from "notivue";
-import { toRef } from "vue";
+import { ref, reactive, toRef, onMounted } from "vue";
 import { Lock, AlertCircle } from "lucide-vue-next";
 import { useUserPasswordRules } from "@/composables/user_password_rules";
 
@@ -165,7 +165,10 @@ useSeoMeta({
 });
 
 const toast = usePush();
-const url = useRuntimeConfig().public;
+const router = useRouter();
+const route = useRoute();
+const config = useRuntimeConfig();
+const url = config.public;
 
 const password = reactive({
   new: "",
@@ -173,18 +176,40 @@ const password = reactive({
 });
 
 const newPasswordRef = toRef(password, "new");
-
 const { passwordErrors } = useUserPasswordRules(newPasswordRef);
 
 const passwordRequestError = ref("");
 const passwordSubmitted = ref(false);
-const flow = ref("");
+const flowData = ref(null);
 const csrfToken = ref("");
 
-const fetchFlowIdAndCsrfToken = async () => {
+// Helper to extract messages from Ory Kratos flows
+const extractMessages = (data) => {
+  const msgs = [];
+  if (data?.ui?.messages) {
+    msgs.push(...data.ui.messages.map((m) => m.text));
+  }
+  if (data?.ui?.nodes) {
+    data.ui.nodes.forEach((node) => {
+      if (node.messages) {
+        msgs.push(...node.messages.map((m) => m.text));
+      }
+    });
+  }
+  return msgs;
+};
+
+const initSettingsFlow = async () => {
+  const flowId = route.query.flow;
+  if (!flowId) {
+    // If no flow ID exists, navigate to Kratos to initialize the flow
+    window.location.href = `${url.kratosUrl}/self-service/settings/browser`;
+    return;
+  }
+
   try {
     const response = await fetch(
-      `${url.kratosUrl}/self-service/settings/browser?aal=&refresh=&return_to=`,
+      `${url.kratosUrl}/self-service/settings/flows?id=${flowId}`,
       {
         method: "GET",
         headers: {
@@ -194,75 +219,118 @@ const fetchFlowIdAndCsrfToken = async () => {
       }
     );
 
+    if (response.status === 401) {
+      router.push("/account/login");
+      return;
+    }
+
+    if (response.status === 404 || response.status === 410) {
+      window.location.href = `${url.kratosUrl}/self-service/settings/browser`;
+      return;
+    }
+
     if (!response.ok) {
-      throw new Error(`Error: ${response.statusText}`);
+      router.push("/error");
+      return;
     }
 
     const data = await response.json();
-    flow.value = data.id;
-    csrfToken.value = data.ui.nodes.find(
+    flowData.value = data;
+
+    const tokenNode = data.ui.nodes.find(
       (node) => node.attributes.name === "csrf_token"
-    ).attributes.value;
+    );
+    if (tokenNode) {
+      csrfToken.value = tokenNode.attributes.value;
+    }
   } catch (error) {
-    console.error("Error fetching flow ID and CSRF token:", error);
+    console.error("Error fetching settings flow:", error);
+    router.push("/error");
   }
 };
+
+onMounted(() => {
+  initSettingsFlow();
+});
 
 const handleChangePassword = async () => {
   passwordSubmitted.value = true;
 
+  if (passwordErrors.value.length > 0) {
+    return;
+  }
+
+  if (password.new !== password.confirm) {
+    passwordRequestError.value = "Passwords do not match.";
+    return;
+  }
+
+  if (!flowData.value || !csrfToken.value) {
+    passwordRequestError.value = "Settings flow is not initialized.";
+    return;
+  }
+
   try {
-    if (passwordErrors.value.length > 0) {
+    const actionUrl = flowData.value.ui.action;
+    const actionMethod = flowData.value.ui.method || "POST";
+
+    const response = await fetch(actionUrl, {
+      method: actionMethod,
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify({
+        password: password.new,
+        csrf_token: csrfToken.value,
+        method: "password",
+      }),
+    });
+
+    if (response.status === 401) {
+      router.push("/account/login");
       return;
     }
 
-    if (password.new !== password.confirm) {
-      passwordRequestError.value = "Passwords do not match.";
+    if (response.status === 404 || response.status === 410) {
+      window.location.href = `${url.kratosUrl}/self-service/settings/browser`;
       return;
     }
 
-    await fetchFlowIdAndCsrfToken();
-
-    const response = await fetch(
-      `${url.kratosUrl}/self-service/settings?flow=${flow.value}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({
-          password: password.new,
-          csrf_token: csrfToken.value,
-          method: "password",
-        }),
-      }
-    );
+    const resData = await response.json();
 
     if (!response.ok) {
-      const errorData = await response.json();
-      if (errorData.error.id === "session_refresh_required") {
-        window.location.href = errorData.redirect_browser_to;
-      } else {
-        throw new Error(errorData.error.message);
+      if (resData.error && resData.error.id === "session_refresh_required") {
+        window.location.href = resData.redirect_browser_to;
+        return;
       }
+
+      // Handle validation and flow messages
+      const msgs = extractMessages(resData);
+      if (msgs.length > 0) {
+        passwordRequestError.value = msgs.join(" ");
+      } else if (resData.error?.message) {
+        passwordRequestError.value = resData.error.message;
+      } else {
+        passwordRequestError.value = "Failed to update password.";
+      }
+      return;
     }
 
     passwordRequestError.value = "";
-
     password.new = "";
     password.confirm = "";
 
     toast.success("Password updated successfully.");
-
-    navigateTo("/admin");
+    router.push("/admin");
   } catch (error) {
-    passwordRequestError.value = error.message;
+    console.error("Error submitting settings flow:", error);
+    passwordRequestError.value = "A network error occurred. Please try again.";
   }
 };
 
 const handleCancel = () => {
-  navigateTo("/admin");
+  router.push("/admin");
 };
 </script>

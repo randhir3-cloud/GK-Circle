@@ -146,6 +146,8 @@ func TestValidateAPIConfig(t *testing.T) {
 		t.Setenv("REDIS_HOST", "redis")
 		t.Setenv("REDIS_PORT", "6379")
 		t.Setenv("REPORT_SCHEDULER_TIMEOUT_SECONDS", "10")
+		t.Setenv("WEB_URL", "https://gkcircle.com")
+		t.Setenv("SELF_SERVICE_DEFAULT_BROWSER_RETURN_URL", "https://gkcircle.com")
 
 		cfg, err := config.LoadConfig()
 		assert.NoError(t, err)

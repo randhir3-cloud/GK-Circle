@@ -1,3 +1,13 @@
+# Stage 1: Build the config renderer
+FROM golang:1.22-alpine AS builder
+WORKDIR /app
+COPY cmd/kratos-config-renderer/main.go .
+# Fetch dependencies (yaml.v3)
+RUN go mod init kratos-config-renderer || true
+RUN go get gopkg.in/yaml.v3
+RUN CGO_ENABLED=0 GOOS=linux go build -o config-renderer main.go
+
+# Stage 2: Final Kratos container
 FROM oryd/kratos:v1.0.0
 
 USER root
@@ -5,7 +15,12 @@ RUN mv /usr/bin/kratos /usr/bin/kratos-bin
 COPY kratos-entrypoint.sh /usr/bin/kratos
 RUN chmod 0755 /usr/bin/kratos
 
-COPY pkg/kratos/kratos.yml /etc/config/kratos/kratos.yml
+# Copy the compiled config renderer
+COPY --from=builder /app/config-renderer /usr/bin/kratos-config-renderer
+RUN chmod 0755 /usr/bin/kratos-config-renderer
+
+COPY pkg/kratos/kratos.template.yml /etc/config/kratos/kratos.template.yml
+COPY pkg/kratos/kratos.dev.yml /etc/config/kratos/kratos.dev.yml
 COPY pkg/kratos/identity.schema.json /etc/config/kratos/identity.schema.json
 COPY pkg/kratos/email-templates /etc/config/kratos/email-templates
 
@@ -13,4 +28,4 @@ USER 10000
 
 EXPOSE 4433 4434
 
-CMD ["serve", "-c", "/etc/config/kratos/kratos.yml", "--watch-courier"]
+CMD ["serve", "-c", "/tmp/kratos.yml", "--watch-courier"]

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"net/url"
 	"os"
 	"strconv"
 	"strings"
@@ -244,6 +245,16 @@ func ValidateAPIConfig(cfg AppConfig) error {
 		return fmt.Errorf("missing mandatory production environment variables: %v", missing)
 	}
 
+	// Validate browser URLs structurally in production
+	if cfg.Env == "production" || (!cfg.IsDevelopment && cfg.Env != "testing") {
+		if err := validateBrowserURL(cfg.WebUrl, "WEB_URL"); err != nil {
+			return err
+		}
+		if err := validateBrowserURL(cfg.Kratos.UIUrl, "SELF_SERVICE_DEFAULT_BROWSER_RETURN_URL"); err != nil {
+			return err
+		}
+	}
+
 	// Validate database pool limits
 	if cfg.DB.MaxOpenConns < 0 {
 		return fmt.Errorf("DB_MAX_OPEN_CONNS cannot be negative: %d", cfg.DB.MaxOpenConns)
@@ -278,5 +289,35 @@ func validatePortStr(portStr string) error {
 	if err != nil || p <= 0 || p > 65535 {
 		return fmt.Errorf("invalid port number %q", portStr)
 	}
+	return nil
+}
+
+func validateBrowserURL(rawURL, varName string) error {
+	if isWhitespaceOnly(rawURL) {
+		return fmt.Errorf("%s cannot be empty in production", varName)
+	}
+
+	u, err := url.Parse(rawURL)
+	if err != nil {
+		return fmt.Errorf("failed to parse %s: %w", varName, err)
+	}
+
+	if u.Scheme != "https" {
+		return fmt.Errorf("%s scheme must be 'https', got '%s'", varName, u.Scheme)
+	}
+
+	hostname := u.Hostname()
+	if hostname == "" {
+		return fmt.Errorf("%s hostname cannot be empty", varName)
+	}
+
+	if hostname == "localhost" || hostname == "127.0.0.1" || hostname == "::1" {
+		return fmt.Errorf("%s hostname cannot resolve to localhost/loopback in production: %s", varName, hostname)
+	}
+
+	if strings.HasSuffix(hostname, ".up.railway.app") || strings.HasSuffix(hostname, ".railway.internal") {
+		return fmt.Errorf("%s hostname cannot be a Railway auto-generated domain in production: %s", varName, hostname)
+	}
+
 	return nil
 }
