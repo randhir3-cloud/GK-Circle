@@ -32,6 +32,9 @@ export default defineNuxtRouteMiddleware(async (to) => {
 
   // Authenticated but email not verified — fail closed (redirect to verification)
   if (user.emailVerified !== true) {
-    return navigateTo("/verification");
+    return navigateTo({
+      path: "/verification",
+      query: { return_to: to.fullPath },
+    });
   }
 });

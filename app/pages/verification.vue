@@ -87,78 +87,17 @@
           </div>
 
           <form class="flex flex-col gap-4" @submit.prevent="handleSubmit()">
-            <!-- Loop through input nodes that are not submit or hidden -->
-            <div
-              v-for="node in inputFields"
-              :key="node.attributes.name"
-              class="flex flex-col gap-1.5"
-            >
-              <label
-                :for="node.attributes.name"
-                class="px-0.5 font-body text-xs font-bold uppercase tracking-wide text-jv-ink sm:text-[13px]"
-              >
-                {{ node.meta?.label?.text || node.attributes.name }}
-              </label>
-
-              <div
-                class="jv-card flex items-center gap-2.5 border-2 border-jv-ink bg-jv-white px-3 py-2.5 shadow-brutal-sm transition-all focus-within:translate-x-[1px] focus-within:translate-y-[1px] focus-within:shadow-none"
-              >
-                <Mail
-                  v-if="node.attributes.name === 'email'"
-                  class="size-[18px] shrink-0 text-jv-ink/70"
-                  :stroke-width="2.2"
-                />
-                <ShieldCheck
-                  v-else-if="node.attributes.name === 'code'"
-                  class="size-[18px] shrink-0 text-jv-ink/70"
-                  :stroke-width="2.2"
-                />
-                <input
-                  :id="node.attributes.name"
-                  v-model="formValues[node.attributes.name]"
-                  :name="node.attributes.name"
-                  :type="node.attributes.type"
-                  :required="node.attributes.required"
-                  :disabled="node.attributes.disabled"
-                  :autocomplete="node.attributes.autocomplete"
-                  :maxlength="node.attributes.name === 'code' ? 6 : undefined"
-                  class="min-w-0 flex-1 border-0 bg-transparent font-body text-sm text-jv-ink outline-none placeholder:text-jv-ink/40 sm:text-base"
-                  :class="{
-                    'tracking-[0.2em]': node.attributes.name === 'code',
-                  }"
-                  :placeholder="
-                    node.attributes.name === 'code'
-                      ? '123456'
-                      : 'you@example.com'
-                  "
-                />
-              </div>
-
-              <!-- Node specific messages -->
-              <p
-                v-for="(msg, index) in node.messages"
-                :key="index"
-                class="font-body text-jv-accent-red text-xs px-0.5 m-0 flex items-center gap-1"
-              >
-                <AlertCircle class="size-3.5 shrink-0" :stroke-width="2.2" />
-                {{ msg.text }}
-              </p>
-            </div>
-
-            <!-- Submit buttons rendered dynamically -->
-            <button
-              v-for="node in submitFields"
-              :key="node.attributes.name + node.attributes.value"
-              type="submit"
-              :disabled="node.attributes.disabled || isLoading"
-              class="jv-card mt-2 inline-flex h-12 items-center justify-center gap-2 border-2 border-jv-ink bg-jv-coral font-headings text-base text-white shadow-brutal-sm transition-transform hover:rotate-[1deg] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none sm:text-lg disabled:opacity-70 disabled:cursor-not-allowed"
-              @click="
-                setSubmitAction(node.attributes.name, node.attributes.value)
-              "
-            >
-              {{ node.meta?.label?.text || "Submit" }}
-              <ArrowRight class="size-5" :stroke-width="2.4" />
-            </button>
+            <KratosVerificationNode
+              v-for="(node, index) in flowData.ui.nodes"
+              :key="`${flowData.id}:${index}`"
+              :node="node"
+              :index="index"
+              :model-value="formValues[node.attributes?.name]"
+              :loading="isLoading || resending"
+              :current-origin="currentOrigin"
+              @update-value="updateFormValue"
+              @submit-node="setSubmitNode"
+            />
           </form>
 
           <!-- Resend Code section mapped from the choose_method / alternate actions -->
@@ -175,7 +114,7 @@
               v-if="flowData?.state === 'sent_email'"
               :disabled="resending || !!rateLimitMsg"
               class="text-sm font-headings text-jv-ink/80 hover:text-jv-coral transition-colors underline underline-offset-4 disabled:opacity-50 disabled:cursor-not-allowed"
-              @click="initiateVerificationFlow"
+              @click="handleResend"
             >
               <span v-if="resending">Requesting new code...</span>
               <span v-else>Resend verification code</span>
@@ -189,12 +128,21 @@
 
 <script setup>
 import { usePush } from "notivue";
-import { ShieldCheck, ArrowRight, Mail, AlertCircle } from "lucide-vue-next";
-import { ref, computed, onMounted } from "vue";
+import { ArrowRight } from "lucide-vue-next";
+import { computed, onMounted, ref } from "vue";
+import { useUsersStore } from "~~/store/users";
+import KratosVerificationNode from "~/components/auth/KratosVerificationNode.vue";
+import {
+  buildVerificationBody,
+  configuredRedirectOrigins,
+  findVerificationSubmitNode,
+  replacementVerificationState,
+  resolveAllowedRedirect,
+  retryAfterSeconds,
+  verificationSubmissionBlocked,
+} from "~/utils/verificationFlow";
 
-definePageMeta({
-  layout: "auth",
-});
+definePageMeta({ layout: "auth" });
 
 useSeoMeta({
   title: "Verify Account - GK Circle",
@@ -203,238 +151,215 @@ useSeoMeta({
   robots: "noindex, nofollow",
 });
 
-const { kratosUrl } = useRuntimeConfig().public;
-const route = useRoute("");
+const runtime = useRuntimeConfig().public;
+const route = useRoute();
 const toast = usePush();
+const usersStore = useUsersStore();
 
 const flowData = ref(null);
 const formValues = ref({});
+const activeSubmitNode = ref(null);
 const isLoading = ref(false);
-const flowActive = ref(false);
 const resending = ref(false);
 const resendSuccess = ref(false);
 const rateLimitMsg = ref("");
+const currentOrigin = ref(new URL(runtime.baseUrl).origin);
+const flowActive = computed(() => Boolean(flowData.value?.ui?.nodes));
 
-// Track clicked submit node name & value
-const activeSubmitName = ref("");
-const activeSubmitValue = ref("");
+const allowedRedirectOrigins = () =>
+  configuredRedirectOrigins({
+    currentOrigin: window.location.origin,
+    baseUrl: runtime.baseUrl,
+    configuredOrigins: runtime.redirectAllowedOrigins,
+  });
 
-const setSubmitAction = (name, value) => {
-  activeSubmitName.value = name;
-  activeSubmitValue.value = value;
+const updateFormValue = (name, value) => {
+  if (name) formValues.value = { ...formValues.value, [name]: value };
 };
 
-// Filter out standard fields for rendering
-const inputFields = computed(() => {
-  if (!flowData.value?.ui?.nodes) return [];
-  return flowData.value.ui.nodes.filter(
-    (node) =>
-      node.type === "input" &&
-      node.attributes.type !== "submit" &&
-      node.attributes.type !== "hidden"
-  );
-});
+const setSubmitNode = (node) => {
+  activeSubmitNode.value = node;
+};
 
-// Filter hidden fields
-const hiddenFields = computed(() => {
-  if (!flowData.value?.ui?.nodes) return [];
-  return flowData.value.ui.nodes.filter(
-    (node) => node.type === "input" && node.attributes.type === "hidden"
-  );
-});
-
-// Filter submit fields
-const submitFields = computed(() => {
-  if (!flowData.value?.ui?.nodes) return [];
-  return flowData.value.ui.nodes.filter(
-    (node) => node.type === "input" && node.attributes.type === "submit"
-  );
-});
-
-onMounted(async () => {
-  if (route.query.flow) {
-    await fetchFlowIdAndCsrfToken();
-  }
-});
-
-const fetchFlowIdAndCsrfToken = async () => {
-  isLoading.value = true;
-  flowActive.value = false;
+const processMessages = (flow) => {
   rateLimitMsg.value = "";
-  try {
-    const response = await fetch(
-      `${kratosUrl}/self-service/verification/flows?id=${route.query.flow}`,
-      {
-        method: "GET",
-        headers: {
-          Accept: "application/json",
-        },
-        credentials: "include",
-      }
-    );
+  for (const message of flow?.ui?.messages || []) {
+    const text = String(message.text || "");
+    if (message.type === "error") toast.error(text);
+    else toast.success(text);
 
-    if (!response.ok) {
-      throw new Error(
-        `Failed to fetch verification status: ${response.statusText}`
-      );
+    const normalized = text.toLowerCase();
+    if (
+      message.id === 4000007 ||
+      normalized.includes("rate limit") ||
+      normalized.includes("please wait")
+    ) {
+      rateLimitMsg.value = text;
     }
-
-    const data = await response.json();
-    flowData.value = data;
-    flowActive.value = true;
-
-    // Prepopulate form values
-    data?.ui?.nodes?.forEach((node) => {
-      if (node.attributes.name && node.attributes.value !== undefined) {
-        formValues.value[node.attributes.name] = node.attributes.value;
-      }
-    });
-
-    // Inspect flow messages
-    data?.ui?.messages?.forEach((element) => {
-      if (element.type === "error") {
-        toast.error(element.text);
-        if (
-          element.id === 4000007 ||
-          element.text.toLowerCase().includes("rate limit") ||
-          element.text.toLowerCase().includes("please wait")
-        ) {
-          rateLimitMsg.value = element.text;
-        }
-      } else {
-        toast.success(element.text);
-        if (
-          data.state === "sent_email" ||
-          element.text.toLowerCase().includes("sent")
-        ) {
-          resendSuccess.value = true;
-        }
-      }
-    });
-
-    if (data.state === "passed_challenge") {
-      toast.success("Verification successful! Redirecting to login...");
-      setTimeout(() => {
-        navigateTo("/account/login");
-      }, 1000);
-    }
-  } catch (error) {
-    console.error("Error fetching flow ID and CSRF token:", error.message);
-    flowActive.value = false;
-  } finally {
-    isLoading.value = false;
   }
+};
+
+const replaceFlow = (nextFlow) => {
+  const replacement = replacementVerificationState(nextFlow);
+  flowData.value = replacement.flow;
+  formValues.value = replacement.values;
+  activeSubmitNode.value = null;
+  resendSuccess.value = nextFlow?.state === "sent_email";
+  processMessages(nextFlow);
+};
+
+const safeReturnPath = () => {
+  const returnTo = Array.isArray(route.query.return_to)
+    ? route.query.return_to[0]
+    : route.query.return_to;
+  const allowed = resolveAllowedRedirect(
+    returnTo,
+    window.location.href,
+    allowedRedirectOrigins()
+  );
+  if (!allowed) return "/";
+  const resolved = new URL(allowed);
+  return `${resolved.pathname}${resolved.search}${resolved.hash}`;
+};
+
+const finishVerification = async () => {
+  await usersStore.fetchAuthenticatedUser();
+  const user = usersStore.getUserData();
+  toast.success("Verification successful.");
+  await navigateTo(
+    user?.emailVerified === true ? safeReturnPath() : "/account/login"
+  );
 };
 
 const initiateVerificationFlow = () => {
   resending.value = true;
-  window.location.href = `${kratosUrl}/self-service/verification/browser`;
+  window.location.assign(
+    `${runtime.kratosUrl}/self-service/verification/browser`
+  );
 };
 
-const handleSubmit = async () => {
-  if (!flowData.value) return;
+const fetchFlow = async () => {
+  if (!route.query.flow) return;
   isLoading.value = true;
-  rateLimitMsg.value = "";
-
-  // Build request body with all form values including hidden csrf token
-  const body = { ...formValues.value };
-
-  // Inject hidden nodes value specifically if missing
-  hiddenFields.value.forEach((node) => {
-    body[node.attributes.name] = node.attributes.value;
-  });
-
-  if (activeSubmitName.value) {
-    body[activeSubmitName.value] = activeSubmitValue.value;
-  }
-
   try {
-    const actionUrl = flowData.value.ui.action;
-    const method = flowData.value.ui.method || "POST";
-
-    const response = await fetch(actionUrl, {
-      method: method,
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      credentials: "include",
-      body: JSON.stringify(body),
-    });
-
-    if (
-      response.status === 400 ||
-      response.status === 422 ||
-      response.status === 401
-    ) {
-      // Flow error or update containing refreshed UI nodes/messages
-      const updatedFlow = await response.json();
-      flowData.value = updatedFlow;
-
-      // Update values
-      updatedFlow?.ui?.nodes?.forEach((node) => {
-        if (node.attributes.name && node.attributes.value !== undefined) {
-          formValues.value[node.attributes.name] = node.attributes.value;
-        }
-      });
-
-      // Handle general flow level messages
-      updatedFlow?.ui?.messages?.forEach((msg) => {
-        if (msg.type === "error") {
-          toast.error(msg.text);
-          if (msg.text.toLowerCase().includes("rate limit")) {
-            rateLimitMsg.value = msg.text;
-          }
-        } else {
-          toast.success(msg.text);
-          if (
-            updatedFlow.state === "sent_email" ||
-            msg.text.toLowerCase().includes("sent")
-          ) {
-            resendSuccess.value = true;
-          }
-        }
-      });
-
-      // Handle node-specific messages
-      updatedFlow?.ui?.nodes?.forEach((node) => {
-        node.messages?.forEach((msg) => {
-          if (msg.type === "error") {
-            toast.error(
-              `${node.meta?.label?.text || node.attributes.name}: ${msg.text}`
-            );
-          }
-        });
-      });
-      return;
-    }
-
-    if (!response.ok) {
-      throw new Error(`Submission failed: HTTP ${response.status}`);
-    }
-
-    // Process successful flow completion or transition
-    const result = await response.json();
-    flowData.value = result;
-
-    if (result.state === "passed_challenge" || response.status === 200) {
-      toast.success("Verification successful! Redirecting...");
-      setTimeout(() => {
-        navigateTo("/account/login");
-      }, 1000);
-    } else {
-      resendSuccess.value = true;
-      result?.ui?.messages?.forEach((msg) => {
-        if (msg.type === "success") {
-          toast.success(msg.text);
-        }
-      });
-    }
+    const response = await fetch(
+      `${
+        runtime.kratosUrl
+      }/self-service/verification/flows?id=${encodeURIComponent(
+        String(route.query.flow)
+      )}`,
+      { headers: { Accept: "application/json" }, credentials: "include" }
+    );
+    if (response.status === 410) return initiateVerificationFlow();
+    if (!response.ok) throw new Error(`flow_fetch_${response.status}`);
+    const nextFlow = await response.json();
+    replaceFlow(nextFlow);
+    if (nextFlow.state === "passed_challenge") await finishVerification();
   } catch (error) {
-    console.error("Error submitting verification form:", error);
-    toast.error("Failed to complete verification step.");
+    console.warn("Verification flow could not be loaded.", {
+      cause: error?.message || "request_failed",
+    });
+    toast.error("Unable to load the verification flow.");
   } finally {
     isLoading.value = false;
   }
 };
+
+const handleSubmit = async (
+  submitNode = activeSubmitNode.value,
+  resendSubmission = false
+) => {
+  if (
+    !flowData.value ||
+    verificationSubmissionBlocked({
+      isLoading: isLoading.value,
+      resending: resending.value,
+      resendSubmission,
+    })
+  )
+    return;
+  isLoading.value = true;
+  rateLimitMsg.value = "";
+
+  try {
+    const action = new URL(flowData.value.ui.action, window.location.href);
+    const actionOrigins = new Set(allowedRedirectOrigins());
+    actionOrigins.add(new URL(runtime.kratosUrl).origin);
+    if (!actionOrigins.has(action.origin))
+      throw new Error("action_origin_rejected");
+
+    const response = await fetch(action.href, {
+      method: String(flowData.value.ui.method || "POST").toUpperCase(),
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
+      },
+      credentials: "include",
+      redirect: "manual",
+      body: buildVerificationBody(flowData.value, formValues.value, submitNode),
+    });
+
+    const retrySeconds = retryAfterSeconds(response.headers.get("Retry-After"));
+    if (retrySeconds !== null) {
+      rateLimitMsg.value = `Please wait ${retrySeconds} seconds before trying again.`;
+    }
+
+    if (response.status === 410) return initiateVerificationFlow();
+
+    const location = response.headers.get("Location");
+    if (location || (response.status >= 300 && response.status < 400)) {
+      const redirectUrl = resolveAllowedRedirect(
+        location,
+        window.location.href,
+        allowedRedirectOrigins()
+      );
+      if (!redirectUrl) throw new Error("redirect_origin_rejected");
+      window.location.assign(redirectUrl);
+      return;
+    }
+
+    const contentType = response.headers.get("Content-Type") || "";
+    if (!contentType.includes("application/json")) {
+      throw new Error(`unexpected_response_${response.status}`);
+    }
+
+    const nextFlow = await response.json();
+    replaceFlow(nextFlow);
+    if (nextFlow.state === "passed_challenge") {
+      await finishVerification();
+      return;
+    }
+    if (!response.ok && ![400, 401, 422, 429].includes(response.status)) {
+      throw new Error(`submission_${response.status}`);
+    }
+  } catch (error) {
+    console.warn("Verification submission failed.", {
+      cause: error?.message || "request_failed",
+    });
+    toast.error("Failed to complete the verification step.");
+  } finally {
+    isLoading.value = false;
+    resending.value = false;
+  }
+};
+
+const handleResend = async () => {
+  if (resending.value || isLoading.value) return;
+  const resendNode = findVerificationSubmitNode(
+    flowData.value,
+    "method",
+    "code"
+  );
+  if (!resendNode) return initiateVerificationFlow();
+  resending.value = true;
+  await handleSubmit(resendNode, true);
+};
+
+onMounted(async () => {
+  currentOrigin.value = window.location.origin;
+  // Registration's show-verification hook bypasses the normal API callback.
+  // Synchronize the valid Kratos session before protected-route middleware runs.
+  await usersStore.fetchAuthenticatedUser().catch(() => null);
+  await fetchFlow();
+});
 </script>

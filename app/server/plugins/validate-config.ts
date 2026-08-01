@@ -1,10 +1,8 @@
 import { defineNitroPlugin } from "nitropack/runtime";
+import { isProductionRuntime } from "../utils/production-config";
 
 export default defineNitroPlugin(() => {
-  const isProd =
-    process.env.NODE_ENV === "production" ||
-    process.env.APP_ENV === "production" ||
-    process.env.NUXT_PUBLIC_BASE_URL?.includes("gkcircle.com");
+  const isProd = isProductionRuntime(process.env);
 
   if (!isProd) {
     console.log("Nuxt config validation bypassed in development mode.");

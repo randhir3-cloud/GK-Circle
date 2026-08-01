@@ -229,7 +229,6 @@ func setupAuthController(v1 fiber.Router, goqu *goqu.Database, logger *zap.Logge
 		kratos.Get("/whoami", authController.GetRegisteredUser)
 		kratos.Put("/user", middlewares.KratosAuthenticated, middlewares.VerificationRequired, authController.UpadateRegisteredUser)
 		kratos.Delete("/user", middlewares.KratosAuthenticated, middlewares.VerificationRequired, authController.DeleteRegisteredUser)
-		kratos.Delete("/e2e-cleanup", authController.E2ECleanup)
 	}
 	return nil
 }

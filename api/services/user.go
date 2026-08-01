@@ -5,11 +5,11 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/doug-martin/goqu/v9"
+	"github.com/go-resty/resty/v2"
 	"github.com/randhir3-cloud/GK-Circle-v2/api/config"
 	"github.com/randhir3-cloud/GK-Circle-v2/api/constants"
 	"github.com/randhir3-cloud/GK-Circle-v2/api/models"
-	"github.com/doug-martin/goqu/v9"
-	"github.com/go-resty/resty/v2"
 	"go.uber.org/zap"
 )
 
@@ -107,9 +107,13 @@ func (userSvc *UserService) DeleteUserDataById(userId, kratosId string) error {
 	kratosClient := resty.New().SetBaseURL(userSvc.config.Kratos.AdminUrl+"/identities").SetHeader("accept", "application/json")
 
 	res, err := kratosClient.R().Delete(fmt.Sprintf("/%s", kratosId))
-	if err != nil || res.StatusCode() != http.StatusNoContent {
-		userSvc.logger.Error("unauthenticated registration", zap.Any("response from kratos", res.RawResponse), zap.Error(err), zap.Any("kratos response", res))
-		return fmt.Errorf("failed to delete user from kratos for %s", kratosId)
+	if err != nil {
+		userSvc.logger.Error("kratos identity deletion failed", zap.String("error_class", "request_failed"))
+		return fmt.Errorf("failed to delete user from kratos")
+	}
+	if res.StatusCode() != http.StatusNoContent && res.StatusCode() != http.StatusNotFound {
+		userSvc.logger.Error("kratos identity deletion failed", zap.Int("status", res.StatusCode()))
+		return fmt.Errorf("failed to delete user from kratos")
 	}
 
 	isOk = true

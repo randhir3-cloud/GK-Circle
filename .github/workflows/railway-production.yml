@@ -1,0 +1,111 @@
+name: Railway Production Promotion
+
+on:
+  workflow_dispatch:
+    inputs:
+      commit_sha:
+        description: Exact immutable SHA previously verified in staging
+        required: true
+        type: string
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  staging-gate:
+    runs-on: ubuntu-latest
+    outputs:
+      run_id: ${{ steps.find.outputs.result }}
+    steps:
+      - name: Require immutable full SHA
+        shell: bash
+        env:
+          REQUESTED_SHA: ${{ inputs.commit_sha }}
+        run: |
+          set -euo pipefail
+          [[ "$REQUESTED_SHA" =~ ^[0-9a-f]{40}$ ]]
+
+      - name: Find successful staging run at least 24 hours old
+        id: find
+        uses: actions/github-script@v7
+        with:
+          result-encoding: string
+          script: |
+            const sha = '${{ inputs.commit_sha }}';
+            const response = await github.rest.actions.listWorkflowRuns({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'railway-staging.yml',
+              status: 'completed',
+              per_page: 100,
+            });
+            const cutoff = Date.now() - (24 * 60 * 60 * 1000);
+            const run = response.data.workflow_runs.find((candidate) =>
+              candidate.head_sha === sha &&
+              candidate.conclusion === 'success' &&
+              Date.parse(candidate.updated_at) <= cutoff
+            );
+            if (!run) {
+              core.setFailed(`No successful staging run for ${sha} has completed the 24-hour gate.`);
+              return '';
+            }
+            return String(run.id);
+
+      - name: Download exact-SHA staging artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: railway-staging-${{ inputs.commit_sha }}
+          path: staging-record
+          run-id: ${{ steps.find.outputs.result }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Verify artifact SHA and rollback evidence
+        shell: bash
+        env:
+          REQUESTED_SHA: ${{ inputs.commit_sha }}
+        run: |
+          set -euo pipefail
+          test "$(tr -d '\r\n' < staging-record/commit-sha.txt)" = "$REQUESTED_SHA"
+          test -s staging-record/rollback-ref.txt
+          test -s staging-record/rollback-evidence.txt
+          test -s staging-record/completed-at.txt
+
+  deploy:
+    needs: staging-gate
+    environment: production
+    runs-on: ubuntu-latest
+    container: ghcr.io/railwayapp/cli:latest
+    strategy:
+      fail-fast: true
+      matrix:
+        service: ${{ fromJSON(vars.RAILWAY_SERVICES_JSON) }}
+    env:
+      RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+    steps:
+      - name: Checkout exact staged commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.commit_sha }}
+          persist-credentials: false
+
+      - name: Promote exact service source to production
+        shell: sh
+        run: >-
+          railway up "${{ matrix.service.path }}"
+          --path-as-root
+          --project "${{ vars.RAILWAY_PROJECT_ID }}"
+          --environment "${{ vars.RAILWAY_PRODUCTION_ENVIRONMENT }}"
+          --service "${{ matrix.service.name }}"
+          --message "production ${{ inputs.commit_sha }}"
+          --json
+
+  production-smoke:
+    needs: [staging-gate, deploy]
+    environment: production
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify production health
+        env:
+          HEALTH_URL: ${{ vars.RAILWAY_PRODUCTION_HEALTH_URL }}
+        run: curl --fail --silent --show-error --retry 10 --retry-delay 6 "$HEALTH_URL"

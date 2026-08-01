@@ -1,6 +1,6 @@
 import { mount } from "@vue/test-utils";
 import { afterEach, describe, expect, it } from "vitest";
-import ConfirmModal from "~/components/Utils/ConfirmModal.vue";
+import ConfirmModal from "~/components/utils/ConfirmModal.vue";
 
 const props = {
   modalTitle: "Test Modal",

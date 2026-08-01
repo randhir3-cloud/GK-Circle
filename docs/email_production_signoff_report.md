@@ -1,5 +1,7 @@
 # GK Circle Production Email Infrastructure Sign-off Report
 
+> Historical report: this document is not current production verification evidence. The active evidence process is `docs/production-verification/email-verification/README.md`, and the current incident root cause remains unclassified until a single tagged run completes the five-milestone trace.
+
 This report presents the final production audit and deliverability validation of the GK Circle email infrastructure (Phase 1 Kratos and Phase 2 Go Transactional Email).
 
 ---

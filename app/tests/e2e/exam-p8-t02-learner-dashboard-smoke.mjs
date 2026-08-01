@@ -41,7 +41,8 @@ if (fs.existsSync(e2eEnvPath)) {
 const base = process.env.PLAYWRIGHT_BASE_URL || "http://localhost:3000";
 const api = process.env.PLAYWRIGHT_API_BASE_URL || "http://localhost:3010";
 const email = process.env.E2E_CREATOR_EMAIL || "course.admin@example.com";
-const password = process.env.E2E_TEST_PASSWORD || "Password123!";
+const password = process.env.E2E_TEST_PASSWORD;
+if (!password) throw new Error("E2E_TEST_PASSWORD must be supplied explicitly");
 const out = path.join("test-results", "exam-p8-t02-learner-dashboard-smoke");
 fs.mkdirSync(out, { recursive: true });
 const log = [];

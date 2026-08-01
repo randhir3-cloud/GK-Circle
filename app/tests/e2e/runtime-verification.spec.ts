@@ -192,6 +192,7 @@ async function waitForAuthFormReady(page: Page): Promise<void> {
 }
 
 async function captureShot(page: Page, name: string): Promise<void> {
+  if (process.env.PLAYWRIGHT_SANITIZED_EVIDENCE === "true") return;
   await page.screenshot({
     path: path.join(screenshotDir, name),
     fullPage: true,

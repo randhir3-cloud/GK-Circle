@@ -32,6 +32,24 @@ jobs:
   backend-verify:
     name: Backend Verification
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15.2-alpine
+        env:
+          POSTGRES_USER: gk_circle
+          POSTGRES_PASSWORD: change_me_database_password
+          POSTGRES_DB: gk_circle
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U gk_circle -d gk_circle"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DB_HOST: localhost
+      DB_PORT: 5432
+      DB_USERNAME: gk_circle
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -79,9 +97,11 @@ jobs:
 
       - name: Smoke-test Docker verification service
         run: |
+          cp api/.env.kratos.example api/.env.kratos
+          trap 'rm -f api/.env.kratos' EXIT
           docker compose --profile verify config
           docker compose --profile verify build api-verify
-          docker compose --profile verify run --rm api-verify go test ./...
+          docker compose --profile verify run --rm api-verify go test -short ./...
 
   frontend-verify:
     name: Frontend Verification
@@ -102,11 +122,15 @@ jobs:
 
       - name: Install Frontend Dependencies
         working-directory: ./app
-        run: npm install
+        run: npm ci
 
       - name: Run Frontend Lint
         working-directory: ./app
         run: npm run lint
+
+      - name: Run Frontend Tests
+        working-directory: ./app
+        run: npm test -- --run
 
       - name: Run Frontend Build
         working-directory: ./app
@@ -118,6 +142,7 @@ jobs:
     needs:
       - backend-verify
       - frontend-verify
+      - repository-safety
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -134,7 +159,7 @@ jobs:
 
       - name: Install Frontend Dependencies
         working-directory: ./app
-        run: npm install
+        run: npm ci
 
       - name: Install Playwright Browsers and Deps
         working-directory: ./app
@@ -156,8 +181,34 @@ jobs:
           SERVE_ADMIN_PORT=${{ env.SERVE_ADMIN_PORT }}
           EOF
 
+      - name: Prepare Playwright runtime inputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          test_password="Gkc!$(openssl rand -hex 18)Aa9"
+          run_id="ci-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          runtime_email="gkcircle.e2e.${run_id}@example.test"
+          verification_run_id="e2e${run_id//-/}"
+          verification_email="gkc.verification+${verification_run_id}@example.test"
+          echo "::add-mask::$test_password"
+          echo "::add-mask::$runtime_email"
+          echo "::add-mask::$verification_email"
+          {
+            echo "PLAYWRIGHT_BASE_URL=http://localhost:3000"
+            echo "PLAYWRIGHT_API_BASE_URL=http://localhost:3010"
+            echo "MAILPIT_API_URL=http://localhost:8025"
+            echo "E2E_MAILPIT_URL=http://localhost:8025"
+            echo "E2E_KRATOS_PUBLIC_URL=http://localhost:4433"
+            echo "E2E_RUN_ID=$run_id"
+            echo "PLAYWRIGHT_TEST_PASSWORD=$test_password"
+            echo "PLAYWRIGHT_SANITIZED_EVIDENCE=true"
+          } >> "$GITHUB_ENV"
+
       - name: Start Docker Compose services
-        run: docker compose up -d --build
+        run: |
+          cp api/.env.kratos.example api/.env.kratos
+          docker compose config --quiet
+          docker compose up -d --build
 
       - name: Wait for services to be ready
         shell: bash
@@ -183,14 +234,29 @@ jobs:
 
       - name: Run Playwright Tests
         working-directory: ./app
-        run: npx playwright test
+        env:
+          HEADLESS: "true"
+        run: npx playwright test --project=chromium
 
       - name: Collect Docker diagnostics
         if: failure()
         run: |
           mkdir -p artifacts/docker
           docker compose ps --all > artifacts/docker/compose-ps.txt
-          docker compose logs --no-color > artifacts/docker/compose.log
+          docker compose logs --no-color 2>&1 \
+            | grep -E 'FATAL|ERROR|unhealthy|exited|validation failed|required when' \
+            | sed -E \
+                -e 's/[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}/[REDACTED_EMAIL]/g' \
+                -e 's/\b[0-9]{6}\b/[REDACTED_CODE]/g' \
+            > artifacts/docker/compose-errors.log || true
+
+      - name: Remove credential-bearing browser artifacts
+        if: always()
+        shell: bash
+        run: |
+          find app/test-results app/playwright-report -type f \
+            \( -name '*.png' -o -name '*.webm' -o -name '*.zip' -o -name 'error-context.md' \) \
+            -delete 2>/dev/null || true
 
       - name: Upload Playwright report
         if: always()
@@ -206,3 +272,50 @@ jobs:
       - name: Stop test stack
         if: always()
         run: docker compose down -v --remove-orphans
+
+  repository-safety:
+    name: Repository Safety Gates
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Reject whitespace errors
+        run: git diff --check
+
+      - name: Scan tracked files for secrets
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Reject verification security regressions
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git grep -n -E 'e2e-cleanup|X-E2E-Secret' -- api app deploy; then
+            echo 'Public E2E cleanup endpoint reference detected.'
+            exit 1
+          fi
+          if grep -n -E '/mailpit/|mailpit\.railway\.internal' deploy/nginx.*.conf; then
+            echo 'Production Mailpit route detected.'
+            exit 1
+          fi
+          if git grep -n -E 'console\.(log|info|debug).*([Vv]erification.?[Cc]ode|[Pp]assword|csrf|Authorization)' -- app api; then
+            echo 'Sensitive verification logging detected.'
+            exit 1
+          fi
+          if git grep -n -E 'PLAYWRIGHT_BASE_URL[^\n]*https://gkcircle\.com' -- app/tests app/playwright.config.ts; then
+            echo 'Production E2E default detected.'
+            exit 1
+          fi
+          if git grep -n -E "PASSWORD[^\n]*\|\|[[:space:]]*['\"]" -- app/tests/e2e; then
+            echo 'Hardcoded E2E credential fallback detected.'
+            exit 1
+          fi
+          if git grep -n -E "password:[[:space:]]*['\"][^$]" -- app/tests/e2e; then
+            echo 'Hardcoded E2E password detected.'
+            exit 1
+          fi
