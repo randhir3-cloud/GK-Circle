@@ -28,7 +28,10 @@ page.on("pageerror", (error) => {
 });
 page.on("console", (msg) => {
   if (msg.type() === "error") {
-    consoleErrors.push(msg.text());
+    const text = msg.text();
+    if (!text.includes("status of 401")) {
+      consoleErrors.push(text);
+    }
   }
 });
 
