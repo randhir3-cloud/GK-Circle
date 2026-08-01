@@ -7,10 +7,14 @@ import { writeEvidence } from './helpers/evidence-helper.mjs'
 
 const RUN_ID = `UPSC-E2E-${new Date().toISOString().replace(/[:-]/g, '').replace(/\..+/, '')}`
 const BASE_URL = process.env.E2E_BASE_URL || 'http://localhost:3000'
-const ADMIN_EMAIL = process.env.E2E_ADMIN_EMAIL || 'admin@gkcircle.com'
-const ADMIN_PASSWORD = process.env.E2E_ADMIN_PASSWORD || 'AdminPassword123!'
-const USER_EMAIL = process.env.E2E_USER_EMAIL || 'learner@gkcircle.com'
-const USER_PASSWORD = process.env.E2E_USER_PASSWORD || 'LearnerPassword123!'
+const ADMIN_EMAIL = process.env.E2E_ADMIN_EMAIL
+const ADMIN_PASSWORD = process.env.E2E_ADMIN_PASSWORD
+const USER_EMAIL = process.env.E2E_USER_EMAIL
+const USER_PASSWORD = process.env.E2E_USER_PASSWORD
+
+if (!ADMIN_EMAIL || !ADMIN_PASSWORD || !USER_EMAIL || !USER_PASSWORD) {
+  throw new Error('E2E admin and learner credentials must be supplied explicitly')
+}
 
 const SUBJECTS_DEFINITION = [
   { title: `Indian History and National Movement — ${RUN_ID}`, topics: ['Ancient India', 'Medieval India', 'Modern India', 'Indian National Movement', 'Post-Independence Consolidation'] },

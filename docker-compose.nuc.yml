@@ -146,6 +146,7 @@ services:
       NUXT_PUBLIC_API_URL: https://gkcircle.com/api/v1
       NUXT_PUBLIC_API_SOCKET_URL: wss://gkcircle.com/api/v1/socket
       NUXT_PUBLIC_KRATOS_URL: https://gkcircle.com/kratos
+      NUXT_PUBLIC_REDIRECT_ALLOWED_ORIGINS: https://gkcircle.com
     depends_on:
       api:
         condition: service_healthy

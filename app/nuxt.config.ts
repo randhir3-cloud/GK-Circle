@@ -14,6 +14,10 @@ export default defineNuxtConfig({
         process.env.NUXT_PUBLIC_API_SOCKET_URL ||
         "ws://127.0.0.1:3000/api/v1/socket",
       kratosUrl: process.env.NUXT_PUBLIC_KRATOS_URL || "http://127.0.0.1:4433",
+      redirectAllowedOrigins:
+        process.env.NUXT_PUBLIC_REDIRECT_ALLOWED_ORIGINS ||
+        process.env.NUXT_PUBLIC_BASE_URL ||
+        "http://127.0.0.1:3001",
       privilegedSessionMaxAge: parseInt(
         process.env.NUXT_PUBLIC_PRIVILEGED_SESSION_MAX_AGE || "15"
       ),

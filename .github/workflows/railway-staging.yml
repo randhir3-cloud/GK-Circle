@@ -1,0 +1,127 @@
+name: Railway Staging Deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      commit_sha:
+        description: Immutable commit SHA to deploy
+        required: true
+        type: string
+      rollback_ref:
+        description: Tested rollback reference or artifact identifier
+        required: true
+        type: string
+      rollback_evidence:
+        description: Link or identifier for the completed rollback test
+        required: true
+        type: string
+
+permissions:
+  actions: read
+  checks: read
+  contents: read
+
+jobs:
+  verify-commit:
+    runs-on: ubuntu-latest
+    outputs:
+      commit_sha: ${{ steps.sha.outputs.commit_sha }}
+    steps:
+      - name: Require immutable full SHA
+        id: sha
+        shell: bash
+        env:
+          REQUESTED_SHA: ${{ inputs.commit_sha }}
+        run: |
+          set -euo pipefail
+          [[ "$REQUESTED_SHA" =~ ^[0-9a-f]{40}$ ]]
+          echo "commit_sha=$REQUESTED_SHA" >> "$GITHUB_OUTPUT"
+
+      - name: Require successful verification checks for this SHA
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const sha = '${{ inputs.commit_sha }}';
+            const response = await github.rest.checks.listForRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: sha,
+              per_page: 100,
+            });
+            const required = [
+              'Backend Verification',
+              'Frontend Verification',
+              'Playwright E2E Tests',
+              'Repository Safety Gates',
+            ];
+            for (const name of required) {
+              const check = response.data.check_runs.find((run) => run.name === name);
+              if (!check || check.conclusion !== 'success') {
+                core.setFailed(`${name} is not successful for ${sha}`);
+              }
+            }
+
+  deploy:
+    needs: verify-commit
+    environment: staging
+    runs-on: ubuntu-latest
+    container: ghcr.io/railwayapp/cli:latest
+    strategy:
+      fail-fast: true
+      matrix:
+        service: ${{ fromJSON(vars.RAILWAY_SERVICES_JSON) }}
+    env:
+      RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+    steps:
+      - name: Checkout immutable commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.verify-commit.outputs.commit_sha }}
+          persist-credentials: false
+
+      - name: Deploy service to staging
+        shell: sh
+        run: >-
+          railway up "${{ matrix.service.path }}"
+          --path-as-root
+          --project "${{ vars.RAILWAY_PROJECT_ID }}"
+          --environment "${{ vars.RAILWAY_STAGING_ENVIRONMENT }}"
+          --service "${{ matrix.service.name }}"
+          --message "staging ${{ needs.verify-commit.outputs.commit_sha }}"
+          --json
+
+  staging-smoke:
+    needs: [verify-commit, deploy]
+    environment: staging
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify staging health
+        env:
+          HEALTH_URL: ${{ vars.RAILWAY_STAGING_HEALTH_URL }}
+        run: curl --fail --silent --show-error --retry 10 --retry-delay 6 "$HEALTH_URL"
+
+  record-staging-artifact:
+    needs: [verify-commit, deploy, staging-smoke]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Write immutable staging record
+        shell: bash
+        env:
+          COMMIT_SHA: ${{ needs.verify-commit.outputs.commit_sha }}
+          ROLLBACK_REF: ${{ inputs.rollback_ref }}
+          ROLLBACK_EVIDENCE: ${{ inputs.rollback_evidence }}
+        run: |
+          set -euo pipefail
+          mkdir -p staging-record
+          printf '%s\n' "$COMMIT_SHA" > staging-record/commit-sha.txt
+          printf '%s\n' "$ROLLBACK_REF" > staging-record/rollback-ref.txt
+          printf '%s\n' "$ROLLBACK_EVIDENCE" > staging-record/rollback-evidence.txt
+          date -u +%Y-%m-%dT%H:%M:%SZ > staging-record/completed-at.txt
+
+      - name: Upload staging evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: railway-staging-${{ needs.verify-commit.outputs.commit_sha }}
+          path: staging-record
+          retention-days: 30
+          if-no-files-found: error

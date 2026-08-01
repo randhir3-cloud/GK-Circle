@@ -1,147 +1,196 @@
-import { test, expect } from "@playwright/test";
+import { execFile } from "node:child_process";
+import { randomUUID } from "node:crypto";
+import path from "node:path";
+import { promisify } from "node:util";
+import { expect, test } from "@playwright/test";
 
-test.describe("Production Email Verification & Courier Audit", () => {
-  const baseUrl = process.env.PLAYWRIGHT_BASE_URL || "https://gkcircle.com";
-  // We expose Mailpit via the gateway proxy at /mailpit/
-  const mailpitUrl = `${baseUrl}/mailpit`;
-  const jwtSecret =
-    process.env.JWT_SECRET ||
-    "UiOe_yhM6RwzEp1ciiNlvX6ierlOfOS1KmaHTnYrgChBHivTQPeKAco19uN1kj7t";
+const execFileAsync = promisify(execFile);
 
+test.use({ trace: "off", video: "off", screenshot: "off" });
+
+test.describe("Email verification and courier integration", () => {
+  const baseUrl = process.env.PLAYWRIGHT_BASE_URL || "http://localhost:5000";
+  const mailpitUrl = process.env.E2E_MAILPIT_URL || "http://localhost:8025";
+  const kratosUrl =
+    process.env.E2E_KRATOS_PUBLIC_URL || "http://localhost:4433";
   let runId = "";
   let testEmail = "";
+  let testPassword = "";
   let kratosIdentityId = "";
+  let expectedNodeOrder: Array<string> = [];
 
-  test.beforeEach(() => {
-    runId = `e2e${Date.now()}`;
-    testEmail = `gkcircle.e2e.run.${runId}@example.test`;
-  });
+  test.beforeEach(({ page }) => {
+    runId = `e2e${randomUUID().replaceAll("-", "").slice(0, 16)}`;
+    testEmail = `gkc.verification+${runId}@example.test`;
+    testPassword = `Gkc!${randomUUID()}aA9`;
+    kratosIdentityId = "";
+    expectedNodeOrder = [];
 
-  test.afterEach(async ({ request }) => {
-    if (kratosIdentityId) {
-      console.log(
-        `Cleaning up test user: ${testEmail} (Identity: ${kratosIdentityId})`
-      );
-      const cleanupUrl = `${baseUrl}/api/v1/kratos/e2e-cleanup?kratos_id=${kratosIdentityId}&email=${testEmail}&run_id=${runId}`;
-      const response = await request.delete(cleanupUrl, {
-        headers: {
-          "X-E2E-Secret": jwtSecret,
-        },
-      });
-      console.log(`Cleanup response status: ${response.status()}`);
-      try {
-        const json = await response.json();
-        console.log(`Cleanup response body:`, json);
-      } catch (e) {
-        console.log(`Cleanup raw response:`, await response.text());
-      }
-    }
-  });
+    // Preserve the pre-existing finite timeout hardening.
+    page.setDefaultTimeout(30_000);
+    page.setDefaultNavigationTimeout(30_000);
 
-  test("Should complete registration, trigger verification email, extract Mailpit code, and verify successfully", async ({
-    page,
-  }) => {
-    // Intercept Kratos session to capture identity ID securely
-    page.on("response", async (res) => {
-      if (res.url().includes("/sessions/whoami") && res.status() === 200) {
+    page.on("response", async (response) => {
+      const url = response.url();
+      if (
+        url.includes("/self-service/verification/flows") &&
+        response.status() === 200
+      ) {
         try {
-          const json = await res.json();
-          if (json.identity?.id) {
-            kratosIdentityId = json.identity.id;
-          }
-        } catch (e) {
-          // Ignored
+          const flow = await response.json();
+          expectedNodeOrder = (flow?.ui?.nodes || []).map(
+            (node: {
+              type?: string;
+              group?: string;
+              attributes?: { name?: string; type?: string };
+            }) =>
+              `${node.group || ""}:${node.type || ""}:${
+                node.attributes?.type || ""
+              }:${node.attributes?.name || ""}`
+          );
+        } catch {
+          // A later successful flow response can still provide the ordering evidence.
+        }
+      }
+      if (url.includes("/sessions/whoami") && response.status() === 200) {
+        try {
+          const session = await response.json();
+          if (session?.identity?.id) kratosIdentityId = session.identity.id;
+        } catch {
+          // Cleanup remains guarded and will not run without a verified identity ID.
         }
       }
     });
+  });
 
+  test.afterEach(async () => {
+    if (!kratosIdentityId) return;
+    const repositoryRoot = path.resolve(process.cwd(), "..");
+    await execFileAsync(
+      "docker",
+      [
+        "compose",
+        "-f",
+        "docker-compose.yaml",
+        "exec",
+        "-T",
+        "api",
+        "./gk-circle",
+        "qa",
+        "cleanup-verification",
+        "--identity-id",
+        kratosIdentityId,
+        "--run-id",
+        runId,
+        "--confirm",
+      ],
+      { cwd: repositoryRoot, windowsHide: true }
+    );
+  });
+
+  test("registers, sends a real courier message, verifies, refreshes the session, and unlocks a protected route", async ({
+    page,
+    request,
+  }) => {
     const testStartTime = Date.now();
 
-    // 1. Register a new user
-    await page.goto(`${baseUrl}/account/register`);
+    // Preserve the pre-existing domcontentloaded navigation hardening.
+    await page.goto(`${baseUrl}/account/register`, {
+      waitUntil: "domcontentloaded",
+    });
     await page.fill("#firstname", "E2E");
     await page.fill("#lastname", "Verification");
     await page.fill("#email", testEmail);
-    await page.fill("#password", "SuperSecretPassword123!");
+    await page.fill("#password", testPassword);
     await page.click("button[type='submit']");
 
-    // 2. Wait for redirect or check that user is logged in
-    await page.waitForURL(new RegExp(baseUrl));
-
-    // 3. Skip verification first and try to access a protected route (e.g. /instructor/reports)
-    await page.goto(`${baseUrl}/instructor/reports`);
-
-    // 4. Verify we are redirected to /verification
-    await page.waitForURL(/\/verification/);
-    expect(page.url()).toContain("/verification");
-
-    // 5. The page should render the "Send Verification Code" submit button dynamically
-    const sendButton = page.locator(
-      "button:has-text('Send Verification Code')"
+    await page.waitForURL(
+      (url) =>
+        url.origin === new URL(baseUrl).origin &&
+        ["/", "/account/login", "/verification"].some(
+          (pathname) => url.pathname === pathname
+        ),
+      { timeout: 30_000 }
     );
-    await expect(sendButton).toBeVisible();
-    await sendButton.click();
+
+    const session = await page.evaluate(async (publicUrl) => {
+      const response = await fetch(`${publicUrl}/sessions/whoami`, {
+        credentials: "include",
+        headers: { Accept: "application/json" },
+      });
+      return response.ok ? response.json() : null;
+    }, kratosUrl);
+    kratosIdentityId = session?.identity?.id || kratosIdentityId;
+    expect(kratosIdentityId).not.toBe("");
+
+    await page.goto(`${baseUrl}/instructor/reports`, {
+      waitUntil: "domcontentloaded",
+    });
+    await page.waitForURL(/\/verification/);
+    expect(new URL(page.url()).searchParams.get("return_to")).toBe(
+      "/instructor/reports"
+    );
+
+    if (!page.url().includes("flow=")) {
+      await page
+        .getByRole("button", { name: "Send Verification Code" })
+        .click();
+      await page.waitForURL(/flow=/);
+    }
+
+    const sendCode = page.locator('button[name="method"][value="code"]');
+    await expect(sendCode).toBeVisible();
+
+    const renderedNodeOrder = await page
+      .locator("[data-kratos-node-index]")
+      .evaluateAll((elements) =>
+        elements.map(
+          (element) =>
+            `${element.getAttribute("data-kratos-node-group") || ""}:` +
+            `${element.getAttribute("data-kratos-node-type") || ""}:` +
+            `${element.getAttribute("data-kratos-node-input-type") || ""}:` +
+            `${element.getAttribute("data-kratos-node-name") || ""}`
+        )
+      );
+    expect(renderedNodeOrder).toEqual(expectedNodeOrder);
+
+    await sendCode.click();
 
     interface MailpitMessage {
       ID: string;
-      Subject: string;
       To: Array<{ Address: string }>;
       Created: string;
     }
 
-    // 7. Poll Mailpit API to retrieve the enqueued verification email
-    let verificationMail: MailpitMessage | null = null;
-    for (let attempt = 0; attempt < 15; attempt++) {
-      const mailpitRes = await fetch(`${mailpitUrl}/api/v1/messages`).catch(
-        () => null
-      );
-      if (mailpitRes && mailpitRes.ok) {
-        const mailData = (await mailpitRes.json()) as {
-          messages: MailpitMessage[];
-        };
-        verificationMail =
-          mailData.messages.find((m) => {
-            const createdTime = Date.parse(m.Created);
-            return (
-              m.To?.some((to) => to.Address === testEmail) &&
-              createdTime >= testStartTime
-            );
-          }) || null;
-        if (verificationMail) break;
+    let verificationMail: MailpitMessage | undefined;
+    for (let attempt = 0; attempt < 20 && !verificationMail; attempt += 1) {
+      const response = await request.get(`${mailpitUrl}/api/v1/messages`);
+      if (response.ok()) {
+        const data = (await response.json()) as { messages?: MailpitMessage[] };
+        verificationMail = data.messages?.find(
+          (message) =>
+            Date.parse(message.Created) >= testStartTime &&
+            message.To?.some((recipient) => recipient.Address === testEmail)
+        );
       }
-      await page.waitForTimeout(1000);
+      if (!verificationMail) await page.waitForTimeout(500);
     }
+    expect(verificationMail).toBeDefined();
 
-    expect(verificationMail).not.toBeNull();
-    const targetMail = verificationMail;
-    if (!targetMail) {
-      throw new Error("Verification mail not found");
-    }
-
-    // 8. Extract the 6-digit code from the email body
-    const detailRes = await fetch(
-      `${mailpitUrl}/api/v1/message/${targetMail.ID}`
+    const detail = await request.get(
+      `${mailpitUrl}/api/v1/message/${verificationMail?.ID}`
     );
-    expect(detailRes.ok).toBe(true);
+    expect(detail.ok()).toBe(true);
+    const body = (await detail.json()) as { HTML?: string; Text?: string };
+    const match = (body.HTML || body.Text || "").match(/\b\d{6}\b/);
+    expect(match).not.toBeNull();
 
-    const detailData = (await detailRes.json()) as {
-      HTML: string;
-      Text: string;
-    };
-    const bodyText = detailData.HTML || detailData.Text;
-    const codeMatch = bodyText.match(/\b\d{6}\b/);
-    expect(codeMatch).not.toBeNull();
-    const verificationCode = codeMatch ? codeMatch[0] : "";
-    console.log(`Extracted verification code: ${verificationCode}`);
+    const codeInput = page.locator('input[name="code"]');
+    await expect(codeInput).toBeVisible();
+    await codeInput.fill(match?.[0] || "");
+    await page.locator('button[name="method"][value="code"]').click();
 
-    // 9. Input the code and submit verification
-    await codeInput.fill(verificationCode);
-
-    const verifyButton = page.locator("button[type='submit']");
-    await verifyButton.click();
-
-    // 10. Verification should complete successfully and redirect/refresh
-    await page.waitForURL(/\/account\/login/);
-    expect(page.url()).toContain("/account/login");
+    await page.waitForURL(/\/instructor\/reports/);
+    expect(page.url()).toContain("/instructor/reports");
   });
 });

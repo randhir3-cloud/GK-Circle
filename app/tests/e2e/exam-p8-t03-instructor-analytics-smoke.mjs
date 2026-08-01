@@ -17,7 +17,7 @@ async function runSmokeTest() {
     });
 
     if (res.status() === 401 || res.url().includes("/login")) {
-      console.log("Authentication required: skipped live browser interaction (expected without session cookies).");
+      console.log("Authentication required: skipped live browser interaction.");
       await browser.close();
       return;
     }

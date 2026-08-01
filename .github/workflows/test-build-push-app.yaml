@@ -23,20 +23,35 @@ jobs:
         timeout-minutes: 2
 
       - name: Set up Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: '22.9.0'
+          node-version: '22.12.0'
+          cache: npm
+          cache-dependency-path: app/package-lock.json
         timeout-minutes: 2
 
       - name: Install Frontend Dependencies
-        run: npm install
+        run: npm ci
         working-directory: ./app
         timeout-minutes: 5
 
-      # - name: Run Frontend Tests
-      #   run: npm run test
-      #   working-directory: ./app
-      #   timeout-minutes: 5
+      - name: Run Frontend Lint
+        run: npm run lint
+        working-directory: ./app
+        timeout-minutes: 5
+
+      - name: Run Frontend Tests
+        run: npm test -- --run
+        working-directory: ./app
+        timeout-minutes: 10
+
+      - name: Run Frontend Build
+        run: npm run build
+        working-directory: ./app
+        timeout-minutes: 10
+
+      - name: Reject whitespace errors
+        run: git diff --check
 
   build:
     needs: frontend-tests

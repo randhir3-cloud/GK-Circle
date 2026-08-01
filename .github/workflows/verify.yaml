@@ -102,11 +102,15 @@ jobs:
 
       - name: Install Frontend Dependencies
         working-directory: ./app
-        run: npm install
+        run: npm ci
 
       - name: Run Frontend Lint
         working-directory: ./app
         run: npm run lint
+
+      - name: Run Frontend Tests
+        working-directory: ./app
+        run: npm test -- --run
 
       - name: Run Frontend Build
         working-directory: ./app
@@ -118,6 +122,7 @@ jobs:
     needs:
       - backend-verify
       - frontend-verify
+      - repository-safety
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -134,7 +139,7 @@ jobs:
 
       - name: Install Frontend Dependencies
         working-directory: ./app
-        run: npm install
+        run: npm ci
 
       - name: Install Playwright Browsers and Deps
         working-directory: ./app
@@ -157,7 +162,9 @@ jobs:
           EOF
 
       - name: Start Docker Compose services
-        run: docker compose up -d --build
+        run: |
+          docker compose config --quiet
+          docker compose up -d --build
 
       - name: Wait for services to be ready
         shell: bash
@@ -183,6 +190,8 @@ jobs:
 
       - name: Run Playwright Tests
         working-directory: ./app
+        env:
+          HEADLESS: "true"
         run: npx playwright test
 
       - name: Collect Docker diagnostics
@@ -206,3 +215,50 @@ jobs:
       - name: Stop test stack
         if: always()
         run: docker compose down -v --remove-orphans
+
+  repository-safety:
+    name: Repository Safety Gates
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Reject whitespace errors
+        run: git diff --check
+
+      - name: Scan tracked files for secrets
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Reject verification security regressions
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git grep -n -E 'e2e-cleanup|X-E2E-Secret' -- api app deploy; then
+            echo 'Public E2E cleanup endpoint reference detected.'
+            exit 1
+          fi
+          if grep -n -E '/mailpit/|mailpit\.railway\.internal' deploy/nginx.*.conf; then
+            echo 'Production Mailpit route detected.'
+            exit 1
+          fi
+          if git grep -n -E 'console\.(log|info|debug).*([Vv]erification.?[Cc]ode|[Pp]assword|csrf|Authorization)' -- app api; then
+            echo 'Sensitive verification logging detected.'
+            exit 1
+          fi
+          if git grep -n -E 'PLAYWRIGHT_BASE_URL[^\n]*https://gkcircle\.com' -- app/tests app/playwright.config.ts; then
+            echo 'Production E2E default detected.'
+            exit 1
+          fi
+          if git grep -n -E "PASSWORD[^\n]*\|\|[[:space:]]*['\"]" -- app/tests/e2e; then
+            echo 'Hardcoded E2E credential fallback detected.'
+            exit 1
+          fi
+          if git grep -n -E "password:[[:space:]]*['\"][^$]" -- app/tests/e2e; then
+            echo 'Hardcoded E2E password detected.'
+            exit 1
+          fi
