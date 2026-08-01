@@ -48,8 +48,7 @@ export async function login(page: Page, account: TestAccount): Promise<void> {
   await page.goto("/account/login", { waitUntil: "domcontentloaded" });
   await expect(page.getByText("Loading…")).toHaveCount(0, { timeout: 20_000 });
   const identifier = page.locator('input[name="identifier"]');
-  const isReadonly = await identifier.getAttribute("readonly");
-  if (!isReadonly) {
+  if (await identifier.isEditable()) {
     await identifier.fill(account.email);
   }
   await page.locator('input[name="password"]').fill(account.password);

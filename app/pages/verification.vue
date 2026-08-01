@@ -357,6 +357,9 @@ const handleResend = async () => {
 
 onMounted(async () => {
   currentOrigin.value = window.location.origin;
+  // Registration's show-verification hook bypasses the normal API callback.
+  // Synchronize the valid Kratos session before protected-route middleware runs.
+  await usersStore.fetchAuthenticatedUser().catch(() => null);
   await fetchFlow();
 });
 </script>

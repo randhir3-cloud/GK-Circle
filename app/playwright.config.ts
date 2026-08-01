@@ -1,6 +1,8 @@
 import { defineConfig, devices } from "@playwright/test";
 
 const productionAudit = process.env.PRODUCTION_AUDIT === "true";
+const sanitizedEvidence =
+  productionAudit || process.env.PLAYWRIGHT_SANITIZED_EVIDENCE === "true";
 const headless = process.env.HEADLESS === "true" || Boolean(process.env.CI);
 
 export default defineConfig({
@@ -24,14 +26,25 @@ export default defineConfig({
     launchOptions: {
       slowMo: Number(process.env.E2E_SLOW_MO_MS ?? "300"),
     },
-    video: productionAudit ? "off" : "on",
-    screenshot: productionAudit ? "off" : "only-on-failure",
-    trace: productionAudit ? "off" : "retain-on-failure",
+    video: sanitizedEvidence ? "off" : "on",
+    screenshot: sanitizedEvidence ? "off" : "only-on-failure",
+    trace: sanitizedEvidence ? "off" : "retain-on-failure",
   },
   projects: [
     {
       name: "chromium",
-      testIgnore: /exam-full-browser-operator-learner-readiness\.spec\.ts$/,
+      testIgnore: [
+        /exam-full-browser-operator-learner-readiness\.spec\.ts$/,
+        /learning-item-e2e\.spec\.ts$/,
+      ],
+      use: {
+        browserName: "chromium",
+        headless,
+      },
+    },
+    {
+      name: "chromium-fixture",
+      testMatch: /learning-item-e2e\.spec\.ts$/,
       use: {
         browserName: "chromium",
         headless,

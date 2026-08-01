@@ -20,7 +20,10 @@ test.describe("Email verification and courier integration", () => {
   let expectedNodeOrder: Array<string> = [];
 
   test.beforeEach(({ page }) => {
-    runId = `e2e${randomUUID().replaceAll("-", "").slice(0, 16)}`;
+    const executionRunId = process.env.E2E_RUN_ID?.replaceAll("-", "");
+    runId = executionRunId
+      ? `e2e${executionRunId.slice(0, 60)}`
+      : `e2e${randomUUID().replaceAll("-", "").slice(0, 16)}`;
     testEmail = `gkc.verification+${runId}@example.test`;
     testPassword = `Gkc!${randomUUID()}aA9`;
     kratosIdentityId = "";
