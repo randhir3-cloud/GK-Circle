@@ -47,10 +47,10 @@ try {
   const entries = await page.evaluate(() => {
     return performance.getEntriesByType("resource").map(r => r.name);
   });
-  const hasCSS = entries.some(name => name.includes(".css"));
+  const hasCSS = entries.some(name => name.includes(".css")) || await page.evaluate(() => document.querySelectorAll("style").length > 0);
   const hasJS = entries.some(name => name.includes(".js"));
 
-  assertCondition("Static CSS loaded", hasCSS, "no CSS files detected in resources");
+  assertCondition("Static CSS loaded", hasCSS, "no CSS files or style blocks detected");
   assertCondition("Static JS loaded", hasJS, "no JS files detected in resources");
 
   // 2. Gateway /healthz

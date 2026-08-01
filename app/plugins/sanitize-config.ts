@@ -1,11 +1,43 @@
-export default defineNuxtPlugin(() => {
-  const config = useRuntimeConfig();
-
+export default defineNuxtPlugin((nuxtApp) => {
   // On the server side (SSR), route API and Kratos requests via internal private domains
+  // directly in $fetch instead of mutating global runtime config which leaks to the client.
   if (import.meta.server) {
-    config.public.apiUrl = "http://api.railway.internal:3000/api/v1";
-    config.public.kratosUrl = "http://kratos.railway.internal:4433";
+    const originalFetch = globalThis.$fetch;
+    type FetchType = (
+      request: string | Request | URL,
+      options?: Record<string, unknown>
+    ) => Promise<unknown>;
+
+    globalThis.$fetch = ((
+      request: string | Request | URL,
+      options?: Record<string, unknown>
+    ) => {
+      let req = request;
+      if (typeof req === "string") {
+        const publicApiUrl = nuxtApp.$config.public.apiUrl as
+          | string
+          | undefined;
+        const publicKratosUrl = nuxtApp.$config.public.kratosUrl as
+          | string
+          | undefined;
+
+        if (publicApiUrl && req.startsWith(publicApiUrl)) {
+          req = req.replace(
+            publicApiUrl,
+            "http://api.railway.internal:3000/api/v1"
+          );
+        } else if (publicKratosUrl && req.startsWith(publicKratosUrl)) {
+          req = req.replace(
+            publicKratosUrl,
+            "http://kratos.railway.internal:4433"
+          );
+        }
+      }
+      return originalFetch(req, options);
+    }) as unknown as FetchType;
   }
+
+  const config = useRuntimeConfig();
 
   // Sanitize baseUrl
   const base = config.public.baseUrl;
