@@ -24,6 +24,8 @@ COPY pkg/kratos/kratos.dev.yml /etc/config/kratos/kratos.dev.yml
 COPY pkg/kratos/identity.schema.json /etc/config/kratos/identity.schema.json
 COPY pkg/kratos/email-templates /etc/config/kratos/email-templates
 
+RUN ln -sf /tmp/kratos.yml /etc/config/kratos/kratos.yml
+
 USER 10000
 
 EXPOSE 4433 4434
