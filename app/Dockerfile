@@ -22,6 +22,6 @@ ENV NODE_ENV=production
 
 EXPOSE 5000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
-  CMD wget -qO- http://localhost:5000/ >/dev/null || exit 1
+  CMD wget -qO- http://localhost:5000/favicon.ico >/dev/null || exit 1
 
 CMD ["supervisord", "-c", "/etc/supervisord.conf"]
