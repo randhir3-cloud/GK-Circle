@@ -32,6 +32,24 @@ jobs:
   backend-verify:
     name: Backend Verification
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15.2-alpine
+        env:
+          POSTGRES_USER: gk_circle
+          POSTGRES_PASSWORD: change_me_database_password
+          POSTGRES_DB: gk_circle
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U gk_circle -d gk_circle"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DB_HOST: localhost
+      DB_PORT: 5432
+      DB_USERNAME: gk_circle
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
