@@ -14,6 +14,7 @@ func Init(cfg config.AppConfig, logger *zap.Logger) error {
 	apiCmd := GetAPICommandDef(cfg, logger)
 	deleteOrphanedKratosUserCmd := GetDeleteOrphanedCommand(cfg)
 	qaCmd := GetQACommand(cfg, logger)
+	seedAdminCmd := GetSeedAdminCommand(cfg, logger)
 
 	rootCmd := &cobra.Command{
 		Use:           "gk-circle",
@@ -24,6 +25,6 @@ func Init(cfg config.AppConfig, logger *zap.Logger) error {
 		},
 	}
 
-	rootCmd.AddCommand(&migrationCmd, &apiCmd, &deleteOrphanedKratosUserCmd, &qaCmd)
+	rootCmd.AddCommand(&migrationCmd, &apiCmd, &deleteOrphanedKratosUserCmd, &qaCmd, &seedAdminCmd)
 	return rootCmd.Execute()
 }
