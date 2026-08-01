@@ -40,7 +40,7 @@ page.on("requestfailed", (request) => {
 try {
   // 1. Homepage loads
   console.log(`Loading homepage: ${base}/`);
-  const homeRes = await page.goto(`${base}/`, { waitUntil: "networkidle" });
+  const homeRes = await page.goto(`${base}/`, { waitUntil: "load" });
   assertCondition("Homepage loads with 200", homeRes.status() === 200, `got status ${homeRes.status()}`);
   
   // Check static assets
@@ -75,12 +75,12 @@ try {
 
   // 6. Registration page
   console.log("Checking registration route...");
-  const regRes = await page.goto(`${base}/account/register`, { waitUntil: "networkidle" });
+  const regRes = await page.goto(`${base}/account/register`, { waitUntil: "load" });
   assertCondition("Registration route loads (2xx/3xx)", regRes.status() >= 200 && regRes.status() < 400, `got status ${regRes.status()}`);
 
   // 7. Login page
   console.log("Checking login route...");
-  const loginRes = await page.goto(`${base}/account/login`, { waitUntil: "networkidle" });
+  const loginRes = await page.goto(`${base}/account/login`, { waitUntil: "load" });
   assertCondition("Login route loads (2xx/3xx)", loginRes.status() >= 200 && loginRes.status() < 400, `got status ${loginRes.status()}`);
 
   // 8. Console errors check
