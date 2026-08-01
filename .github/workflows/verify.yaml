@@ -183,6 +183,7 @@ jobs:
 
       - name: Start Docker Compose services
         run: |
+          cp api/.env.kratos.example api/.env.kratos
           docker compose config --quiet
           docker compose up -d --build
 
