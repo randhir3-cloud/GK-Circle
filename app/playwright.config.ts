@@ -12,7 +12,8 @@ export default defineConfig({
   reporter: [["line"]],
   use: {
     ...devices["Desktop Chrome"],
-    headless: false,
+    baseURL: process.env.PLAYWRIGHT_BASE_URL || "http://localhost:3000",
+    headless: process.env.HEADLESS === "true",
     viewport: {
       width: 1920,
       height: 1080,
@@ -29,7 +30,7 @@ export default defineConfig({
       name: "chromium-observation",
       use: {
         browserName: "chromium",
-        headless: false,
+        headless: process.env.HEADLESS === "true",
         launchOptions: {
           slowMo: Number(process.env.E2E_SLOW_MO_MS ?? "300"),
         },
