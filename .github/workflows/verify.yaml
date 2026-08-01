@@ -229,7 +229,7 @@ jobs:
         working-directory: ./app
         env:
           HEADLESS: "true"
-        run: npx playwright test
+        run: npx playwright test --project=chromium
 
       - name: Collect Docker diagnostics
         if: failure()

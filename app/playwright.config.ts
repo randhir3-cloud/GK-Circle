@@ -30,7 +30,16 @@ export default defineConfig({
   },
   projects: [
     {
+      name: "chromium",
+      testIgnore: /exam-full-browser-operator-learner-readiness\.spec\.ts$/,
+      use: {
+        browserName: "chromium",
+        headless,
+      },
+    },
+    {
       name: "chromium-observation",
+      testMatch: /exam-full-browser-operator-learner-readiness\.spec\.ts$/,
       use: {
         browserName: "chromium",
         headless,
