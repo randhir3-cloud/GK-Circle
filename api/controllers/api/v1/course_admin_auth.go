@@ -32,7 +32,7 @@ func authorizeCourseAdmin(c *fiber.Ctx, appConfig *config.AppConfig) (models.Use
 	if ownerID == "" {
 		return models.User{}, "", errCourseIdentityMissing
 	}
-	if !appConfig.Quiz.IsPublicQuizAdmin(user.Email) {
+	if !models.CanManageCourses(&user) {
 		return models.User{}, "", errCourseAdminForbidden
 	}
 	return user, ownerID, nil

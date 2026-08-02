@@ -68,11 +68,19 @@
           :alt="userName"
           class="size-10 shrink-0 rounded-full border-[2px] border-jv-ink bg-jv-slate object-cover"
         />
-        <span
-          class="min-w-0 flex-1 truncate font-headings text-[15px] text-jv-ink"
-        >
-          {{ userName }}
-        </span>
+        <div class="min-w-0 flex-1 flex flex-col justify-center">
+          <span
+            class="truncate font-headings text-[15px] text-jv-ink leading-tight"
+          >
+            {{ userName }}
+          </span>
+          <span
+            class="truncate font-bold text-[10px] text-jv-ink/65 uppercase tracking-wider mt-0.5"
+            data-testid="sidebar-user-role"
+          >
+            {{ userRoleLabel }}
+          </span>
+        </div>
         <Popover v-model:open="desktopMenuOpen">
           <PopoverTrigger as-child>
             <NavigationLink
@@ -167,11 +175,19 @@
             :alt="userName"
             class="size-9 shrink-0 rounded-full border-[2px] border-jv-ink bg-jv-slate object-cover"
           />
-          <span
-            class="min-w-0 flex-1 truncate font-headings text-[15px] text-jv-ink"
-          >
-            {{ userName }}
-          </span>
+          <div class="min-w-0 flex-1 flex flex-col justify-center">
+            <span
+              class="truncate font-headings text-[15px] text-jv-ink leading-tight"
+            >
+              {{ userName }}
+            </span>
+            <span
+              class="truncate font-bold text-[10px] text-jv-ink/65 uppercase tracking-wider mt-0.5"
+              data-testid="sidebar-user-role-mobile"
+            >
+              {{ userRoleLabel }}
+            </span>
+          </div>
           <Popover v-model:open="mobileMenuOpen">
             <PopoverTrigger as-child>
               <NavigationLink
@@ -253,6 +269,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { handleLogout, setUserDataStore } from "@/composables/auth";
 import { getAvatarUrlByName } from "@/composables/avatar";
 import { useUsersStore } from "~~/store/users";
+import { hasAnyRole, getRoleLabel } from "~/utils/roles";
 
 const route = useRoute();
 const open = ref(false);
@@ -261,15 +278,27 @@ const mobileMenuOpen = ref(false);
 const mounted = ref(false);
 const userDataStore = useUsersStore();
 
-const isLoggedInAdmin = computed(
-  () => userDataStore.getUserData()?.role === "admin-user"
+const canManageCourses = computed(() =>
+  hasAnyRole(currentUser.value?.roles, ["super_admin", "admin"])
+);
+
+const canManageQuizzes = computed(
+  () =>
+    Boolean(currentUser.value?.canCreatePublicQuiz) ||
+    hasAnyRole(currentUser.value?.roles, ["super_admin", "admin"])
 );
 
 // Show admin nav ONLY when the user is actually an authenticated admin.
 // Visiting an /admin/* route as a guest must not flip the sidebar.
-const showAdminNav = computed(() => isLoggedInAdmin.value);
+const showAdminNav = computed(
+  () => canManageQuizzes.value || canManageCourses.value
+);
 
 const currentUser = computed(() => userDataStore.getUserData());
+
+const userRoleLabel = computed(() =>
+  getRoleLabel(currentUser.value?.roles || [])
+);
 
 // True whenever any authenticated session exists (admin or learner).
 const isLoggedIn = computed(() => !!currentUser.value?.role);
@@ -343,7 +372,7 @@ const navItems = computed(() => {
         icon: BarChart3,
         active: isActiveRoute("/admin/reports"),
       },
-      ...(canManageCategories.value
+      ...(canManageCourses.value
         ? [
             {
               label: "Courses",
@@ -363,6 +392,10 @@ const navItems = computed(() => {
               icon: BookOpenText,
               active: isActiveRoute("/admin/courses/learning-items"),
             },
+          ]
+        : []),
+      ...(canManageQuizzes.value
+        ? [
             {
               label: "Categories",
               url: "/admin/categories",

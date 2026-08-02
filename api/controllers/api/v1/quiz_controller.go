@@ -69,10 +69,9 @@ func InitQuizController(db *goqu.Database, logger *zap.Logger, appConfig *config
 func (ctrl *QuizController) GetAdminUploadedQuizzes(c *fiber.Ctx) error {
 	userID := quizUtilsHelper.GetString(c.Locals(constants.ContextUid))
 
-	// Public-quiz admins also see (and manage) every public quiz, not just their own.
 	includePublic := false
 	if user, ok := quizUtilsHelper.ConvertType[models.User](c.Locals(constants.ContextUser)); ok {
-		includePublic = ctrl.appConfig.Quiz.IsPublicQuizAdmin(user.Email)
+		includePublic = models.CanManageQuizzes(&user, ctrl.appConfig)
 	}
 
 	quizzes, err := ctrl.quizModel.GetQuizzesByAdmin(userID, includePublic)
@@ -129,7 +128,7 @@ func (ctrl *QuizController) CreateQuiz(c *fiber.Ctx) error {
 	isPublic := quizReq.IsPublic
 	if isPublic {
 		user, ok := quizUtilsHelper.ConvertType[models.User](c.Locals(constants.ContextUser))
-		if !ok || !ctrl.appConfig.Quiz.IsPublicQuizAdmin(user.Email) {
+		if !ok || !models.CanManageQuizzes(&user, ctrl.appConfig) {
 			isPublic = false
 		}
 	}
@@ -197,7 +196,7 @@ func (ctrl *QuizController) UpdateQuizSettings(c *fiber.Ctx) error {
 	// sending only points/duration/ordering are unaffected.
 	if quizReq.CategoryId != nil || quizReq.CoverImage != nil {
 		user, ok := quizUtilsHelper.ConvertType[models.User](c.Locals(constants.ContextUser))
-		if !ok || !ctrl.appConfig.Quiz.IsPublicQuizAdmin(user.Email) {
+		if !ok || !models.CanManageQuizzes(&user, ctrl.appConfig) {
 			return utils.JSONFail(c, http.StatusForbidden, constants.ErrUnauthorized)
 		}
 
@@ -474,6 +473,31 @@ func (ctrl *QuizController) GeneratePublicSession(c *fiber.Ctx) error {
 func (ctrl *QuizController) DeleteQuizById(c *fiber.Ctx) error {
 	quizId := c.Params(constants.QuizId)
 	ctrl.logger.Debug("QuizController.DeleteQuizById called", zap.Any(constants.QuizId, quizId))
+
+	user, ok := quizUtilsHelper.ConvertType[models.User](c.Locals(constants.ContextUser))
+	if !ok {
+		return utils.JSONError(c, http.StatusUnauthorized, constants.ErrUnauthenticated)
+	}
+
+	quiz, err := ctrl.quizModel.GetQuizById(quizId)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return utils.JSONFail(c, http.StatusBadRequest, constants.ErrQuizNotFound)
+		}
+		ctrl.logger.Error("error fetching quiz for delete", zap.Error(err))
+		return utils.JSONError(c, http.StatusInternalServerError, err.Error())
+	}
+
+	if quiz.IsPublic {
+		if !models.CanManageQuizzes(&user, ctrl.appConfig) {
+			return utils.JSONFail(c, http.StatusForbidden, constants.ErrUnauthorized)
+		}
+	} else {
+		isCreator := quiz.CreatorID != nil && *quiz.CreatorID == user.ID
+		if !isCreator && !models.CanManageQuizzes(&user, ctrl.appConfig) {
+			return utils.JSONFail(c, http.StatusForbidden, constants.ErrUnauthorized)
+		}
+	}
 
 	isActiveQuizPresent, err := ctrl.activeQuizModel.IsActiveQuizPresent(quizId)
 	if err != nil {

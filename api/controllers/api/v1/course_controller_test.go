@@ -85,7 +85,7 @@ func kratosAuthMiddleware(t *testing.T) fiber.Handler {
 }
 
 func adminUser() models.User {
-	return models.User{ID: adminOwnerID, Email: adminEmail, FirstName: "Admin", LastName: "User", Username: "admin"}
+	return models.User{ID: adminOwnerID, Email: adminEmail, FirstName: "Admin", LastName: "User", Username: "admin", Roles: models.SystemRoleAdmin}
 }
 
 func nonAdminUser() models.User {

@@ -59,15 +59,40 @@ export const handleLogout = async () => {
   }
 };
 
-const normalizeAuthenticatedUser = (data) => ({
-  role: data?.role,
-  avatar: data?.avatar,
-  firstname: data?.firstname,
-  username: data?.username,
-  email: data?.email,
-  canCreatePublicQuiz: !!data?.can_create_public_quiz,
-  emailVerified: data?.email_verified === true,
-});
+import { normalizeRoles, getHighestRole } from "~/utils/roles";
+
+/**
+ * @typedef {Object} AuthenticatedUser
+ * @property {string} role
+ * @property {import("~/utils/roles").SystemRole[]} roles
+ * @property {string} avatar
+ * @property {string} firstname
+ * @property {string} username
+ * @property {string} email
+ * @property {boolean} canCreatePublicQuiz
+ * @property {boolean} emailVerified
+ */
+const normalizeAuthenticatedUser = (data) => {
+  const roles = normalizeRoles(data?.roles || data?.role);
+  const legacyRoleMap = {
+    super_admin: "admin-user",
+    admin: "admin-user",
+    moderator: "admin-user",
+    user: "guest-user",
+  };
+  const highestRole = getHighestRole(roles);
+
+  return {
+    role: legacyRoleMap[highestRole] || "guest-user",
+    roles,
+    avatar: data?.avatar,
+    firstname: data?.firstname,
+    username: data?.username,
+    email: data?.email,
+    canCreatePublicQuiz: !!data?.can_create_public_quiz,
+    emailVerified: data?.email_verified === true,
+  };
+};
 
 export const getAuthenticatedUser = async () => {
   const { apiUrl } = useRuntimeConfig().public;
