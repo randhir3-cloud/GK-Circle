@@ -47,8 +47,11 @@ export function getRoleLabel(roles: readonly SystemRole[]): string {
 }
 
 export function hasAnyRole(
-  roles: readonly SystemRole[],
+  roles: readonly SystemRole[] | null | undefined,
   requiredRoles: readonly SystemRole[]
 ): boolean {
+  if (!roles) {
+    return false;
+  }
   return requiredRoles.some((role) => roles.includes(role));
 }
