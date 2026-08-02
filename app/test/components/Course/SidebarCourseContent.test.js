@@ -36,6 +36,7 @@ const NavigationLinkStub = {
 beforeEach(() => {
   sidebarState.user = {
     role: "admin-user",
+    roles: ["admin"],
     canCreatePublicQuiz: true,
     firstname: "Admin",
   };
@@ -60,7 +61,8 @@ describe("Sidebar Course Content navigation", () => {
 
   it("hides the link when the capability is absent", async () => {
     sidebarState.user = {
-      role: "admin-user",
+      role: "guest-user",
+      roles: ["user"],
       canCreatePublicQuiz: false,
       firstname: "Admin",
     };
@@ -73,5 +75,21 @@ describe("Sidebar Course Content navigation", () => {
       wrapper.find('a[href="/admin/courses/learning-items"]').exists()
     ).toBe(false);
     expect(wrapper.find('a[href="/admin/courses/list"]').exists()).toBe(false);
+  });
+
+  it("displays the correct role badge for super_admin", async () => {
+    sidebarState.user = {
+      role: "admin-user",
+      roles: ["super_admin"],
+      firstname: "Randhir",
+    };
+    const wrapper = await mountSuspended(Sidebar, {
+      global: { stubs: { NavigationLink: NavigationLinkStub } },
+    });
+    await flushPromises();
+
+    const roleBadge = wrapper.find('[data-testid="sidebar-user-role"]');
+    expect(roleBadge.exists()).toBe(true);
+    expect(roleBadge.text()).toBe("Super Admin");
   });
 });

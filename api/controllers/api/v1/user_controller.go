@@ -82,8 +82,9 @@ func (ctrl *UserController) GetUserMeta(c *fiber.Ctx) error {
 			"firstname":              user.FirstName,
 			"email":                  user.Email,
 			"role":                   "admin-user",
+			"roles":                  models.ParseRoles(user.Roles),
 			"avatar":                 user.ImageKey,
-			"can_create_public_quiz": ctrl.config.Quiz.IsPublicQuizAdmin(user.Email),
+			"can_create_public_quiz": models.CanManageQuizzes(&user, &ctrl.config),
 			"email_verified":         emailVerified,
 		})
 	}
@@ -106,8 +107,9 @@ func (ctrl *UserController) GetUserMeta(c *fiber.Ctx) error {
 		"firstname":              user.FirstName,
 		"email":                  user.Email,
 		"role":                   "guest-user",
+		"roles":                  models.ParseRoles(user.Roles),
 		"avatar":                 user.ImageKey,
-		"can_create_public_quiz": false,
+		"can_create_public_quiz": models.CanManageQuizzes(&user, &ctrl.config),
 	})
 }
 

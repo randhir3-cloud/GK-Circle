@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/doug-martin/goqu/v9"
+	"github.com/randhir3-cloud/GK-Circle-v2/api/config"
 )
 
 type Role string
@@ -19,6 +20,56 @@ const (
 	SystemRoleAdmin      = "admin"
 	SystemRoleSuperAdmin = "super_admin"
 )
+
+var SystemRoles = map[string]struct{}{
+	SystemRoleUser:       {},
+	SystemRoleModerator:  {},
+	SystemRoleAdmin:      {},
+	SystemRoleSuperAdmin: {},
+}
+
+// ParseRoles parses, normalizes, and returns unique valid roles from a comma-separated string
+func ParseRoles(value string) []string {
+	seen := make(map[string]struct{})
+	roles := make([]string, 0)
+
+	for _, rawRole := range strings.Split(value, ",") {
+		role := strings.ToLower(strings.TrimSpace(rawRole))
+		if role == "" {
+			continue
+		}
+
+		if _, valid := SystemRoles[role]; !valid {
+			continue
+		}
+
+		if _, exists := seen[role]; exists {
+			continue
+		}
+
+		seen[role] = struct{}{}
+		roles = append(roles, role)
+	}
+
+	return roles
+}
+
+// HasRole checks if the userRoles string contains any of the target roles
+func HasRole(userRoles string, targets ...string) bool {
+	roles := ParseRoles(userRoles)
+
+	for _, target := range targets {
+		normalizedTarget := strings.ToLower(strings.TrimSpace(target))
+
+		for _, role := range roles {
+			if role == normalizedTarget {
+				return true
+			}
+		}
+	}
+
+	return false
+}
 
 // QuizModel implements quiz related database operations
 type RoleModel struct {
@@ -89,4 +140,20 @@ func (rm *RoleModel) NewAllowedRoles(roles ...string) (AllowedRoles, error) {
 func (ar *AllowedRoles) IsAllowed(role Role) bool {
 	_, found := ar.roles[role]
 	return found
+}
+
+// CanManageCourses checks if a user has the super_admin or admin roles required to manage courses.
+func CanManageCourses(user *User) bool {
+	if user == nil {
+		return false
+	}
+	return HasRole(user.Roles, SystemRoleSuperAdmin, SystemRoleAdmin)
+}
+
+// CanManageQuizzes checks if a user is authorized to manage quizzes (super_admin, admin, or is public quiz admin).
+func CanManageQuizzes(user *User, appConfig *config.AppConfig) bool {
+	if user == nil {
+		return false
+	}
+	return HasRole(user.Roles, SystemRoleSuperAdmin, SystemRoleAdmin) || (appConfig != nil && appConfig.Quiz.IsPublicQuizAdmin(user.Email))
 }

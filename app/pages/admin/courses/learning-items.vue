@@ -15,7 +15,11 @@ import {
 import { setUserDataStore } from "@/composables/auth";
 import { useUsersStore } from "~~/store/users";
 
-definePageMeta({ layout: "empty" });
+definePageMeta({
+  layout: "empty",
+  middleware: ["authorization"],
+  requiredRoles: ["super_admin", "admin"],
+});
 useSeoMeta({
   title: "Course Content - GK Circle",
   description: "Manage CourseNode LearningItems.",
@@ -276,10 +280,6 @@ const deleteItem = async () => {
 
 onMounted(async () => {
   if (!usersStore.userData) await setUserDataStore();
-  if (!usersStore.userData?.canCreatePublicQuiz) {
-    await navigateTo("/admin/quiz/list-quiz");
-    return;
-  }
   await Promise.all([loadCourses(), loadQuizzes()]);
   const requestedCourseId = String(route.query.course || "");
   if (

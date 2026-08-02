@@ -32,12 +32,9 @@ func InitQuizCategoryController(db *goqu.Database, logger *zap.Logger, appConfig
 	}, nil
 }
 
-// isPublicQuizAdmin reports whether the requester is one of the configured
-// public-quiz admin emails. Categories are a public-catalog feature, so the
-// same allowlist that gates publishing quizzes gates managing categories.
 func (ctrl *QuizCategoryController) isPublicQuizAdmin(c *fiber.Ctx) bool {
 	user, ok := quizUtilsHelper.ConvertType[models.User](c.Locals(constants.ContextUser))
-	return ok && ctrl.appConfig.Quiz.IsPublicQuizAdmin(user.Email)
+	return ok && models.CanManageQuizzes(&user, ctrl.appConfig)
 }
 
 func (ctrl *QuizCategoryController) parseCategoryRequest(c *fiber.Ctx) (string, error) {

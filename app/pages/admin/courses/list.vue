@@ -9,7 +9,11 @@ import {
 import { setUserDataStore } from "@/composables/auth";
 import { useUsersStore } from "~~/store/users";
 
-definePageMeta({ layout: "empty" });
+definePageMeta({
+  layout: "empty",
+  middleware: ["authorization"],
+  requiredRoles: ["super_admin", "admin"],
+});
 useSeoMeta({
   title: "Courses - GK Circle",
   description: "Search and manage created GK Circle courses.",

@@ -68,11 +68,19 @@
           :alt="userName"
           class="size-10 shrink-0 rounded-full border-[2px] border-jv-ink bg-jv-slate object-cover"
         />
-        <span
-          class="min-w-0 flex-1 truncate font-headings text-[15px] text-jv-ink"
-        >
-          {{ userName }}
-        </span>
+        <div class="min-w-0 flex-1 flex flex-col justify-center">
+          <span
+            class="truncate font-headings text-[15px] text-jv-ink leading-tight"
+          >
+            {{ userName }}
+          </span>
+          <span
+            class="truncate font-bold text-[10px] text-jv-ink/65 uppercase tracking-wider mt-0.5"
+            data-testid="sidebar-user-role"
+          >
+            {{ userRoleLabel }}
+          </span>
+        </div>
         <Popover v-model:open="desktopMenuOpen">
           <PopoverTrigger as-child>
             <NavigationLink
@@ -167,11 +175,19 @@
             :alt="userName"
             class="size-9 shrink-0 rounded-full border-[2px] border-jv-ink bg-jv-slate object-cover"
           />
-          <span
-            class="min-w-0 flex-1 truncate font-headings text-[15px] text-jv-ink"
-          >
-            {{ userName }}
-          </span>
+          <div class="min-w-0 flex-1 flex flex-col justify-center">
+            <span
+              class="truncate font-headings text-[15px] text-jv-ink leading-tight"
+            >
+              {{ userName }}
+            </span>
+            <span
+              class="truncate font-bold text-[10px] text-jv-ink/65 uppercase tracking-wider mt-0.5"
+              data-testid="sidebar-user-role-mobile"
+            >
+              {{ userRoleLabel }}
+            </span>
+          </div>
           <Popover v-model:open="mobileMenuOpen">
             <PopoverTrigger as-child>
               <NavigationLink
@@ -253,6 +269,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { handleLogout, setUserDataStore } from "@/composables/auth";
 import { getAvatarUrlByName } from "@/composables/avatar";
 import { useUsersStore } from "~~/store/users";
+import { hasAnyRole, getRoleLabel } from "~/utils/roles";
 
 const route = useRoute();
 const open = ref(false);
@@ -261,24 +278,30 @@ const mobileMenuOpen = ref(false);
 const mounted = ref(false);
 const userDataStore = useUsersStore();
 
-const isLoggedInAdmin = computed(
-  () => userDataStore.getUserData()?.role === "admin-user"
+const canManageCourses = computed(() =>
+  hasAnyRole(currentUser.value?.roles, ["super_admin", "admin"])
+);
+
+const canManageQuizzes = computed(
+  () =>
+    Boolean(currentUser.value?.canCreatePublicQuiz) ||
+    hasAnyRole(currentUser.value?.roles, ["super_admin", "admin"])
 );
 
 // Show admin nav ONLY when the user is actually an authenticated admin.
 // Visiting an /admin/* route as a guest must not flip the sidebar.
-const showAdminNav = computed(() => isLoggedInAdmin.value);
+const showAdminNav = computed(
+  () => canManageQuizzes.value || canManageCourses.value
+);
 
 const currentUser = computed(() => userDataStore.getUserData());
 
+const userRoleLabel = computed(() =>
+  getRoleLabel(currentUser.value?.roles || [])
+);
+
 // True whenever any authenticated session exists (admin or learner).
 const isLoggedIn = computed(() => !!currentUser.value?.role);
-
-// Categories manage public-catalog grouping, so the nav item only shows for
-// the configured public-quiz admins (same gate as the API enforces).
-const canManageCategories = computed(
-  () => !!currentUser.value?.canCreatePublicQuiz
-);
 
 const userName = computed(
   () => currentUser.value?.firstname || currentUser.value?.username || "Profile"
@@ -327,7 +350,7 @@ const isActiveRoute = (url) => {
   return route.path === url;
 };
 
-const navItems = computed(() => {
+const allNavItems = computed(() => {
   if (showAdminNav.value) {
     return [
       { label: "Home", url: "/", icon: Home, active: isActiveRoute("/") },
@@ -343,162 +366,48 @@ const navItems = computed(() => {
         icon: BarChart3,
         active: isActiveRoute("/admin/reports"),
       },
-      ...(canManageCategories.value
-        ? [
-            {
-              label: "Courses",
-              url: "/admin/courses/list",
-              icon: LibraryBig,
-              active: isActiveRoute("/admin/courses/list"),
-            },
-            {
-              label: "Course Builder",
-              url: "/admin/courses",
-              icon: BookOpenText,
-              active: isActiveRoute("/admin/courses"),
-            },
-            {
-              label: "Course Content",
-              url: "/admin/courses/learning-items",
-              icon: BookOpenText,
-              active: isActiveRoute("/admin/courses/learning-items"),
-            },
-            {
-              label: "Categories",
-              url: "/admin/categories",
-              icon: Tag,
-              active: isActiveRoute("/admin/categories"),
-            },
-          ]
-        : []),
+      // Courses items
+      {
+        label: "Courses",
+        url: "/admin/courses/list",
+        icon: LibraryBig,
+        active: isActiveRoute("/admin/courses/list"),
+        show: canManageCourses.value,
+      },
+      {
+        label: "Course Builder",
+        url: "/admin/courses",
+        icon: BookOpenText,
+        active: isActiveRoute("/admin/courses"),
+        show: canManageCourses.value,
+      },
+      {
+        label: "Course Content",
+        url: "/admin/courses/learning-items",
+        icon: BookOpenText,
+        active: isActiveRoute("/admin/courses/learning-items"),
+        show: canManageCourses.value,
+      },
+      // Categories
+      {
+        label: "Categories",
+        url: "/admin/categories",
+        icon: Tag,
+        active: isActiveRoute("/admin/categories"),
+        show: canManageQuizzes.value,
+      },
       {
         label: "Profile",
         url: "/admin",
         icon: UserRound,
         active: isActiveRoute("/admin"),
       },
-    ];
-  }
-
-  return [
-    // Public items — always visible
-    { label: "Home", url: "/", icon: Home, active: isActiveRoute("/") },
-    {
-      label: "Courses",
-      url: "/courses",
-      icon: BookOpenText,
-      active: isActiveRoute("/courses"),
-    },
-    {
-      label: "Practice",
-      url: "/#practice",
-      icon: Activity,
-      active: isActiveRoute("/#practice"),
-    },
-    {
-      label: "Live Quiz",
-      url: "/join",
-      icon: Radio,
-      active: isActiveRoute("/join"),
-    },
-    {
-      label: "Community",
-      url: "/#community",
-      icon: Users,
-      active: isActiveRoute("/#community"),
-    },
-    // Login-gated items — only shown to authenticated users
-    ...(isLoggedIn.value
-      ? [
-          {
-            label: "Analytics",
-            url: "/analytics",
-            icon: BarChart3,
-            active: isActiveRoute("/analytics"),
-          },
-          {
-            label: "AI Assistant",
-            url: "/#ai-assistant",
-            icon: Bot,
-            active: isActiveRoute("/#ai-assistant"),
-          },
-          {
-            label: "Leaderboard",
-            url: "/admin/scoreboard",
-            icon: Trophy,
-            active: isActiveRoute("/admin/scoreboard"),
-          },
-          {
-            label: "Profile",
-            url: "/admin",
-            icon: UserRound,
-            active: isActiveRoute("/admin"),
-          },
-          {
-            label: "Settings",
-            url: "/account/change-password",
-            icon: Settings,
-            active: isActiveRoute("/account/change-password"),
-          },
-        ]
-      : []),
-  ];
-});
-
-const mobileNavItems = computed(() => {
-  if (showAdminNav.value) {
-    return [
-      { label: "Home", url: "/", icon: Home, active: isActiveRoute("/") },
-      {
-        label: "Quizzes",
-        url: "/admin/quiz/list-quiz",
-        icon: HelpCircle,
-        active: isActiveRoute("/admin/quiz/list-quiz"),
-      },
-      {
-        label: "Reports",
-        url: "/admin/reports",
-        icon: BarChart3,
-        active: isActiveRoute("/admin/reports"),
-      },
-      ...(canManageCategories.value
-        ? [
-            {
-              label: "Courses",
-              url: "/admin/courses/list",
-              icon: LibraryBig,
-              active: isActiveRoute("/admin/courses/list"),
-            },
-            {
-              label: "Course Builder",
-              url: "/admin/courses",
-              icon: BookOpenText,
-              active: isActiveRoute("/admin/courses"),
-            },
-            {
-              label: "Course Content",
-              url: "/admin/courses/learning-items",
-              icon: BookOpenText,
-              active: isActiveRoute("/admin/courses/learning-items"),
-            },
-            {
-              label: "Categories",
-              url: "/admin/categories",
-              icon: Tag,
-              active: isActiveRoute("/admin/categories"),
-            },
-          ]
-        : []),
-      {
-        label: "Profile",
-        url: "/admin",
-        icon: UserRound,
-        active: isActiveRoute("/admin"),
-      },
+      // Mobile-only Create Quiz
       {
         label: "Create Quiz",
         url: "/admin/quiz/list-quiz?create=1",
         icon: Plus,
+        mobileOnly: true,
       },
     ];
   }
@@ -529,47 +438,65 @@ const mobileNavItems = computed(() => {
       icon: Users,
       active: isActiveRoute("/#community"),
     },
-    ...(isLoggedIn.value
-      ? [
-          {
-            label: "Analytics",
-            url: "/analytics",
-            icon: BarChart3,
-            active: isActiveRoute("/analytics"),
-          },
-          {
-            label: "AI Assistant",
-            url: "/#ai-assistant",
-            icon: Bot,
-            active: isActiveRoute("/#ai-assistant"),
-          },
-          {
-            label: "Leaderboard",
-            url: "/admin/scoreboard",
-            icon: Trophy,
-            active: isActiveRoute("/admin/scoreboard"),
-          },
-          {
-            label: "Profile",
-            url: "/admin",
-            icon: UserRound,
-            active: isActiveRoute("/admin"),
-          },
-          {
-            label: "Settings",
-            url: "/account/change-password",
-            icon: Settings,
-            active: isActiveRoute("/account/change-password"),
-          },
-        ]
-      : [
-          {
-            label: "Sign In",
-            url: "/account/login",
-            active: isActiveRoute("/account/login"),
-          },
-        ]),
+    // Login-gated items
+    {
+      label: "Analytics",
+      url: "/analytics",
+      icon: BarChart3,
+      active: isActiveRoute("/analytics"),
+      show: isLoggedIn.value,
+    },
+    {
+      label: "AI Assistant",
+      url: "/#ai-assistant",
+      icon: Bot,
+      active: isActiveRoute("/#ai-assistant"),
+      show: isLoggedIn.value,
+    },
+    {
+      label: "Leaderboard",
+      url: "/admin/scoreboard",
+      icon: Trophy,
+      active: isActiveRoute("/admin/scoreboard"),
+      show: isLoggedIn.value,
+    },
+    {
+      label: "Profile",
+      url: "/admin",
+      icon: UserRound,
+      active: isActiveRoute("/admin"),
+      show: isLoggedIn.value,
+    },
+    {
+      label: "Settings",
+      url: "/account/change-password",
+      icon: Settings,
+      active: isActiveRoute("/account/change-password"),
+      show: isLoggedIn.value,
+    },
+    // Mobile-only Sign In
+    {
+      label: "Sign In",
+      url: "/account/login",
+      active: isActiveRoute("/account/login"),
+      mobileOnly: true,
+      show: !isLoggedIn.value,
+    },
   ];
+});
+
+// Desktop navigation items (filters out mobile-only items and those where show is false)
+const navItems = computed(() => {
+  return allNavItems.value.filter(
+    (item) => !item.mobileOnly && (item.show === undefined || item.show)
+  );
+});
+
+// Mobile navigation items (filters out those where show is false)
+const mobileNavItems = computed(() => {
+  return allNavItems.value.filter(
+    (item) => item.show === undefined || item.show
+  );
 });
 
 const navItemClass = (item) =>

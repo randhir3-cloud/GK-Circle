@@ -112,7 +112,7 @@ func (ctrl *QuestionController) ListQuestionsWithAnswerByQuizId(c *fiber.Ctx) er
 	canEditPublicMeta := false
 	if quiz.IsPublic {
 		if user, ok := quizUtilsHelper.ConvertType[models.User](c.Locals(constants.ContextUser)); ok {
-			canEditPublicMeta = ctrl.appConfig.Quiz.IsPublicQuizAdmin(user.Email)
+			canEditPublicMeta = models.CanManageQuizzes(&user, ctrl.appConfig)
 		}
 	}
 
